@@ -72,8 +72,17 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onCellClick, on
                 whileTap={isPlayable ? { scale: 0.95 } : {}}
               >
                 {cell && (
-                  <div>
-                    <img src={cell.image} alt={cell.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <img 
+                      src={cell.image} 
+                      alt={cell.name} 
+                      style={{ 
+                        maxWidth: '80%', 
+                        maxHeight: '80%', 
+                        objectFit: 'contain',
+                        borderRadius: '8px'
+                      }} 
+                    />
                   </div>
                 )}
               </Cell>
