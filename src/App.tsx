@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from '@emotion/styled';
-import { GameBoard } from './components/GameBoard';
-import { GameCard } from './components/GameCard';
+import { GameBoard } from './components/GameBoard.tsx';
+import { GameCard } from './components/GameCard.tsx';
 import { GameLogic } from './services/gameLogic';
 import { cards } from './data/cards';
 import { Card, GameState, Position, GameRules } from './types/game';
