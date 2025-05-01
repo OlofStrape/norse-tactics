@@ -145,7 +145,8 @@ export class GameLogic {
 
     if (captured) {
       adjacentCards.forEach(({ card: adjacentCard, position: adjPos }) => {
-        if (newState.board[adjPos.row][adjPos.col]) {
+        if (newState.board[adjPos.row][adjPos.col] && 
+            newState.board[adjPos.row][adjPos.col]?.owner !== state.currentTurn) {
           newState.board[adjPos.row][adjPos.col] = {
             ...newState.board[adjPos.row][adjPos.col]!,
             owner: state.currentTurn
