@@ -103,9 +103,9 @@ const App: React.FC = () => {
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
 
   const handleCardSelect = (card: Card) => {
-    if (gameState.currentTurn === 'player' && gameState.playerHand.includes(card)) {
+    if (gameState.currentTurn === 'player' && gameState.player1Hand.includes(card)) {
       setSelectedCard(card);
-    } else if (gameState.currentTurn === 'opponent' && gameState.opponentHand.includes(card)) {
+    } else if (gameState.currentTurn === 'opponent' && gameState.player2Hand.includes(card)) {
       setSelectedCard(card);
     }
   };
@@ -150,7 +150,7 @@ const App: React.FC = () => {
             Player 1 (Score: {gameState.score.player})
           </PlayerInfo>
           <HandContainer>
-            {gameState.playerHand.map(card => (
+            {gameState.player1Hand.map(card => (
               <CardWrapper key={card.id}>
                 <GameCard
                   card={card}
@@ -162,14 +162,17 @@ const App: React.FC = () => {
           </HandContainer>
         </PlayerHand>
 
-        <GameBoard gameState={gameState} onCellClick={handleCellClick} />
+        <GameBoard
+          gameState={gameState}
+          onCellClick={handleCellClick}
+        />
 
         <PlayerHand>
           <PlayerInfo isActive={gameState.currentTurn === 'opponent'}>
             Player 2 (Score: {gameState.score.opponent})
           </PlayerInfo>
           <HandContainer>
-            {gameState.opponentHand.map(card => (
+            {gameState.player2Hand.map(card => (
               <CardWrapper key={card.id}>
                 <GameCard
                   card={card}
