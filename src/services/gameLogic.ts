@@ -130,14 +130,20 @@ export class GameLogic {
       ? state.player2Hand.filter(c => c.id !== card.id)
       : state.player2Hand;
 
-    // Place card on board
-    newState.board[position.row][position.col] = {
+    // Create a new board array
+    const newBoard = newState.board.map(row => [...row]);
+    
+    // Place card on board at the specified position only
+    newBoard[position.row][position.col] = {
       ...card,
       owner: state.currentTurn
     };
 
+    // Update the board in the state
+    newState.board = newBoard;
+
     // Check for captures
-    const adjacentCards = this.getAdjacentCards(newState.board, position);
+    const adjacentCards = this.getAdjacentCards(newBoard, position);
     let captured = false;
 
     if (rules.same && adjacentCards.length >= 2) {
@@ -150,10 +156,10 @@ export class GameLogic {
 
     if (captured) {
       adjacentCards.forEach(({ card: adjacentCard, position: adjPos }) => {
-        if (newState.board[adjPos.row][adjPos.col] && 
-            newState.board[adjPos.row][adjPos.col]?.owner !== state.currentTurn) {
-          newState.board[adjPos.row][adjPos.col] = {
-            ...newState.board[adjPos.row][adjPos.col]!,
+        if (newBoard[adjPos.row][adjPos.col] && 
+            newBoard[adjPos.row][adjPos.col]?.owner !== state.currentTurn) {
+          newBoard[adjPos.row][adjPos.col] = {
+            ...newBoard[adjPos.row][adjPos.col]!,
             owner: state.currentTurn
           };
         }
