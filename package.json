@@ -2,7 +2,7 @@
   "name": "norse-tactics",
   "version": "1.0.0",
   "description": "A Norse mythology-themed card game based on Triple Triad mechanics",
-  "main": "src/index.tsx",
+  "main": "src/main.tsx",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
