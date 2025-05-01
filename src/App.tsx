@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from '@emotion/styled';
 import { GameBoard } from './components/GameBoard.tsx';
 import { GameCard } from './components/GameCard.tsx';
-import { GameLogic } from './services/gameLogic';
+import { GameLogic } from './services/gameLogic.ts';
 import { cards } from './data/cards';
 import { Card, GameState, Position, GameRules } from './types/game';
 
@@ -103,9 +103,9 @@ const App: React.FC = () => {
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
 
   const handleCardSelect = (card: Card) => {
-    if (gameState.currentPlayer === 'player1' && gameState.player1Hand.includes(card)) {
+    if (gameState.currentTurn === 'player' && gameState.playerHand.includes(card)) {
       setSelectedCard(card);
-    } else if (gameState.currentPlayer === 'player2' && gameState.player2Hand.includes(card)) {
+    } else if (gameState.currentTurn === 'opponent' && gameState.opponentHand.includes(card)) {
       setSelectedCard(card);
     }
   };
@@ -146,15 +146,15 @@ const App: React.FC = () => {
       </RulesToggle>
       <GameContainer>
         <PlayerHand>
-          <PlayerInfo isActive={gameState.currentPlayer === 'player1'}>
-            Player 1 (Score: {gameState.score.player1})
+          <PlayerInfo isActive={gameState.currentTurn === 'player'}>
+            Player 1 (Score: {gameState.score.player})
           </PlayerInfo>
           <HandContainer>
-            {gameState.player1Hand.map(card => (
+            {gameState.playerHand.map(card => (
               <CardWrapper key={card.id}>
                 <GameCard
                   card={card}
-                  isPlayable={gameState.currentPlayer === 'player1'}
+                  isPlayable={gameState.currentTurn === 'player'}
                   onClick={() => handleCardSelect(card)}
                 />
               </CardWrapper>
@@ -165,15 +165,15 @@ const App: React.FC = () => {
         <GameBoard gameState={gameState} onCellClick={handleCellClick} />
 
         <PlayerHand>
-          <PlayerInfo isActive={gameState.currentPlayer === 'player2'}>
-            Player 2 (Score: {gameState.score.player2})
+          <PlayerInfo isActive={gameState.currentTurn === 'opponent'}>
+            Player 2 (Score: {gameState.score.opponent})
           </PlayerInfo>
           <HandContainer>
-            {gameState.player2Hand.map(card => (
+            {gameState.opponentHand.map(card => (
               <CardWrapper key={card.id}>
                 <GameCard
                   card={card}
-                  isPlayable={gameState.currentPlayer === 'player2'}
+                  isPlayable={gameState.currentTurn === 'opponent'}
                   onClick={() => handleCardSelect(card)}
                 />
               </CardWrapper>
@@ -186,7 +186,7 @@ const App: React.FC = () => {
         {selectedCard ? (
           `Selected: ${selectedCard.name} - Place it on the board`
         ) : (
-          `${gameState.currentPlayer === 'player1' ? 'Player 1' : 'Player 2'}'s turn`
+          `${gameState.currentTurn === 'player' ? 'Player 1' : 'Player 2'}'s turn`
         )}
       </GameInfo>
     </AppContainer>
