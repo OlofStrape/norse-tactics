@@ -82,6 +82,8 @@ export class GameLogic {
   }
 
   static checkSameRule(playedCard: Card, adjacentCards: { card: Card; direction: string }[]): boolean {
+    if (adjacentCards.length < 2) return false;
+    
     const values: number[] = [];
     adjacentCards.forEach(({ card, direction }) => {
       switch (direction) {
@@ -96,6 +98,8 @@ export class GameLogic {
   }
 
   static checkPlusRule(playedCard: Card, adjacentCards: { card: Card; direction: string }[]): boolean {
+    if (adjacentCards.length < 2) return false;
+    
     const sums: number[] = [];
     adjacentCards.forEach(({ card, direction }) => {
       switch (direction) {
