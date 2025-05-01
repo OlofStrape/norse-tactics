@@ -3,7 +3,7 @@ import styled from '@emotion/styled';
 import { GameBoard } from './components/GameBoard.tsx';
 import { GameCard } from './components/GameCard.tsx';
 import { GameLogic } from './services/gameLogic.ts';
-import { cards } from './data/cards';
+import { cards } from './data/cards.ts';
 import { Card, GameState, Position, GameRules } from './types/game';
 
 const AppContainer = styled.div`
