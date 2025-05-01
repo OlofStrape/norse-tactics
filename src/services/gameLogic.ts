@@ -119,7 +119,8 @@ export class GameLogic {
     position: Position,
     rules: GameRules
   ): GameState {
-    const newState = { ...state };
+    // Create a deep copy of the state
+    const newState = JSON.parse(JSON.stringify(state));
 
     // Remove card from player's hand
     newState.player1Hand = state.currentTurn === 'player' 
@@ -139,11 +140,11 @@ export class GameLogic {
     const adjacentCards = this.getAdjacentCards(newState.board, position);
     let captured = false;
 
-    if (rules.same) {
+    if (rules.same && adjacentCards.length >= 2) {
       captured = captured || this.checkSameRule(card, adjacentCards);
     }
 
-    if (rules.plus) {
+    if (rules.plus && adjacentCards.length >= 2) {
       captured = captured || this.checkPlusRule(card, adjacentCards);
     }
 
