@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from '@emotion/styled';
 import { motion } from 'framer-motion';
-import { Card, Position, GameState } from '../types/game';
+import { Position, GameState } from '../types/game';
 
 const BoardContainer = styled.div`
   display: flex;
@@ -18,60 +18,68 @@ const Grid = styled.div`
   background: #2a2a2a;
   padding: 1rem;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 `;
 
-const Cell = styled.div<{ isPlayable: boolean }>`
+const Cell = styled(motion.div)<{ isPlayable: boolean }>`
   width: 120px;
   height: 160px;
   background: ${props => props.isPlayable ? '#3a3a3a' : '#2a2a2a'};
-  border: 2px solid #4a4a4a;
-  border-radius: 4px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  border: 2px solid ${props => props.isPlayable ? '#ffd700' : 'transparent'};
+  border-radius: 8px;
   cursor: ${props => props.isPlayable ? 'pointer' : 'default'};
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.2s ease;
 
   &:hover {
-    transform: ${props => props.isPlayable ? 'scale(1.05)' : 'none'};
-    border-color: ${props => props.isPlayable ? '#6a6a6a' : '#4a4a4a'};
+    background: ${props => props.isPlayable ? '#4a4a4a' : '#2a2a2a'};
   }
 `;
 
 interface GameBoardProps {
   gameState: GameState;
   onCellClick: (position: Position) => void;
+  onDrop?: (position: Position) => void;
 }
 
-export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onCellClick }) => {
-  const isCellPlayable = (row: number, col: number) => {
-    return gameState.board[row][col] === null;
+export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onCellClick, onDrop }) => {
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent, position: Position) => {
+    e.preventDefault();
+    if (onDrop) onDrop(position);
   };
 
   return (
     <BoardContainer>
       <Grid>
-        {Array.from({ length: 3 }, (_, row) => (
-          Array.from({ length: 3 }, (_, col) => (
-            <Cell
-              key={`${row}-${col}`}
-              isPlayable={isCellPlayable(row, col)}
-              onClick={() => isCellPlayable(row, col) && onCellClick({ row, col })}
-            >
-              {gameState.board[row][col] && (
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                >
-                  {/* Card component will go here */}
-                  {gameState.board[row][col]?.name}
-                </motion.div>
-              )}
-            </Cell>
-          ))
-        ))}
+        {gameState.board.map((row, rowIndex) =>
+          row.map((cell, colIndex) => {
+            const position = { row: rowIndex, col: colIndex };
+            const isPlayable = cell === null && gameState.currentTurn === 'player';
+
+            return (
+              <Cell
+                key={`${rowIndex}-${colIndex}`}
+                isPlayable={isPlayable}
+                onClick={() => isPlayable && onCellClick(position)}
+                onDragOver={handleDragOver}
+                onDrop={(e) => isPlayable && handleDrop(e, position)}
+                whileHover={isPlayable ? { scale: 1.05 } : {}}
+                whileTap={isPlayable ? { scale: 0.95 } : {}}
+              >
+                {cell && (
+                  <div>
+                    <img src={cell.image} alt={cell.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                )}
+              </Cell>
+            );
+          })
+        )}
       </Grid>
     </BoardContainer>
   );

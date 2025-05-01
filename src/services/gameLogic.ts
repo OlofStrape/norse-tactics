@@ -13,11 +13,34 @@ export class GameLogic {
       board: Array(3).fill(null).map(() => Array(3).fill(null)),
       player1Hand: player1Cards,
       player2Hand: player2Cards,
-      currentPlayer: 'player1',
+      currentTurn: 'player',
       score: {
-        player1: 0,
-        player2: 0,
+        player: 0,
+        opponent: 0,
       },
+      rules: {
+        same: false,
+        plus: false,
+        elements: false,
+        ragnarok: false,
+      },
+      ragnarokCounter: 0,
+      activeEffects: [],
+      isMultiplayer: false,
+      isVsAI: false,
+      player1Stats: {
+        id: 'player1',
+        name: 'Player 1',
+        rank: 0,
+      },
+      player2Stats: {
+        id: 'player2',
+        name: 'Player 2',
+        rank: 0,
+      },
+      turnCount: 0,
+      matchStartTime: new Date(),
+      gameStatus: 'active',
     };
   }
 
@@ -92,67 +115,65 @@ export class GameLogic {
     position: Position,
     rules: GameRules
   ): GameState {
-    if (!this.isValidMove(state, position)) {
-      return state;
-    }
+    const newState = { ...state };
 
-    const newState = JSON.parse(JSON.stringify(state)) as GameState;
-    const playedCard = { ...card, owner: state.currentPlayer };
-    newState.board[position.row][position.col] = playedCard;
+    // Remove card from player's hand
+    newState.player1Hand = state.currentTurn === 'player' 
+      ? state.player1Hand.filter(c => c.id !== card.id)
+      : state.player1Hand;
+    newState.player2Hand = state.currentTurn === 'opponent'
+      ? state.player2Hand.filter(c => c.id !== card.id)
+      : state.player2Hand;
 
-    // Remove the played card from the player's hand
-    const hand = state.currentPlayer === 'player1' ? 'player1Hand' : 'player2Hand';
-    newState[hand] = newState[hand].filter(c => c.id !== card.id);
+    // Place card on board
+    newState.board[position.row][position.col] = {
+      ...card,
+      owner: state.currentTurn
+    };
 
-    // Get adjacent cards
+    // Check for captures
     const adjacentCards = this.getAdjacentCards(newState.board, position);
-    const cardsToFlip = new Set<string>();
+    let captured = false;
 
-    // Check for special rules
-    if (rules.same && this.checkSameRule(playedCard, adjacentCards)) {
-      adjacentCards.forEach(({ card }) => cardsToFlip.add(`${card.id}`));
+    if (rules.same) {
+      captured = captured || this.checkSameRule(card, adjacentCards);
     }
 
-    if (rules.plus && this.checkPlusRule(playedCard, adjacentCards)) {
-      adjacentCards.forEach(({ card }) => cardsToFlip.add(`${card.id}`));
+    if (rules.plus) {
+      captured = captured || this.checkPlusRule(card, adjacentCards);
     }
 
-    // Normal capture rules
-    adjacentCards.forEach(({ card, direction, position }) => {
-      if (this.compareCards(playedCard, card, direction)) {
-        cardsToFlip.add(`${card.id}`);
-      }
-    });
-
-    // Flip captured cards
-    newState.board = newState.board.map(row =>
-      row.map(cell => {
-        if (cell && cardsToFlip.has(cell.id)) {
-          return { ...cell, owner: state.currentPlayer };
+    if (captured) {
+      adjacentCards.forEach(({ card: adjacentCard, position: adjPos }) => {
+        if (newState.board[adjPos.row][adjPos.col]) {
+          newState.board[adjPos.row][adjPos.col] = {
+            ...newState.board[adjPos.row][adjPos.col]!,
+            owner: state.currentTurn
+          };
         }
-        return cell;
-      })
-    );
+      });
+    }
 
     // Update scores
     newState.score = {
-      player1: newState.board.flat().filter(cell => cell?.owner === 'player1').length,
-      player2: newState.board.flat().filter(cell => cell?.owner === 'player2').length,
+      player: newState.board.flat().filter(cell => cell?.owner === 'player').length,
+      opponent: newState.board.flat().filter(cell => cell?.owner === 'opponent').length,
     };
 
-    // Switch players
-    newState.currentPlayer = state.currentPlayer === 'player1' ? 'player2' : 'player1';
+    // Switch turns
+    newState.currentTurn = state.currentTurn === 'player' ? 'opponent' : 'player';
+    newState.turnCount++;
 
     return newState;
   }
 
   static isGameOver(state: GameState): boolean {
-    return state.board.flat().filter(cell => cell === null).length === 0;
+    return state.board.flat().every(cell => cell !== null);
   }
 
-  static getWinner(state: GameState): 'player1' | 'player2' | 'draw' {
-    if (state.score.player1 > state.score.player2) return 'player1';
-    if (state.score.player2 > state.score.player1) return 'player2';
+  static getWinner(state: GameState): 'player' | 'opponent' | 'draw' {
+    if (state.score.player > state.score.opponent) return 'player';
+    if (state.score.opponent > state.score.player) return 'opponent';
     return 'draw';
   }
 } 

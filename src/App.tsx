@@ -93,6 +93,7 @@ const App: React.FC = () => {
     elements: false,
     ragnarok: false,
   });
+  const [selectedCard, setSelectedCard] = useState<Card | null>(null);
 
   useEffect(() => {
     // Initialize game state after component mount
@@ -110,8 +111,6 @@ const App: React.FC = () => {
     );
   }
 
-  const [selectedCard, setSelectedCard] = useState<Card | null>(null);
-
   const handleCardSelect = (card: Card) => {
     if (gameState.currentTurn === 'player' && gameState.player1Hand.includes(card)) {
       setSelectedCard(card);
@@ -122,6 +121,7 @@ const App: React.FC = () => {
 
   const handleCellClick = (position: Position) => {
     if (!selectedCard) return;
+    if (!GameLogic.isValidMove(gameState, position)) return;
 
     const newState = GameLogic.playCard(gameState, selectedCard, position, rules);
     setGameState(newState);
@@ -131,6 +131,10 @@ const App: React.FC = () => {
       const winner = GameLogic.getWinner(newState);
       alert(`Game Over! ${winner === 'draw' ? "It's a draw!" : `${winner} wins!`}`);
     }
+  };
+
+  const handleDrop = (position: Position) => {
+    handleCellClick(position);
   };
 
   const toggleRule = (rule: keyof GameRules) => {
@@ -165,7 +169,10 @@ const App: React.FC = () => {
                 <GameCard
                   card={card}
                   isPlayable={gameState.currentTurn === 'player'}
+                  isSelected={selectedCard?.id === card.id}
                   onClick={() => handleCardSelect(card)}
+                  onDragStart={() => handleCardSelect(card)}
+                  onDragEnd={() => setSelectedCard(null)}
                 />
               </CardWrapper>
             ))}
@@ -175,6 +182,7 @@ const App: React.FC = () => {
         <GameBoard
           gameState={gameState}
           onCellClick={handleCellClick}
+          onDrop={handleDrop}
         />
 
         <PlayerHand>
@@ -187,7 +195,10 @@ const App: React.FC = () => {
                 <GameCard
                   card={card}
                   isPlayable={gameState.currentTurn === 'opponent'}
+                  isSelected={selectedCard?.id === card.id}
                   onClick={() => handleCardSelect(card)}
+                  onDragStart={() => handleCardSelect(card)}
+                  onDragEnd={() => setSelectedCard(null)}
                 />
               </CardWrapper>
             ))}

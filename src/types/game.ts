@@ -48,8 +48,8 @@ export interface GameRules {
 
 export interface GameState {
     board: (Card | null)[][];
-    playerHand: Card[];
-    opponentHand: Card[];
+    player1Hand: Card[];
+    player2Hand: Card[];
     currentTurn: 'player' | 'opponent';
     score: {
         player: number;
@@ -73,7 +73,7 @@ export interface GameState {
     turnCount: number;
     matchStartTime: Date;
     gameStatus: 'active' | 'completed' | 'surrendered';
-    winner?: 'player1' | 'player2' | 'draw';
+    winner?: 'player' | 'opponent' | 'draw';
 }
 
 // New types for special abilities and Ragnarök mechanics
