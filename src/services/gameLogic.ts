@@ -66,7 +66,7 @@ export class GameLogic {
     }).filter((result): result is NonNullable<typeof result> => result !== null);
   }
 
-  static compareCards(playedCard: Card, adjacentCard: Card, direction: string): boolean {
+  static compareCards(playedCard: Card, adjacentCard: Card, direction: string): { captured: boolean; value: number } {
     const getComparisonValues = () => {
       switch (direction) {
         case 'left': return { played: playedCard.left, adjacent: adjacentCard.right };
@@ -78,13 +78,16 @@ export class GameLogic {
     };
 
     const { played, adjacent } = getComparisonValues();
-    return played > adjacent;
+    return {
+      captured: played > adjacent,
+      value: played - adjacent
+    };
   }
 
-  static checkSameRule(playedCard: Card, adjacentCards: { card: Card; direction: string }[]): boolean {
-    if (adjacentCards.length < 2) return false;
-    
+  static checkSameRule(playedCard: Card, adjacentCards: { card: Card; direction: string }[]): { captured: boolean; cards: Card[] } {
     const values: number[] = [];
+    const cards: Card[] = [];
+    
     adjacentCards.forEach(({ card, direction }) => {
       switch (direction) {
         case 'left': values.push(card.right); break;
@@ -92,15 +95,19 @@ export class GameLogic {
         case 'up': values.push(card.bottom); break;
         case 'down': values.push(card.top); break;
       }
+      cards.push(card);
     });
 
-    return values.length >= 2 && values.every(v => v === values[0]);
+    return {
+      captured: values.length >= 2 && values.every(v => v === values[0]),
+      cards
+    };
   }
 
-  static checkPlusRule(playedCard: Card, adjacentCards: { card: Card; direction: string }[]): boolean {
-    if (adjacentCards.length < 2) return false;
-    
+  static checkPlusRule(playedCard: Card, adjacentCards: { card: Card; direction: string }[]): { captured: boolean; cards: Card[] } {
     const sums: number[] = [];
+    const cards: Card[] = [];
+    
     adjacentCards.forEach(({ card, direction }) => {
       switch (direction) {
         case 'left': sums.push(playedCard.left + card.right); break;
@@ -108,19 +115,103 @@ export class GameLogic {
         case 'up': sums.push(playedCard.top + card.bottom); break;
         case 'down': sums.push(playedCard.bottom + card.top); break;
       }
+      cards.push(card);
     });
 
-    return sums.length >= 2 && sums.every(s => s === sums[0]);
+    return {
+      captured: sums.length >= 2 && sums.every(s => s === sums[0]),
+      cards
+    };
+  }
+
+  private static processChainReaction(
+    board: (Card | null)[][],
+    position: Position,
+    currentTurn: 'player' | 'opponent',
+    rules: GameRules,
+    onCapture?: (cardId: string, isChainReaction: boolean) => void
+  ): { board: (Card | null)[][] } {
+    const newBoard = [...board];
+    let cardsToProcess = [position];
+    let processedPositions = new Set<string>();
+
+    while (cardsToProcess.length > 0) {
+      const currentPos = cardsToProcess.shift()!;
+      const posKey = `${currentPos.row},${currentPos.col}`;
+      
+      if (processedPositions.has(posKey)) continue;
+      processedPositions.add(posKey);
+
+      const currentCard = newBoard[currentPos.row][currentPos.col];
+      if (!currentCard || currentCard.owner !== currentTurn) continue;
+
+      const adjacentCards = this.getAdjacentCards(newBoard, currentPos);
+      
+      // Check normal captures
+      adjacentCards.forEach(({ card: adjacentCard, direction, position: adjPos }) => {
+        if (adjacentCard.owner === currentTurn) return;
+        
+        const { captured } = this.compareCards(currentCard, adjacentCard, direction);
+        if (captured) {
+          newBoard[adjPos.row][adjPos.col] = {
+            ...newBoard[adjPos.row][adjPos.col]!,
+            owner: currentTurn
+          };
+          cardsToProcess.push(adjPos);
+          // @ts-ignore - we'll use the window handler
+          window.handleGameCapture?.(adjacentCard.id, processedPositions.size > 1);
+        }
+      });
+
+      // Check special rules
+      if (rules.same) {
+        const { captured, cards } = this.checkSameRule(currentCard, adjacentCards);
+        if (captured) {
+          cards.forEach(capturedCard => {
+            const pos = this.findCardPosition(newBoard, capturedCard);
+            if (pos && capturedCard.owner !== currentTurn) {
+              newBoard[pos.row][pos.col] = {
+                ...newBoard[pos.row][pos.col]!,
+                owner: currentTurn
+              };
+              cardsToProcess.push(pos);
+              // @ts-ignore - we'll use the window handler
+              window.handleGameCapture?.(capturedCard.id, processedPositions.size > 1);
+            }
+          });
+        }
+      }
+
+      if (rules.plus) {
+        const { captured, cards } = this.checkPlusRule(currentCard, adjacentCards);
+        if (captured) {
+          cards.forEach(capturedCard => {
+            const pos = this.findCardPosition(newBoard, capturedCard);
+            if (pos && capturedCard.owner !== currentTurn) {
+              newBoard[pos.row][pos.col] = {
+                ...newBoard[pos.row][pos.col]!,
+                owner: currentTurn
+              };
+              cardsToProcess.push(pos);
+              // @ts-ignore - we'll use the window handler
+              window.handleGameCapture?.(capturedCard.id, processedPositions.size > 1);
+            }
+          });
+        }
+      }
+    }
+
+    return { board: newBoard };
   }
 
   static playCard(
     state: GameState,
     card: Card,
     position: Position,
-    rules: GameRules
+    rules: GameRules,
+    onCapture?: (cardId: string, isChainReaction: boolean) => void
   ): GameState {
-    // Create a deep copy of the state
-    const newState = JSON.parse(JSON.stringify(state));
+    const newState = { ...state };
 
     // Remove card from player's hand
     newState.player1Hand = state.currentTurn === 'player' 
@@ -130,41 +221,21 @@ export class GameLogic {
       ? state.player2Hand.filter(c => c.id !== card.id)
       : state.player2Hand;
 
-    // Create a new board array
-    const newBoard = newState.board.map(row => [...row]);
-    
-    // Place card on board at the specified position only
-    newBoard[position.row][position.col] = {
+    // Place card on board
+    newState.board[position.row][position.col] = {
       ...card,
       owner: state.currentTurn
     };
 
-    // Update the board in the state
-    newState.board = newBoard;
-
-    // Check for captures
-    const adjacentCards = this.getAdjacentCards(newBoard, position);
-    let captured = false;
-
-    if (rules.same && adjacentCards.length >= 2) {
-      captured = captured || this.checkSameRule(card, adjacentCards);
-    }
-
-    if (rules.plus && adjacentCards.length >= 2) {
-      captured = captured || this.checkPlusRule(card, adjacentCards);
-    }
-
-    if (captured) {
-      adjacentCards.forEach(({ card: adjacentCard, position: adjPos }) => {
-        if (newBoard[adjPos.row][adjPos.col] && 
-            newBoard[adjPos.row][adjPos.col]?.owner !== state.currentTurn) {
-          newBoard[adjPos.row][adjPos.col] = {
-            ...newBoard[adjPos.row][adjPos.col]!,
-            owner: state.currentTurn
-          };
-        }
-      });
-    }
+    // Process initial captures and chain reactions
+    const { board } = this.processChainReaction(
+      newState.board,
+      position,
+      state.currentTurn,
+      rules,
+      onCapture
+    );
+    newState.board = board;
 
     // Update scores
     newState.score = {
@@ -177,6 +248,17 @@ export class GameLogic {
     newState.turnCount++;
 
     return newState;
+  }
+
+  private static findCardPosition(board: (Card | null)[][], card: Card): Position | null {
+    for (let row = 0; row < board.length; row++) {
+      for (let col = 0; col < board[row].length; col++) {
+        if (board[row][col]?.id === card.id) {
+          return { row, col };
+        }
+      }
+    }
+    return null;
   }
 
   static isGameOver(state: GameState): boolean {

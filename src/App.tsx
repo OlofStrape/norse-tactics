@@ -1,10 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styled from '@emotion/styled';
 import { GameBoard } from './components/GameBoard.tsx';
-import { GameCard } from './components/GameCard.tsx';
+import GameCard from './components/GameCard.tsx';
 import { GameLogic } from './services/gameLogic.ts';
 import { cards } from './data/cards.ts';
 import { Card, GameState, Position, GameRules } from './types/game';
+
+// Add window handler type
+declare global {
+  interface Window {
+    handleGameCapture?: (cardId: string, isChainReaction: boolean) => void;
+  }
+}
 
 const AppContainer = styled.div`
   min-height: 100vh;
@@ -87,13 +94,15 @@ const RuleButton = styled.button<{ active: boolean }>`
 
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState | null>(null);
+  const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [rules, setRules] = useState<GameRules>({
     same: false,
     plus: false,
     elements: false,
     ragnarok: false,
   });
-  const [selectedCard, setSelectedCard] = useState<Card | null>(null);
+  const [capturingCards, setCapturingCards] = useState<Set<string>>(new Set());
+  const [chainReactionCards, setChainReactionCards] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     // Initialize game state after component mount
@@ -102,6 +111,38 @@ const App: React.FC = () => {
     const player2Cards = shuffled.slice(5, 10);
     setGameState(GameLogic.initializeGame(player1Cards, player2Cards));
   }, []);
+
+  const handleCapture = useCallback((cardId: string, isChainReaction: boolean) => {
+    if (isChainReaction) {
+      setChainReactionCards(prev => new Set([...prev, cardId]));
+      setTimeout(() => {
+        setChainReactionCards(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(cardId);
+          return newSet;
+        });
+      }, 1000);
+    } else {
+      setCapturingCards(prev => new Set([...prev, cardId]));
+      setTimeout(() => {
+        setCapturingCards(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(cardId);
+          return newSet;
+        });
+      }, 1000);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Set up the window handler for captures
+    window.handleGameCapture = handleCapture;
+
+    return () => {
+      // Clean up the window handler
+      delete window.handleGameCapture;
+    };
+  }, [handleCapture]);
 
   if (!gameState) {
     return (
@@ -121,9 +162,8 @@ const App: React.FC = () => {
 
   const handleCellClick = (position: Position) => {
     if (!selectedCard) return;
-    if (!GameLogic.isValidMove(gameState, position)) return;
 
-    const newState = GameLogic.playCard(gameState, selectedCard, position, rules);
+    const newState = GameLogic.playCard(gameState, selectedCard, position, rules, handleCapture);
     setGameState(newState);
     setSelectedCard(null);
 
@@ -131,10 +171,6 @@ const App: React.FC = () => {
       const winner = GameLogic.getWinner(newState);
       alert(`Game Over! ${winner === 'draw' ? "It's a draw!" : `${winner} wins!`}`);
     }
-  };
-
-  const handleDrop = (position: Position) => {
-    handleCellClick(position);
   };
 
   const toggleRule = (rule: keyof GameRules) => {
@@ -169,10 +205,9 @@ const App: React.FC = () => {
                 <GameCard
                   card={card}
                   isPlayable={gameState.currentTurn === 'player'}
-                  isSelected={selectedCard?.id === card.id}
                   onClick={() => handleCardSelect(card)}
-                  onDragStart={() => handleCardSelect(card)}
-                  onDragEnd={() => setSelectedCard(null)}
+                  isCapturing={capturingCards.has(card.id)}
+                  isChainReaction={chainReactionCards.has(card.id)}
                 />
               </CardWrapper>
             ))}
@@ -182,7 +217,7 @@ const App: React.FC = () => {
         <GameBoard
           gameState={gameState}
           onCellClick={handleCellClick}
-          onDrop={handleDrop}
+          onCapture={handleCapture}
         />
 
         <PlayerHand>
@@ -195,10 +230,9 @@ const App: React.FC = () => {
                 <GameCard
                   card={card}
                   isPlayable={gameState.currentTurn === 'opponent'}
-                  isSelected={selectedCard?.id === card.id}
                   onClick={() => handleCardSelect(card)}
-                  onDragStart={() => handleCardSelect(card)}
-                  onDragEnd={() => setSelectedCard(null)}
+                  isCapturing={capturingCards.has(card.id)}
+                  isChainReaction={chainReactionCards.has(card.id)}
                 />
               </CardWrapper>
             ))}

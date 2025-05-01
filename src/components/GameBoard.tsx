@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styled from '@emotion/styled';
 import { motion } from 'framer-motion';
-import { Position, GameState } from '../types/game';
+import { GameState, Position } from '../types/game';
+import GameCard from './GameCard.tsx';
 
 const BoardContainer = styled.div`
   display: flex;
@@ -18,77 +19,114 @@ const Grid = styled.div`
   background: #2a2a2a;
   padding: 1rem;
   border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 `;
 
-const Cell = styled(motion.div)<{ isPlayable: boolean }>`
+const Cell = styled.div<{ isPlayable: boolean }>`
   width: 120px;
   height: 160px;
   background: ${props => props.isPlayable ? '#3a3a3a' : '#2a2a2a'};
-  border: 2px solid ${props => props.isPlayable ? '#ffd700' : 'transparent'};
-  border-radius: 8px;
-  cursor: ${props => props.isPlayable ? 'pointer' : 'default'};
+  border: 2px solid #4a4a4a;
+  border-radius: 4px;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  cursor: ${props => props.isPlayable ? 'pointer' : 'default'};
   transition: all 0.2s ease;
 
   &:hover {
-    background: ${props => props.isPlayable ? '#4a4a4a' : '#2a2a2a'};
+    transform: ${props => props.isPlayable ? 'scale(1.05)' : 'none'};
+    border-color: ${props => props.isPlayable ? '#6a6a6a' : '#4a4a4a'};
   }
 `;
 
 interface GameBoardProps {
   gameState: GameState;
   onCellClick: (position: Position) => void;
-  onDrop?: (position: Position) => void;
+  onCapture?: (cardId: string, isChainReaction: boolean) => void;
 }
 
-export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onCellClick, onDrop }) => {
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
+export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onCellClick, onCapture }) => {
+  const [capturingCards, setCapturingCards] = useState<Set<string>>(new Set());
+  const [chainReactionCards, setChainReactionCards] = useState<Set<string>>(new Set());
+
+  const isCellPlayable = (row: number, col: number) => {
+    return gameState.board[row][col] === null;
   };
 
-  const handleDrop = (e: React.DragEvent, position: Position) => {
-    e.preventDefault();
-    if (onDrop) onDrop(position);
-  };
+  useEffect(() => {
+    // Reset animation states after each turn
+    setCapturingCards(new Set());
+    setChainReactionCards(new Set());
+  }, [gameState.turnCount]);
+
+  const handleCapture = useCallback((cardId: string, isChainReaction: boolean = false) => {
+    if (isChainReaction) {
+      setChainReactionCards(prev => new Set([...prev, cardId]));
+      setTimeout(() => {
+        setChainReactionCards(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(cardId);
+          return newSet;
+        });
+      }, 1000);
+    } else {
+      setCapturingCards(prev => new Set([...prev, cardId]));
+      setTimeout(() => {
+        setCapturingCards(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(cardId);
+          return newSet;
+        });
+      }, 1000);
+    }
+    onCapture?.(cardId, isChainReaction);
+  }, [onCapture]);
+
+  // Connect the capture handler to the game logic
+  useEffect(() => {
+    if (onCapture) {
+      const handleGameCapture = (cardId: string, isChainReaction: boolean) => {
+        handleCapture(cardId, isChainReaction);
+      };
+      // @ts-ignore - we'll add this to the window object temporarily
+      window.handleGameCapture = handleGameCapture;
+    }
+  }, [onCapture, handleCapture]);
 
   return (
     <BoardContainer>
       <Grid>
-        {gameState.board.map((row, rowIndex) =>
-          row.map((cell, colIndex) => {
-            const position = { row: rowIndex, col: colIndex };
-            const isPlayable = cell === null && gameState.currentTurn === 'player';
+        {Array.from({ length: 3 }, (_, row) => (
+          Array.from({ length: 3 }, (_, col) => {
+            const card = gameState.board[row][col];
+            const isCapturing = card ? capturingCards.has(card.id) : false;
+            const isChainReaction = card ? chainReactionCards.has(card.id) : false;
 
             return (
               <Cell
-                key={`${rowIndex}-${colIndex}`}
-                isPlayable={isPlayable}
-                onClick={() => isPlayable && onCellClick(position)}
-                onDragOver={handleDragOver}
-                onDrop={(e) => isPlayable && handleDrop(e, position)}
-                whileHover={isPlayable ? { scale: 1.05 } : {}}
-                whileTap={isPlayable ? { scale: 0.95 } : {}}
+                key={`${row}-${col}`}
+                isPlayable={isCellPlayable(row, col)}
+                onClick={() => isCellPlayable(row, col) && onCellClick({ row, col })}
               >
-                {cell && (
-                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <img 
-                      src={cell.image} 
-                      alt={cell.name} 
-                      style={{ 
-                        maxWidth: '80%', 
-                        maxHeight: '80%', 
-                        objectFit: 'contain',
-                        borderRadius: '8px'
-                      }} 
+                {card && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                    style={{ width: '100%', height: '100%' }}
+                  >
+                    <GameCard
+                      card={card}
+                      isCapturing={isCapturing}
+                      isChainReaction={isChainReaction}
                     />
-                  </div>
+                  </motion.div>
                 )}
               </Cell>
             );
           })
-        )}
+        ))}
       </Grid>
     </BoardContainer>
   );
