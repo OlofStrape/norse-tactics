@@ -86,19 +86,29 @@ const RuleButton = styled.button<{ active: boolean }>`
 `;
 
 const App: React.FC = () => {
-  const [gameState, setGameState] = useState<GameState>(() => {
-    const shuffled = [...cards].sort(() => Math.random() - 0.5);
-    const player1Cards = shuffled.slice(0, 5);
-    const player2Cards = shuffled.slice(5, 10);
-    return GameLogic.initializeGame(player1Cards, player2Cards);
-  });
-
+  const [gameState, setGameState] = useState<GameState | null>(null);
   const [rules, setRules] = useState<GameRules>({
     same: false,
     plus: false,
     elements: false,
     ragnarok: false,
   });
+
+  useEffect(() => {
+    // Initialize game state after component mount
+    const shuffled = [...cards].sort(() => Math.random() - 0.5);
+    const player1Cards = shuffled.slice(0, 5);
+    const player2Cards = shuffled.slice(5, 10);
+    setGameState(GameLogic.initializeGame(player1Cards, player2Cards));
+  }, []);
+
+  if (!gameState) {
+    return (
+      <AppContainer>
+        <Title>Loading...</Title>
+      </AppContainer>
+    );
+  }
 
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
 
