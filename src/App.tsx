@@ -1,11 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import styled from '@emotion/styled';
-import { GameBoard } from './components/GameBoard.tsx';
-import GameCard from './components/GameCard.tsx';
-import { GameLogic } from './services/gameLogic.ts';
-import { cards } from './data/cards.ts';
+import { GameBoard } from './components/GameBoard';
+import GameCard from './components/GameCard';
+import { GameLogic } from './services/gameLogic';
+import { cards } from './data/cards';
 import { Card, GameState, Position, GameRules } from './types/game';
 import { AILogic } from './services/aiLogic';
+import { AILoadingIndicator } from './components/AILoadingIndicator';
+import { EndGameModal } from './components/EndGameModal';
+import { motion } from 'framer-motion';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { AIDifficultySelector } from './components/AIDifficultySelector';
 
 // Add window handler type
 declare global {
@@ -59,12 +65,13 @@ const PlayerInfo = styled.div<{ isActive: boolean }>`
 const HandContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1rem;
+  align-items: center;
 `;
 
 const CardWrapper = styled.div`
-  width: 100%;
-  aspect-ratio: 3/4;
+  width: 120px;
+  height: 160px;
 `;
 
 const GameInfo = styled.div`
@@ -101,33 +108,52 @@ const App: React.FC = () => {
     plus: false,
     elements: false,
     ragnarok: false,
+    captureRules: {
+      sameElement: false,
+      higherValue: false,
+      adjacent: false,
+    },
+    chainReaction: false,
   });
   const [capturingCards, setCapturingCards] = useState<Set<string>>(new Set());
   const [chainReactionCards, setChainReactionCards] = useState<Set<string>>(new Set());
+  const [isAIThinking, setIsAIThinking] = useState(false);
+  const [isGameOver, setIsGameOver] = useState(false);
+  const [winner, setWinner] = useState<'player' | 'opponent' | 'draw' | null>(null);
+  const [aiDifficulty, setAIDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy');
 
-  useEffect(() => {
-    // Initialize game state after component mount
+  const initializeGame = () => {
     const shuffled = [...cards].sort(() => Math.random() - 0.5);
     const player1Cards = shuffled.slice(0, 5);
     const player2Cards = shuffled.slice(5, 10);
     setGameState(GameLogic.initializeGame(player1Cards, player2Cards));
+    setIsGameOver(false);
+    setWinner(null);
+    setSelectedCard(null);
+    setCapturingCards(new Set());
+    setChainReactionCards(new Set());
+  };
+
+  useEffect(() => {
+    // Initialize game state after component mount
+    initializeGame();
   }, []);
 
   const handleCapture = useCallback((cardId: string, isChainReaction: boolean) => {
     if (isChainReaction) {
-      setChainReactionCards(prev => new Set([...prev, cardId]));
+      setChainReactionCards(prev => new Set([...Array.from(prev), cardId]));
       setTimeout(() => {
         setChainReactionCards(prev => {
-          const newSet = new Set(prev);
+          const newSet = new Set(Array.from(prev));
           newSet.delete(cardId);
           return newSet;
         });
       }, 1000);
     } else {
-      setCapturingCards(prev => new Set([...prev, cardId]));
+      setCapturingCards(prev => new Set([...Array.from(prev), cardId]));
       setTimeout(() => {
         setCapturingCards(prev => {
-          const newSet = new Set(prev);
+          const newSet = new Set(Array.from(prev));
           newSet.delete(cardId);
           return newSet;
         });
@@ -161,21 +187,24 @@ const App: React.FC = () => {
     }
   };
 
-  const handleCellClick = (position: Position) => {
-    if (!selectedCard) return;
+  const handleCellClick = (position: Position, cardArg?: Card) => {
+    const cardToPlay = cardArg || selectedCard;
+    if (!cardToPlay) return;
 
-    const newState = GameLogic.playCard(gameState, selectedCard, position, rules, handleCapture);
+    const newState = GameLogic.playCard(gameState, cardToPlay, position, rules, handleCapture);
     setGameState(newState);
     setSelectedCard(null);
 
     if (GameLogic.isGameOver(newState)) {
       const winner = GameLogic.getWinner(newState);
-      alert(`Game Over! ${winner === 'draw' ? "It's a draw!" : `${winner} wins!`}`);
+      setIsGameOver(true);
+      setWinner(winner);
       return;
     }
 
     // If it's now the AI's turn, trigger AI move after a short delay
     if (newState.currentTurn === 'opponent') {
+      setIsAIThinking(true);
       setTimeout(() => {
         triggerAIMove(newState);
       }, 700); // 700ms delay for realism
@@ -184,22 +213,38 @@ const App: React.FC = () => {
 
   // AI move logic
   const triggerAIMove = (state: GameState) => {
-    if (GameLogic.isGameOver(state)) return;
-    const ai = new AILogic(rules);
+    if (GameLogic.isGameOver(state)) {
+      setIsAIThinking(false);
+      setIsGameOver(true);
+      setWinner(GameLogic.getWinner(state));
+      return;
+    }
+    const ai = new AILogic(rules, aiDifficulty);
     // Pick the first available card in AI's hand
     const aiHand = state.player2Hand;
-    if (aiHand.length === 0) return;
+    if (aiHand.length === 0) {
+      setIsAIThinking(false);
+      setIsGameOver(true);
+      setWinner(GameLogic.getWinner(state));
+      return;
+    }
     const aiCard = aiHand[0];
     // Pick the best move (currently random valid position)
     const aiPosition = ai.getBestMove(state);
-    if (!aiPosition) return;
+    if (!aiPosition) {
+      setIsAIThinking(false);
+      setIsGameOver(true);
+      setWinner(GameLogic.getWinner(state));
+      return;
+    }
     // Play the move
     const newState = GameLogic.playCard(state, aiCard, aiPosition, rules, handleCapture);
     setGameState(newState);
+    setIsAIThinking(false);
 
     if (GameLogic.isGameOver(newState)) {
-      const winner = GameLogic.getWinner(newState);
-      alert(`Game Over! ${winner === 'draw' ? "It's a draw!" : `${winner} wins!`}`);
+      setIsGameOver(true);
+      setWinner(GameLogic.getWinner(newState));
     }
   };
 
@@ -208,76 +253,110 @@ const App: React.FC = () => {
   };
 
   return (
-    <AppContainer>
-      <Title>Norse Tactics</Title>
-      <RulesToggle>
-        <RuleButton active={rules.same} onClick={() => toggleRule('same')}>
-          Same Rule
-        </RuleButton>
-        <RuleButton active={rules.plus} onClick={() => toggleRule('plus')}>
-          Plus Rule
-        </RuleButton>
-        <RuleButton active={rules.elements} onClick={() => toggleRule('elements')}>
-          Elements
-        </RuleButton>
-        <RuleButton active={rules.ragnarok} onClick={() => toggleRule('ragnarok')}>
-          Ragnarök
-        </RuleButton>
-      </RulesToggle>
-      <GameContainer>
-        <PlayerHand>
-          <PlayerInfo isActive={gameState.currentTurn === 'player'}>
-            Player 1 (Score: {gameState.score.player})
-          </PlayerInfo>
-          <HandContainer>
-            {gameState.player1Hand.map(card => (
-              <CardWrapper key={card.id}>
-                <GameCard
-                  card={card}
-                  isPlayable={gameState.currentTurn === 'player'}
-                  onClick={() => handleCardSelect(card)}
-                  isCapturing={capturingCards.has(card.id)}
-                  isChainReaction={chainReactionCards.has(card.id)}
-                />
-              </CardWrapper>
-            ))}
-          </HandContainer>
-        </PlayerHand>
-
-        <GameBoard
-          gameState={gameState}
-          onCellClick={handleCellClick}
-          onCapture={handleCapture}
+    <DndProvider backend={HTML5Backend}>
+      <AppContainer>
+        <Title>Norse Tactics</Title>
+        <AIDifficultySelector
+          selectedDifficulty={aiDifficulty}
+          onDifficultyChange={setAIDifficulty}
         />
+        {isAIThinking && <AILoadingIndicator />}
+        <EndGameModal
+          isOpen={isGameOver}
+          winner={winner || 'draw'}
+          playerScore={gameState.score.player}
+          opponentScore={gameState.score.opponent}
+          onRestart={initializeGame}
+        />
+        <RulesToggle>
+          <RuleButton active={rules.same} onClick={() => toggleRule('same')}>
+            Same Rule
+          </RuleButton>
+          <RuleButton active={rules.plus} onClick={() => toggleRule('plus')}>
+            Plus Rule
+          </RuleButton>
+          <RuleButton active={rules.elements} onClick={() => toggleRule('elements')}>
+            Elements
+          </RuleButton>
+          <RuleButton active={rules.ragnarok} onClick={() => toggleRule('ragnarok')}>
+            Ragnarök
+          </RuleButton>
+        </RulesToggle>
+        <GameContainer>
+          <PlayerHand>
+            <PlayerInfo isActive={gameState.currentTurn === 'player'}>
+              Player 1 (Score: 
+                <motion.span
+                  key={gameState.score.player}
+                  initial={{ scale: 1, color: '#ffd700' }}
+                  animate={{ scale: [1.2, 1], color: ['#fff', '#ffd700'] }}
+                  transition={{ duration: 0.4 }}
+                  style={{ display: 'inline-block', marginLeft: 4 }}
+                >
+                  {gameState.score.player}
+                </motion.span>
+              )
+            </PlayerInfo>
+            <HandContainer>
+              {gameState.player1Hand.map(card => (
+                <CardWrapper key={card.id}>
+                  <GameCard
+                    card={card}
+                    isPlayable={gameState.currentTurn === 'player'}
+                    onClick={() => handleCardSelect(card)}
+                    isCapturing={capturingCards.has(card.id)}
+                    isChainReaction={chainReactionCards.has(card.id)}
+                  />
+                </CardWrapper>
+              ))}
+            </HandContainer>
+          </PlayerHand>
 
-        <PlayerHand>
-          <PlayerInfo isActive={gameState.currentTurn === 'opponent'}>
-            Player 2 (Score: {gameState.score.opponent})
-          </PlayerInfo>
-          <HandContainer>
-            {gameState.player2Hand.map(card => (
-              <CardWrapper key={card.id}>
-                <GameCard
-                  card={card}
-                  isPlayable={gameState.currentTurn === 'opponent'}
-                  onClick={() => handleCardSelect(card)}
-                  isCapturing={capturingCards.has(card.id)}
-                  isChainReaction={chainReactionCards.has(card.id)}
-                />
-              </CardWrapper>
-            ))}
-          </HandContainer>
-        </PlayerHand>
-      </GameContainer>
+          <GameBoard
+            gameState={gameState}
+            onCellClick={handleCellClick}
+            onCapture={handleCapture}
+          />
 
-      <GameInfo>
-        {selectedCard ? (
-          `Selected: ${selectedCard.name} - Place it on the board`
-        ) : (
-          `${gameState.currentTurn === 'player' ? 'Player 1' : 'Player 2'}'s turn`
-        )}
-      </GameInfo>
-    </AppContainer>
+          <PlayerHand>
+            <PlayerInfo isActive={gameState.currentTurn === 'opponent'}>
+              Player 2 (Score: 
+                <motion.span
+                  key={gameState.score.opponent}
+                  initial={{ scale: 1, color: '#ffd700' }}
+                  animate={{ scale: [1.2, 1], color: ['#fff', '#ffd700'] }}
+                  transition={{ duration: 0.4 }}
+                  style={{ display: 'inline-block', marginLeft: 4 }}
+                >
+                  {gameState.score.opponent}
+                </motion.span>
+              )
+            </PlayerInfo>
+            <HandContainer>
+              {gameState.player2Hand.map(card => (
+                <CardWrapper key={card.id}>
+                  <GameCard
+                    card={card}
+                    isPlayable={gameState.currentTurn === 'opponent'}
+                    onClick={() => handleCardSelect(card)}
+                    isCapturing={capturingCards.has(card.id)}
+                    isChainReaction={chainReactionCards.has(card.id)}
+                  />
+                </CardWrapper>
+              ))}
+            </HandContainer>
+          </PlayerHand>
+        </GameContainer>
+
+        <GameInfo>
+          {selectedCard ? (
+            `Selected: ${selectedCard.name} - Place it on the board`
+          ) : (
+            `${gameState.currentTurn === 'player' ? 'Player 1' : 'Player 2'}'s turn`
+          )}
+        </GameInfo>
+      </AppContainer>
+    </DndProvider>
   );
 };
 
