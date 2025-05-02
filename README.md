@@ -1,144 +1,115 @@
-# Norse Tactics - Card Game
+# Norse Tactics
 
-A React-based implementation of a strategic card game with chain reactions and special rules.
+## To Do
+- Revisit and improve card flip and visual effects (e.g., 3D flip, polish card animations)
+
+Norse Tactics is a turn-based card strategy game inspired by Triple Triad, built with React, TypeScript, and Emotion for styling. The game features Norse mythology-themed cards, special rules, and animated card capture effects.
 
 ## Project Structure
 
 ```
-src/
-├── components/
-│   ├── GameBoard.tsx      # Main game board component
-│   └── GameCard.tsx       # Individual card component
-├── services/
-│   └── gameLogic.ts       # Core game logic and rules
-├── types/
-│   └── game.ts           # TypeScript type definitions
-├── data/
-│   └── cards.ts          # Card data and configurations
-└── App.tsx               # Main application component
+norse-tactics/
+├── build/                # Build output (images, sounds)
+├── dist/                 # Distribution output
+├── public/               # Static assets (images, sounds)
+├── scripts/              # Utility scripts
+├── src/
+│   ├── components/       # React components (GameBoard, GameCard, etc.)
+│   ├── data/             # Card and campaign data
+│   ├── services/         # Game logic, image, and ability services
+│   ├── types/            # TypeScript type definitions
+│   └── ...
+├── index.html            # Main HTML file
+├── package.json          # NPM dependencies and scripts
+├── tsconfig.json         # TypeScript configuration
+├── webpack.config.js     # Webpack configuration
+└── README.md             # This file
 ```
 
-## Components
+## How the Game Works
 
-### GameCard
-- Displays individual cards with their stats and visual effects
-- Handles capture and chain reaction animations
-- Uses Framer Motion for smooth transitions
-- Props:
-  - `card`: Card data (id, name, stats, element, etc.)
-  - `isPlayable`: Whether the card can be played
-  - `onClick`: Click handler for playing the card
-  - `isCapturing`: Whether the card is being captured
-  - `isChainReaction`: Whether the card is part of a chain reaction
-
-### GameBoard
-- Renders the 3x3 game grid
-- Manages card placement and captures
-- Handles game state updates
-- Props:
-  - `gameState`: Current game state
-  - `onCellClick`: Handler for cell selection
-  - `onCapture`: Handler for capture events
-
-## Game Logic
-
-### Core Mechanics
-1. **Card Placement**
-   - Players take turns placing cards on the 3x3 grid
-   - Cards can only be placed on empty cells
-   - Each card has four directional stats (top, right, bottom, left)
-
-2. **Capture Rules**
-   - Normal Capture: Card's stat must be higher than adjacent card's opposite stat
-   - Same Rule: If two adjacent cards have the same stat, they capture each other
-   - Plus Rule: If the sum of two adjacent cards' stats equals another pair's sum, they capture each other
-
-3. **Chain Reactions**
-   - When a card is captured, it can trigger additional captures
-   - Chain reactions continue until no more captures are possible
-   - Each capture in the chain is visually animated
-
-### GameState
-- Tracks:
-  - Current board state
-  - Player hands
-  - Current turn
-  - Game rules (Same, Plus, Elements)
-  - Score
-  - Turn count
+- **Players:** Two players (Player 1 and Player 2, or Player vs AI) take turns placing cards on a 3x3 board.
+- **Cards:** Each card has four numbers (top, right, bottom, left), an element, a rarity, and may have special abilities.
+- **Turns:** On your turn, select a card from your hand and place it on an empty cell on the board. If playing against the AI, the AI will automatically make its move after yours.
+- **Capturing:** When you place a card, it can capture adjacent opponent cards if its number on the touching side is higher than the opponent's number.
+- **Ownership:** Player 1's cards are shown with a red border, Player 2's with a blue border. Ownership updates dynamically as cards are captured.
+- **Chain Reactions:** If a card is captured, it can immediately capture adjacent cards in a chain reaction, following the same rules.
+- **Special Rules:**
+  - **Same Rule:** If two or more adjacent numbers are the same, all matching cards are captured.
+  - **Plus Rule:** If the sum of the placed card's number and an adjacent card's number matches the sum on another side, all involved cards are captured.
+  - **Elements & Ragnarök:** Additional rules can be toggled for more complex gameplay.
 
 ## Animation System
 
-### Capture Effects
-1. **Card Flip**
-   - Captured cards rotate 180 degrees
-   - Smooth transition using Framer Motion
+- **Card Capture:** When a card is captured, it flips and shows an element-based effect (fire, lightning, or ice glow).
+- **Chain Reaction:** Cards captured in a chain reaction show a pulsing white glow.
+- **Ownership Change:** Cards update their border and background color to reflect the new owner.
+- **Animations:** All animations are handled with Framer Motion and React state.
 
-2. **Element Effects**
-   - Fire: Red glow effect
-   - Ice: Blue glow effect
-   - Lightning: Yellow glow effect
+## AI Competitor (New Feature)
 
-3. **Chain Reaction**
-   - White pulsing glow effect
-   - Sequential animation of captures
+- **Automatic AI Opponent:**
+  - When playing solo, Player 2 is controlled by an AI.
+  - The AI automatically selects and plays a card after your turn, with a short delay for realism.
+  - The AI currently picks the first available card and a valid position, but will be improved to play more strategically in future updates.
+  - No button press is needed; the AI acts as soon as your move is complete.
 
-## State Management
+- **How to Play Against the AI:**
+  - Start the game as usual. After you place a card, the AI will respond automatically.
+  - The game continues until the board is full or a win condition is met.
 
-### Capture States
-- `capturingCards`: Set of cards currently being captured
-- `chainReactionCards`: Set of cards involved in chain reactions
-- States are automatically cleared after animations complete
+## Running the Project
 
-### Game Flow
-1. Player selects a card from their hand
-2. Player places card on the board
-3. GameLogic processes captures and chain reactions
-4. Capture animations play
-5. Turn switches to the other player
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+2. **Start the development server:**
+   ```bash
+   npm start
+   ```
+   The game will be available at `http://localhost:3000` (or the port shown in your terminal).
 
-## Error Handling
+3. **Build for production:**
+   ```bash
+   npm run build
+   ```
 
-### Common Issues
-1. **Capture Animation Not Playing**
-   - Check if `window.handleGameCapture` is properly set
-   - Verify card IDs match between game state and animations
-   - Ensure Framer Motion is properly imported
+## Development Tips
 
-2. **Chain Reactions Not Working**
-   - Verify `processChainReaction` is being called
-   - Check if `processedPositions` set is preventing infinite loops
-   - Ensure capture rules are being applied correctly
+- **Component Structure:**
+  - `App.tsx` is the main entry point and manages game state.
+  - `GameBoard.tsx` renders the board and handles cell clicks and animation triggers.
+  - `GameCard.tsx` renders individual cards and their animations.
+  - `gameLogic.ts` contains all the rules for card placement, capturing, and chain reactions.
+- **Adding Cards:** Add new cards in `src/data/cards.ts`.
+- **Adding Rules:** Modify or extend rules in `src/services/gameLogic.ts`.
+- **Styling:** Uses Emotion for CSS-in-JS styling.
+- **Animations:** Uses Framer Motion for smooth transitions and effects.
 
-3. **Game State Not Updating**
-   - Check if `setGameState` is being called with correct parameters
-   - Verify turn switching logic
-   - Ensure score is being updated correctly
+## Troubleshooting
 
-## Development Notes
+- **Blank Screen or Errors:**
+  - Make sure all imports use the correct file extension (e.g., `.tsx` for components).
+  - Ensure all components are using the correct export/import style (default vs named).
+  - If you see TypeScript or ESLint warnings, read the message for hints. Most are about unused variables or missing dependencies in hooks.
+- **Animations Not Showing:**
+  - Make sure the `handleCapture` callback is properly connected between `App.tsx`, `GameBoard.tsx`, and `gameLogic.ts`.
+  - Ensure the `GameCard` component is receiving the `isCapturing` and `isChainReaction` props.
+- **Rules Not Working:**
+  - Check the logic in `gameLogic.ts` for the relevant rule.
+  - Make sure the rule is enabled in the UI toggle.
 
-### Dependencies
-- React
-- TypeScript
-- Framer Motion
-- Emotion (styled-components)
+## Extending the Game
 
-### Best Practices
-1. Always use TypeScript types for props and state
-2. Keep game logic separate from UI components
-3. Use React hooks for state management
-4. Implement proper cleanup in useEffect hooks
-5. Use useCallback for event handlers
+- **Add new elements, abilities, or rules** by editing the relevant files in `src/data/` and `src/services/`.
+- **Improve animations** by customizing the Framer Motion props in `GameCard.tsx`.
+- **Add sound effects** by integrating audio playback in the capture/chain reaction handlers.
 
-### Testing
-- Test individual card captures
-- Verify chain reaction behavior
-- Check special rule implementations
-- Test animation timing and cleanup
+## Contact & Contribution
 
-## Future Improvements
-1. Add multiplayer support
-2. Implement AI opponent
-3. Add sound effects
-4. Create card collection system
-5. Add tutorial mode 
+If you encounter issues or want to contribute, please open an issue or pull request on the repository. For major changes, please open an issue first to discuss what you would like to change.
+
+---
+
+**Enjoy Norse Tactics!** 

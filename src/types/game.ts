@@ -1,4 +1,4 @@
-export type ElementType = 'fire' | 'ice' | 'lightning' | 'none';
+export type ElementType = 'fire' | 'water' | 'earth' | 'air' | 'none';
 export type Rarity = 'common' | 'rare' | 'epic' | 'legendary';
 
 export interface CardAbility {
@@ -30,6 +30,7 @@ export interface Card {
     element: ElementType;
     description: string;
     rarity: Rarity;
+    value: number;
     owner: 'player' | 'opponent' | null;
     abilities?: CardAbility[];
 }
@@ -39,7 +40,15 @@ export interface Position {
     col: number;
 }
 
+export interface CaptureRules {
+    sameElement: boolean;
+    higherValue: boolean;
+    adjacent: boolean;
+}
+
 export interface GameRules {
+    captureRules: CaptureRules;
+    chainReaction: boolean;
     same: boolean;
     plus: boolean;
     elements: boolean;
@@ -60,6 +69,7 @@ export interface GameState {
     activeEffects: CardEffect[];
     isMultiplayer: boolean;
     isVsAI: boolean;
+    aiDifficulty: 'easy' | 'medium' | 'hard';
     player1Stats: {
         id: string;
         name: string;

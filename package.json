@@ -4,8 +4,8 @@
   "description": "A Norse mythology-themed card game based on Triple Triad mechanics",
   "main": "src/index.tsx",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "webpack serve --mode development",
+    "build": "webpack --mode production",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "generate-icons": "node scripts/generate-icons.js"
@@ -16,16 +16,28 @@
     "framer-motion": "^10.16.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "sharp": "^0.32.6",
-    "styled-components": "^6.1.1"
+    "react-scripts": "^5.0.1",
+    "sharp": "^0.32.6"
   },
   "devDependencies": {
+    "@babel/core": "^7.27.1",
+    "@babel/preset-env": "^7.27.1",
+    "@babel/preset-react": "^7.27.1",
+    "@babel/preset-typescript": "^7.27.1",
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.6.0",
     "@types/node": "^20.9.0",
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.2.15",
-    "@types/styled-components": "^5.1.30",
+    "babel-loader": "^10.0.0",
+    "css-loader": "^7.1.2",
+    "html-webpack-plugin": "^5.6.3",
+    "source-map-loader": "^5.0.0",
+    "style-loader": "^4.0.0",
     "typescript": "^4.9.5",
+    "webpack": "^5.99.7",
+    "webpack-bundle-analyzer": "^4.10.2",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.1",
     "workbox-webpack-plugin": "^6.5.4"
   },
   "eslintConfig": {

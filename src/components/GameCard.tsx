@@ -3,11 +3,43 @@ import styled from '@emotion/styled';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '../types/game';
 
-const CardContainer = styled(motion.div)<{ rarity: string; owner: string | null }>`
+const CardContainer = styled.div`
   width: 100%;
   height: 100%;
+  perspective: 800px;
   position: relative;
+  will-change: transform;
+  overflow: visible;
+`;
+
+const Flipper = styled(motion.div)`
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-style: preserve-3d;
+  will-change: transform;
+  overflow: visible;
+`;
+
+const CardFace = styled.div<{ rarity: string; owner: string | null }>`
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
   border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: 2px solid ${props => {
+    if (props.owner === 'player') return '#ff4444';
+    if (props.owner === 'opponent') return '#4444ff';
+    return 'transparent';
+  }};
   background: ${props => {
     if (props.owner === 'player') {
       return 'linear-gradient(45deg, #1a1a1a, #2a2a2a)';
@@ -21,46 +53,16 @@ const CardContainer = styled(motion.div)<{ rarity: string; owner: string | null 
       default: return 'linear-gradient(45deg, #666666, #333333)';
     }
   }};
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border: 2px solid ${props => {
-    if (props.owner === 'player') return '#ff4444';
-    if (props.owner === 'opponent') return '#4444ff';
-    return 'transparent';
-  }};
-  transform-style: preserve-3d;
 `;
 
-const CaptureEffect = styled(motion.div)<{ element: string }>`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 10;
-  background: ${props => {
-    switch (props.element) {
-      case 'fire': return 'radial-gradient(circle, rgba(255,100,0,0.5) 0%, rgba(255,0,0,0) 70%)';
-      case 'lightning': return 'radial-gradient(circle, rgba(255,255,0,0.5) 0%, rgba(255,255,0,0) 70%)';
-      case 'ice': return 'radial-gradient(circle, rgba(0,200,255,0.5) 0%, rgba(0,200,255,0) 70%)';
-      default: return 'radial-gradient(circle, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 70%)';
-    }
-  }};
-`;
-
-const ChainEffect = styled(motion.div)`
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 200%;
-  height: 200%;
-  transform: translate(-50%, -50%);
-  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
-  pointer-events: none;
-  z-index: 5;
+const CardBack = styled(CardFace)<{ owner: string | null; rarity: string }>`
+  background: ${props =>
+    props.owner === 'player'
+      ? 'linear-gradient(45deg, #ff4444, #aa2222)'
+      : props.owner === 'opponent'
+      ? 'linear-gradient(45deg, #4444ff, #2222aa)'
+      : 'linear-gradient(45deg, #666666, #333333)'};
+  transform: rotateY(180deg);
 `;
 
 const CardImage = styled.div<{ image: string }>`
@@ -132,6 +134,36 @@ const ElementIcon = styled.div<{ element: string }>`
   display: ${props => props.element === 'none' ? 'none' : 'block'};
 `;
 
+const CaptureEffect = styled(motion.div)<{ element: string }>`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+  background: ${props => {
+    switch (props.element) {
+      case 'fire': return 'radial-gradient(circle, rgba(255,100,0,0.5) 0%, rgba(255,0,0,0) 70%)';
+      case 'lightning': return 'radial-gradient(circle, rgba(255,255,0,0.5) 0%, rgba(255,255,0,0) 70%)';
+      case 'ice': return 'radial-gradient(circle, rgba(0,200,255,0.5) 0%, rgba(0,200,255,0) 70%)';
+      default: return 'radial-gradient(circle, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 70%)';
+    }
+  }};
+`;
+
+const ChainEffect = styled(motion.div)`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200%;
+  height: 200%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+  pointer-events: none;
+  z-index: 5;
+`;
+
 interface GameCardProps {
   card: Card;
   isPlayable?: boolean;
@@ -160,55 +192,63 @@ const GameCard: React.FC<GameCardProps> = ({
   useEffect(() => {
     if (isChainReaction) {
       setShowChainEffect(true);
-      setTimeout(() => setShowChainEffect(false), 1000);
+      setTimeout(() => setShowChainEffect(false), 600);
     }
   }, [isChainReaction]);
 
   return (
-    <CardContainer
-      rarity={card.rarity}
-      owner={card.owner}
-      onClick={isPlayable ? onClick : undefined}
-      style={{ cursor: isPlayable ? 'pointer' : 'default' }}
-      animate={{
-        rotateY: isCapturing ? [0, 180, 360] : 0,
-        scale: isCapturing ? [1, 1.2, 1] : 1,
-      }}
-      transition={{
-        duration: 0.8,
-        ease: "easeInOut"
-      }}
-    >
-      <AnimatePresence>
-        {showCaptureEffect && (
-          <CaptureEffect
-            element={card.element || 'none'}
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 2, opacity: 0 }}
-            transition={{ duration: 0.5 }}
-          />
-        )}
-        {showChainEffect && (
-          <ChainEffect
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 2, opacity: 0 }}
-            transition={{ duration: 0.5 }}
-          />
-        )}
-      </AnimatePresence>
-      <CardImage image={card.image} />
-      <CardInfo>
-        <CardName>{card.name}</CardName>
-      </CardInfo>
-      <CardStats>
-        <StatValue position="top">{card.top}</StatValue>
-        <StatValue position="right">{card.right}</StatValue>
-        <StatValue position="bottom">{card.bottom}</StatValue>
-        <StatValue position="left">{card.left}</StatValue>
-      </CardStats>
-      <ElementIcon element={card.element || 'none'} />
+    <CardContainer onClick={isPlayable ? onClick : undefined}>
+      <Flipper
+        animate={isCapturing ? { rotateY: 360, scale: [1, 1.15, 1] } : { rotateY: 0, scale: 1 }}
+        transition={{ duration: 0.4, ease: 'easeInOut' }}
+      >
+        {/* Front Face */}
+        <CardFace rarity={card.rarity} owner={card.owner} style={{ zIndex: 2, transform: 'rotateY(0deg)' }}>
+          <CardImage image={card.image} />
+          <CardInfo>
+            <CardName>{card.name}</CardName>
+          </CardInfo>
+          <ElementIcon element={card.element || 'none'} />
+          <CardStats>
+            <StatValue position="top">{card.top}</StatValue>
+            <StatValue position="right">{card.right}</StatValue>
+            <StatValue position="bottom">{card.bottom}</StatValue>
+            <StatValue position="left">{card.left}</StatValue>
+          </CardStats>
+        </CardFace>
+        {/* Back Face */}
+        <CardBack owner={card.owner} rarity={card.rarity} style={{ zIndex: 1 }}>
+          <CardInfo>
+            <CardName>{card.name}</CardName>
+          </CardInfo>
+          <ElementIcon element={card.element || 'none'} />
+          <CardStats>
+            <StatValue position="top">{card.top}</StatValue>
+            <StatValue position="right">{card.right}</StatValue>
+            <StatValue position="bottom">{card.bottom}</StatValue>
+            <StatValue position="left">{card.left}</StatValue>
+          </CardStats>
+        </CardBack>
+        <AnimatePresence>
+          {showCaptureEffect && (
+            <CaptureEffect
+              element={card.element || 'none'}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 2, opacity: 0 }}
+              transition={{ duration: 0.25 }}
+            />
+          )}
+          {showChainEffect && (
+            <ChainEffect
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 2, opacity: 0 }}
+              transition={{ duration: 0.15 }}
+            />
+          )}
+        </AnimatePresence>
+      </Flipper>
     </CardContainer>
   );
 };

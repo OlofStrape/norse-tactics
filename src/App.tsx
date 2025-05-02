@@ -5,6 +5,7 @@ import GameCard from './components/GameCard.tsx';
 import { GameLogic } from './services/gameLogic.ts';
 import { cards } from './data/cards.ts';
 import { Card, GameState, Position, GameRules } from './types/game';
+import { AILogic } from './services/aiLogic';
 
 // Add window handler type
 declare global {
@@ -166,6 +167,35 @@ const App: React.FC = () => {
     const newState = GameLogic.playCard(gameState, selectedCard, position, rules, handleCapture);
     setGameState(newState);
     setSelectedCard(null);
+
+    if (GameLogic.isGameOver(newState)) {
+      const winner = GameLogic.getWinner(newState);
+      alert(`Game Over! ${winner === 'draw' ? "It's a draw!" : `${winner} wins!`}`);
+      return;
+    }
+
+    // If it's now the AI's turn, trigger AI move after a short delay
+    if (newState.currentTurn === 'opponent') {
+      setTimeout(() => {
+        triggerAIMove(newState);
+      }, 700); // 700ms delay for realism
+    }
+  };
+
+  // AI move logic
+  const triggerAIMove = (state: GameState) => {
+    if (GameLogic.isGameOver(state)) return;
+    const ai = new AILogic(rules);
+    // Pick the first available card in AI's hand
+    const aiHand = state.player2Hand;
+    if (aiHand.length === 0) return;
+    const aiCard = aiHand[0];
+    // Pick the best move (currently random valid position)
+    const aiPosition = ai.getBestMove(state);
+    if (!aiPosition) return;
+    // Play the move
+    const newState = GameLogic.playCard(state, aiCard, aiPosition, rules, handleCapture);
+    setGameState(newState);
 
     if (GameLogic.isGameOver(newState)) {
       const winner = GameLogic.getWinner(newState);
