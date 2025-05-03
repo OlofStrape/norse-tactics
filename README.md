@@ -1,5 +1,12 @@
 # Norse Tactics
 
+## Recent Updates
+- **Norse-Themed UI:** All text now uses the Norse font, and the background features a Norse-inspired image for all game modes.
+- **Modern Transparent Look:** Game board, cells, buttons, and player/score boxes are now transparent with subtle gold and dark brown borders, and soft glowing effects for a modern, immersive feel.
+- **Consistent Button & Box Styling:** All interactive elements (AI difficulty, rules, game mode buttons, player boxes) now share a unified style for a cohesive experience.
+- **Improved Visibility:** Game mode buttons are more visible with a soft gold-tinted background and glow.
+- **Default AI Difficulty:** The AI now defaults to 'medium' difficulty for a balanced challenge.
+
 ## To Do
 - Revisit and improve card flip and visual effects (e.g., 3D flip, polish card animations)
 
@@ -51,11 +58,15 @@ norse-tactics/
 - **Automatic AI Opponent:**
   - When playing solo, Player 2 is controlled by an AI.
   - The AI automatically selects and plays a card after your turn, with a short delay for realism.
-  - The AI currently picks the first available card and a valid position, but will be improved to play more strategically in future updates.
+  - The AI difficulty can be selected using the buttons above the game board: **Easy**, **Medium**, or **Hard**.
+  - **Easy:** AI picks a random valid move.
+  - **Medium:** AI prefers moves that capture a card, otherwise random.
+  - **Hard:** AI evaluates all possible card and position combinations in its hand and picks the move that gives it the best immediate advantage (much more strategic).
   - No button press is needed; the AI acts as soon as your move is complete.
 
 - **How to Play Against the AI:**
   - Start the game as usual. After you place a card, the AI will respond automatically.
+  - Use the AI Difficulty buttons above the board to change the challenge at any time before or during a game.
   - The game continues until the board is full or a win condition is met.
 
 ## Running the Project

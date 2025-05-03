@@ -18,10 +18,11 @@ const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
-  background: #2a2a2a;
+  background: transparent;
   padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  border: 4px solid #ffd700;
+  box-shadow: 0 0 12px 2px #ffd70055, 0 4px 24px rgba(0,0,0,0.18);
 `;
 
 const runeSet = [
@@ -45,19 +46,13 @@ const runeSet = [
 const Cell = styled.div<{ isPlayable: boolean }>`
   width: 120px;
   height: 160px;
-  background:
-    /* noise overlay */
-    url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60"><filter id="n" x="0" y="0"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2"/></filter><rect width="60" height="60" filter="url(%23n)" opacity="0.18"/></svg>'),
-    /* stone grain */
-    repeating-linear-gradient(135deg, #b0b0b0 0 8px, #a0a0a0 8px 16px, #b0b0b0 16px 24px),
-    /* main stone color */
-    linear-gradient(120deg, #bcbcbc 60%, #888 100%);
-  border: 3px solid #444;
+  background: transparent;
+  border: 3px solid rgba(60, 40, 20, 0.7);
   border-radius: 10px;
   box-shadow:
-    0 4px 16px rgba(0,0,0,0.28),
+    0 2px 8px rgba(0,0,0,0.18),
     0 1.5px 0 #666 inset,
-    0 0 0 2px #888 inset;
+    0 0 0 2px #8888 inset;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -69,13 +64,13 @@ const Cell = styled.div<{ isPlayable: boolean }>`
     content: '';
     position: absolute;
     inset: 0;
-    background: repeating-linear-gradient(135deg, rgba(255,255,255,0.06) 0 2px, transparent 2px 8px);
+    background: none;
     pointer-events: none;
     z-index: 1;
   }
   &:hover {
     transform: ${props => props.isPlayable ? 'scale(1.05)' : 'none'};
-    border-color: ${props => props.isPlayable ? '#ffd700' : '#4a4a4a'};
+    border-color: ${props => props.isPlayable ? '#ffd700' : 'rgba(60, 40, 20, 0.7)'};
   }
 `;
 
@@ -116,19 +111,19 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onCellClick, on
 
   const handleCapture = useCallback((cardId: string, isChainReaction: boolean = false) => {
     if (isChainReaction) {
-      setChainReactionCards(prev => new Set([...prev, cardId]));
+      setChainReactionCards(prev => new Set([...Array.from(prev), cardId]));
       setTimeout(() => {
         setChainReactionCards(prev => {
-          const newSet = new Set(prev);
+          const newSet = new Set(Array.from(prev));
           newSet.delete(cardId);
           return newSet;
         });
       }, 1000);
     } else {
-      setCapturingCards(prev => new Set([...prev, cardId]));
+      setCapturingCards(prev => new Set([...Array.from(prev), cardId]));
       setTimeout(() => {
         setCapturingCards(prev => {
-          const newSet = new Set(prev);
+          const newSet = new Set(Array.from(prev));
           newSet.delete(cardId);
           return newSet;
         });

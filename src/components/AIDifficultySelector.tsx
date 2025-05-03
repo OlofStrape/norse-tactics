@@ -21,15 +21,15 @@ const ButtonGroup = styled.div`
 
 const DifficultyButton = styled.button<{ isSelected: boolean }>`
   padding: 0.5rem 1rem;
-  border: 2px solid ${props => props.isSelected ? '#4CAF50' : '#666'};
+  border: 2px solid ${props => props.isSelected ? '#4CAF50' : 'rgba(60, 40, 20, 0.7)'};
   border-radius: 4px;
-  background-color: ${props => props.isSelected ? '#4CAF50' : '#333'};
+  background-color: ${props => props.isSelected ? '#4CAF50' : 'transparent'};
   color: white;
   cursor: pointer;
   transition: all 0.2s ease;
   
   &:hover {
-    background-color: ${props => props.isSelected ? '#45a049' : '#444'};
+    background-color: ${props => props.isSelected ? '#45a049' : 'rgba(255,255,255,0.08)'};
   }
 `;
 

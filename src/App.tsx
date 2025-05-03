@@ -12,6 +12,9 @@ import { motion } from 'framer-motion';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { AIDifficultySelector } from './components/AIDifficultySelector';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import StartPage from './components/StartPage';
+import { Global, css } from '@emotion/react';
 
 // Add window handler type
 declare global {
@@ -56,10 +59,18 @@ const PlayerHand = styled.div`
 
 const PlayerInfo = styled.div<{ isActive: boolean }>`
   padding: 1rem;
-  background: ${props => props.isActive ? '#3a3a3a' : '#2a2a2a'};
+  background: ${props => props.isActive ? '#ffd700' : 'transparent'};
   border-radius: 8px;
   text-align: center;
-  border: 2px solid ${props => props.isActive ? '#ffd700' : 'transparent'};
+  border: 2px solid ${props => props.isActive ? '#ffd700' : 'rgba(60, 40, 20, 0.7)'};
+  color: ${props => props.isActive ? '#bfa100' : 'white'};
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  font-weight: bold;
+  font-size: 1.1rem;
+  &:hover {
+    background: ${props => props.isActive ? '#ffed4a' : 'rgba(255,255,255,0.08)'};
+  }
 `;
 
 const HandContainer = styled.div`
@@ -88,19 +99,19 @@ const RulesToggle = styled.div`
 
 const RuleButton = styled.button<{ active: boolean }>`
   padding: 0.5rem 1rem;
-  background: ${props => props.active ? '#ffd700' : '#3a3a3a'};
-  color: ${props => props.active ? '#1a1a1a' : 'white'};
-  border: none;
+  background: ${props => props.active ? '#ffd700' : 'transparent'};
+  color: ${props => props.active ? '#bfa100' : 'white'};
+  border: 2px solid ${props => props.active ? '#ffd700' : 'rgba(60, 40, 20, 0.7)'};
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
-    background: ${props => props.active ? '#ffed4a' : '#4a4a4a'};
+    background: ${props => props.active ? '#ffed4a' : 'rgba(255,255,255,0.08)'};
   }
 `;
 
-const App: React.FC = () => {
+const AppRoutes: React.FC = () => {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [rules, setRules] = useState<GameRules>({
@@ -120,7 +131,8 @@ const App: React.FC = () => {
   const [isAIThinking, setIsAIThinking] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
   const [winner, setWinner] = useState<'player' | 'opponent' | 'draw' | null>(null);
-  const [aiDifficulty, setAIDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy');
+  const [aiDifficulty, setAIDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
+  const [multiplayerUnlocked, setMultiplayerUnlocked] = useState<boolean>(false);
 
   const initializeGame = () => {
     const shuffled = [...cards].sort(() => Math.random() - 0.5);
@@ -252,111 +264,248 @@ const App: React.FC = () => {
     setRules(prev => ({ ...prev, [rule]: !prev[rule] }));
   };
 
-  return (
-    <DndProvider backend={HTML5Backend}>
-      <AppContainer>
-        <Title>Norse Tactics</Title>
-        <AIDifficultySelector
-          selectedDifficulty={aiDifficulty}
-          onDifficultyChange={setAIDifficulty}
-        />
-        {isAIThinking && <AILoadingIndicator />}
-        <EndGameModal
-          isOpen={isGameOver}
-          winner={winner || 'draw'}
-          playerScore={gameState.score.player}
-          opponentScore={gameState.score.opponent}
-          onRestart={initializeGame}
-        />
-        <RulesToggle>
-          <RuleButton active={rules.same} onClick={() => toggleRule('same')}>
-            Same Rule
-          </RuleButton>
-          <RuleButton active={rules.plus} onClick={() => toggleRule('plus')}>
-            Plus Rule
-          </RuleButton>
-          <RuleButton active={rules.elements} onClick={() => toggleRule('elements')}>
-            Elements
-          </RuleButton>
-          <RuleButton active={rules.ragnarok} onClick={() => toggleRule('ragnarok')}>
-            Ragnarök
-          </RuleButton>
-        </RulesToggle>
-        <GameContainer>
-          <PlayerHand>
-            <PlayerInfo isActive={gameState.currentTurn === 'player'}>
-              Player 1 (Score: 
-                <motion.span
-                  key={gameState.score.player}
-                  initial={{ scale: 1, color: '#ffd700' }}
-                  animate={{ scale: [1.2, 1], color: ['#fff', '#ffd700'] }}
-                  transition={{ duration: 0.4 }}
-                  style={{ display: 'inline-block', marginLeft: 4 }}
-                >
-                  {gameState.score.player}
-                </motion.span>
-              )
-            </PlayerInfo>
-            <HandContainer>
-              {gameState.player1Hand.map(card => (
-                <CardWrapper key={card.id}>
-                  <GameCard
-                    card={card}
-                    isPlayable={gameState.currentTurn === 'player'}
-                    onClick={() => handleCardSelect(card)}
-                    isCapturing={capturingCards.has(card.id)}
-                    isChainReaction={chainReactionCards.has(card.id)}
-                  />
-                </CardWrapper>
-              ))}
-            </HandContainer>
-          </PlayerHand>
-
-          <GameBoard
-            gameState={gameState}
-            onCellClick={handleCellClick}
-            onCapture={handleCapture}
+  // Free Play game component (current game)
+  const FreePlay = () => {
+    const navigate = useNavigate();
+    const BackButton = (
+      <button
+        style={{
+          position: 'absolute',
+          top: 24,
+          left: 24,
+          padding: '0.5rem 1.2rem',
+          fontSize: '1.1rem',
+          borderRadius: 6,
+          border: 'none',
+          background: '#ffd700',
+          color: '#1a1a1a',
+          fontWeight: 'bold',
+          cursor: 'pointer',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+          zIndex: 10,
+        }}
+        onClick={() => navigate('/')}
+      >
+        ← Back to Menu
+      </button>
+    );
+    // Font-face and global styles for Free-play
+    const fontStyles = `
+      @font-face {
+        font-family: 'Norse';
+        src: url('/fonts/Norse.otf') format('opentype');
+        font-weight: normal;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: 'NorseBold';
+        src: url('/fonts/Norsebold.otf') format('opentype');
+        font-weight: bold;
+        font-style: normal;
+      }
+    `;
+    return (
+      <DndProvider backend={HTML5Backend}>
+        <style>{fontStyles}</style>
+        <Global styles={css`
+          body {
+            min-height: 100vh;
+            background: linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url('/images/tutorial/Background.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            font-family: 'Norse', serif !important;
+          }
+          button, input, textarea, select, div, span, h1, h2, h3, h4, h5, h6, p {
+            font-family: 'Norse', serif !important;
+          }
+        `} />
+        <AppContainer style={{ position: 'relative', background: 'none' }}>
+          {BackButton}
+          <Title>Norse Tactics</Title>
+          <AIDifficultySelector
+            selectedDifficulty={aiDifficulty}
+            onDifficultyChange={setAIDifficulty}
           />
+          {isAIThinking && <AILoadingIndicator />}
+          <EndGameModal
+            isOpen={isGameOver}
+            winner={winner || 'draw'}
+            playerScore={gameState.score.player}
+            opponentScore={gameState.score.opponent}
+            onRestart={initializeGame}
+          />
+          <RulesToggle>
+            <RuleButton active={rules.same} onClick={() => toggleRule('same')}>
+              Same Rule
+            </RuleButton>
+            <RuleButton active={rules.plus} onClick={() => toggleRule('plus')}>
+              Plus Rule
+            </RuleButton>
+            <RuleButton active={rules.elements} onClick={() => toggleRule('elements')}>
+              Elements
+            </RuleButton>
+            <RuleButton active={rules.ragnarok} onClick={() => toggleRule('ragnarok')}>
+              Ragnarök
+            </RuleButton>
+          </RulesToggle>
+          <GameContainer>
+            <PlayerHand>
+              <PlayerInfo isActive={gameState.currentTurn === 'player'}>
+                Player 1 (Score: 
+                  <motion.span
+                    key={gameState.score.player}
+                    initial={{ scale: 1, color: '#ffd700' }}
+                    animate={{ scale: [1.2, 1], color: ['#fff', '#ffd700'] }}
+                    transition={{ duration: 0.4 }}
+                    style={{ display: 'inline-block', marginLeft: 4 }}
+                  >
+                    {gameState.score.player}
+                  </motion.span>
+                )
+              </PlayerInfo>
+              <HandContainer>
+                {gameState.player1Hand.map(card => (
+                  <CardWrapper key={card.id}>
+                    <GameCard
+                      card={card}
+                      isPlayable={gameState.currentTurn === 'player'}
+                      onClick={() => handleCardSelect(card)}
+                      isCapturing={capturingCards.has(card.id)}
+                      isChainReaction={chainReactionCards.has(card.id)}
+                    />
+                  </CardWrapper>
+                ))}
+              </HandContainer>
+            </PlayerHand>
 
-          <PlayerHand>
-            <PlayerInfo isActive={gameState.currentTurn === 'opponent'}>
-              Player 2 (Score: 
-                <motion.span
-                  key={gameState.score.opponent}
-                  initial={{ scale: 1, color: '#ffd700' }}
-                  animate={{ scale: [1.2, 1], color: ['#fff', '#ffd700'] }}
-                  transition={{ duration: 0.4 }}
-                  style={{ display: 'inline-block', marginLeft: 4 }}
-                >
-                  {gameState.score.opponent}
-                </motion.span>
-              )
-            </PlayerInfo>
-            <HandContainer>
-              {gameState.player2Hand.map(card => (
-                <CardWrapper key={card.id}>
-                  <GameCard
-                    card={card}
-                    isPlayable={gameState.currentTurn === 'opponent'}
-                    onClick={() => handleCardSelect(card)}
-                    isCapturing={capturingCards.has(card.id)}
-                    isChainReaction={chainReactionCards.has(card.id)}
-                  />
-                </CardWrapper>
-              ))}
-            </HandContainer>
-          </PlayerHand>
-        </GameContainer>
+            <GameBoard
+              gameState={gameState}
+              onCellClick={handleCellClick}
+              onCapture={handleCapture}
+            />
 
-        <GameInfo>
-          {selectedCard ? (
-            `Selected: ${selectedCard.name} - Place it on the board`
-          ) : (
-            `${gameState.currentTurn === 'player' ? 'Player 1' : 'Player 2'}'s turn`
-          )}
-        </GameInfo>
-      </AppContainer>
-    </DndProvider>
+            <PlayerHand>
+              <PlayerInfo isActive={gameState.currentTurn === 'opponent'}>
+                Player 2 (Score: 
+                  <motion.span
+                    key={gameState.score.opponent}
+                    initial={{ scale: 1, color: '#ffd700' }}
+                    animate={{ scale: [1.2, 1], color: ['#fff', '#ffd700'] }}
+                    transition={{ duration: 0.4 }}
+                    style={{ display: 'inline-block', marginLeft: 4 }}
+                  >
+                    {gameState.score.opponent}
+                  </motion.span>
+                )
+              </PlayerInfo>
+              <HandContainer>
+                {gameState.player2Hand.map(card => (
+                  <CardWrapper key={card.id}>
+                    <GameCard
+                      card={card}
+                      isPlayable={gameState.currentTurn === 'opponent'}
+                      onClick={() => handleCardSelect(card)}
+                      isCapturing={capturingCards.has(card.id)}
+                      isChainReaction={chainReactionCards.has(card.id)}
+                    />
+                  </CardWrapper>
+                ))}
+              </HandContainer>
+            </PlayerHand>
+          </GameContainer>
+
+          <GameInfo>
+            {selectedCard ? (
+              `Selected: ${selectedCard.name} - Place it on the board`
+            ) : (
+              `${gameState.currentTurn === 'player' ? 'Player 1' : 'Player 2'}'s turn`
+            )}
+          </GameInfo>
+        </AppContainer>
+      </DndProvider>
+    );
+  };
+
+  // Placeholder components for Campaign and Multiplayer
+  const Campaign = () => {
+    const navigate = useNavigate();
+    const BackButton = (
+      <button
+        style={{
+          position: 'absolute',
+          top: 24,
+          left: 24,
+          padding: '0.5rem 1.2rem',
+          fontSize: '1.1rem',
+          borderRadius: 6,
+          border: 'none',
+          background: '#ffd700',
+          color: '#1a1a1a',
+          fontWeight: 'bold',
+          cursor: 'pointer',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+          zIndex: 10,
+        }}
+        onClick={() => navigate('/')}
+      >
+        ← Back to Menu
+      </button>
+    );
+    return (
+      <div style={{ color: 'white', textAlign: 'center', marginTop: '5rem', fontSize: '2rem', position: 'relative' }}>
+        {BackButton}
+        Campaign Mode (Coming Soon)
+      </div>
+    );
+  };
+  const Multiplayer = () => {
+    const navigate = useNavigate();
+    const BackButton = (
+      <button
+        style={{
+          position: 'absolute',
+          top: 24,
+          left: 24,
+          padding: '0.5rem 1.2rem',
+          fontSize: '1.1rem',
+          borderRadius: 6,
+          border: 'none',
+          background: '#ffd700',
+          color: '#1a1a1a',
+          fontWeight: 'bold',
+          cursor: 'pointer',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+          zIndex: 10,
+        }}
+        onClick={() => navigate('/')}
+      >
+        ← Back to Menu
+      </button>
+    );
+    return (
+      <div style={{ color: 'white', textAlign: 'center', marginTop: '5rem', fontSize: '2rem', position: 'relative' }}>
+        {BackButton}
+        Multiplayer Mode (Unlock by completing Campaign)
+      </div>
+    );
+  };
+
+  return (
+    <Routes>
+      <Route path="/" element={<StartPage multiplayerUnlocked={multiplayerUnlocked} />} />
+      <Route path="/free-play" element={<FreePlay />} />
+      <Route path="/campaign" element={<Campaign />} />
+      <Route path="/multiplayer" element={<Multiplayer />} />
+    </Routes>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <Router>
+      <AppRoutes />
+    </Router>
   );
 };
 
