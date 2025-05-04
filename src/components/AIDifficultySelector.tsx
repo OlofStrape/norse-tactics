@@ -10,8 +10,13 @@ const Container = styled.div`
 `;
 
 const Title = styled.h2`
-  color: #f0f0f0;
+  color: #ffd700;
   margin: 0;
+  font-family: 'Norsebold', 'Norse', serif;
+  font-size: 2rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-shadow: 0 0 4px #ffd70066, 0 0 1px #fff;
 `;
 
 const ButtonGroup = styled.div`
@@ -21,15 +26,20 @@ const ButtonGroup = styled.div`
 
 const DifficultyButton = styled.button<{ isSelected: boolean }>`
   padding: 0.5rem 1rem;
-  border: 2px solid ${props => props.isSelected ? '#4CAF50' : 'rgba(60, 40, 20, 0.7)'};
+  border: 2px solid ${props => props.isSelected ? '#ffd700' : 'rgba(60, 40, 20, 0.7)'};
   border-radius: 4px;
-  background-color: ${props => props.isSelected ? '#4CAF50' : 'transparent'};
-  color: white;
+  background-color: ${props => props.isSelected ? 'rgba(255, 215, 0, 0.18)' : 'transparent'};
+  color: #fff;
+  font-family: 'Norsebold', 'Norse', serif;
+  font-size: 1.1rem;
+  font-weight: bold;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: ${props => props.isSelected ? '0 0 8px #ffd70088' : 'none'};
   
   &:hover {
-    background-color: ${props => props.isSelected ? '#45a049' : 'rgba(255,255,255,0.08)'};
+    background-color: ${props => props.isSelected ? 'rgba(255, 215, 0, 0.28)' : 'rgba(255,255,255,0.08)'};
+    border-color: #ffd700;
   }
 `;
 

@@ -1,6 +1,7 @@
 import { Quest, Opponent } from '../services/campaignService';
 import { cards } from './cards';
 import { GameRules } from '../types/game';
+import { GameState } from '../types/game';
 
 // Helper function to create opponents
 const createOpponent = (
@@ -144,7 +145,7 @@ export const midgardQuests = [
     createQuest(
         'training-grounds',
         'The Art of Combat',
-        'Learn the basics of card combat from a veteran shield-maiden.',
+        'Learn the basics of card combat from Astrid the Shield-Maiden, a patient but demanding teacher.',
         'midgard',
         createOpponent(
             'shield-trainer',
@@ -160,12 +161,12 @@ export const midgardQuests = [
             unlocks: ['village-defense']
         },
         { playerLevel: 1 },
-        { same: false, plus: false, elements: false, ragnarok: false }
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: false, same: true, plus: false, elements: false, ragnarok: false }
     ),
     createQuest(
         'village-defense',
         'Defend the Village',
-        'Put your training to the test against raiders threatening the village.',
+        'Put your training to the test against raiders threatening your home. Prove your worth to the elders.',
         'midgard',
         createOpponent(
             'raider-chief',
@@ -177,19 +178,16 @@ export const midgardQuests = [
         ),
         {
             cardIds: ['berserker'],
-            experience: 150,
+            experience: 200,
             unlocks: ['elemental-wisdom']
         },
-        { 
-            playerLevel: 2,
-            completedQuests: ['training-grounds']
-        },
-        { same: true, plus: false, elements: false, ragnarok: false }
+        { playerLevel: 2, completedQuests: ['training-grounds'] },
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: false, same: true, plus: false, elements: false, ragnarok: false }
     ),
     createQuest(
         'elemental-wisdom',
         'The Elements Awaken',
-        'A wandering mystic teaches you about elemental affinities.',
+        'A wandering mystic teaches you about elemental affinities and the power of fire and ice.',
         'midgard',
         createOpponent(
             'mystic-teacher',
@@ -197,79 +195,80 @@ export const midgardQuests = [
             'A mysterious woman with knowledge of the elements',
             'medium',
             ['muspelheim', 'niflheim', 'light-elf-archer', 'alfheim-mystic', 'draugr'],
-            { 
-                aggressiveness: 0.4,
-                preferredElements: ['fire', 'ice']
-            }
+            { aggressiveness: 0.4, preferredElements: ['fire', 'ice'] }
         ),
         {
             cardIds: ['muspelheim', 'niflheim'],
             experience: 200,
-            unlocks: ['coastal-challenge']
+            unlocks: ['raider-revenge']
         },
-        {
-            playerLevel: 3,
-            completedQuests: ['village-defense']
-        },
-        { same: true, plus: false, elements: true, ragnarok: false }
+        { playerLevel: 3, completedQuests: ['village-defense'] },
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: false, same: true, plus: false, elements: true, ragnarok: false }
     ),
     createQuest(
-        'coastal-challenge',
-        'Raiders of the Storm',
-        'Face a powerful raiding party using your newfound elemental knowledge.',
+        'raider-revenge',
+        'Return of the Raiders',
+        'The raiders return, now led by a cunning new chief. Use your elemental knowledge to defend Midgard.',
         'midgard',
         createOpponent(
-            'storm-raider',
-            'Erik Stormborn',
-            'A raider who harnesses the power of lightning',
+            'raider-witch',
+            'Svala the Witch-Chief',
+            'A raider chief who has learned dark magic',
             'medium',
-            ['thor', 'viking-warrior', 'berserker', 'shield-maiden', 'huginn'],
-            {
-                aggressiveness: 0.6,
-                preferredElements: ['lightning']
-            }
+            ['draugr', 'muspelheim', 'niflheim', 'berserker', 'shield-maiden'],
+            { aggressiveness: 0.6, preferredElements: ['fire', 'ice'] }
         ),
         {
-            cardIds: ['huginn'],
+            cardIds: ['draugr'],
             experience: 250,
-            unlocks: ['the-calling']
+            unlocks: ['valkyrie-test']
         },
-        {
-            playerLevel: 4,
-            completedQuests: ['elemental-wisdom'],
-            requiredCards: ['muspelheim', 'niflheim']
-        },
-        { same: true, plus: true, elements: true, ragnarok: false }
+        { playerLevel: 4, completedQuests: ['elemental-wisdom'] },
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: false, same: true, plus: true, elements: true, ragnarok: false }
     ),
     createQuest(
-        'the-calling',
-        'The Call of the Gods',
-        'Prove yourself worthy of ascending to Asgard.',
+        'valkyrie-test',
+        "The Valkyrie's Test",
+        'A Valkyrie descends to test your worth. Only the bravest may ascend to Asgard.',
         'midgard',
         createOpponent(
-            'valkyrie-judge',
+            'valkyrie',
             'Sigrdrífa the Valkyrie',
             'A valkyrie testing your worth',
             'hard',
             ['sigrdriva', 'einherjar', 'valhalla', 'odroerir', 'gungnir'],
-            {
-                aggressiveness: 0.5,
-                preferredElements: ['lightning'],
-                ragnarokStrategy: 'balanced'
-            }
+            { aggressiveness: 0.5, preferredElements: ['lightning'], ragnarokStrategy: 'balanced' }
         ),
         {
             cardIds: ['bifrost'],
             experience: 300,
+            unlocks: ['midgard-boss']
+        },
+        { playerLevel: 5, completedQuests: ['raider-revenge'], specialConditions: ['win_with_elemental_combo'] },
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: false, same: true, plus: true, elements: true, ragnarok: true }
+    ),
+    createQuest(
+        'midgard-boss',
+        'Champion of Midgard',
+        'Face the legendary champion of Midgard in a final test before you may ascend to Asgard.',
+        'midgard',
+        createOpponent(
+            'midgard-champion',
+            'Eirik the Unbreakable',
+            'The legendary champion of Midgard',
+            'boss',
+            ['einherjar', 'berserker', 'shield-maiden', 'draugr', 'valhalla'],
+            { aggressiveness: 0.8, preferredElements: ['none'], ragnarokStrategy: 'aggressive' }
+        ),
+        {
+            cardIds: ['valhalla'],
+            specialAbilities: ['Berserker Rage'],
+            experience: 400,
             unlocks: ['asgard-arrival']
         },
-        {
-            playerLevel: 5,
-            completedQuests: ['coastal-challenge'],
-            specialConditions: ['win_with_elemental_combo']
-        },
-        { same: true, plus: true, elements: true, ragnarok: true }
-    )
+        { playerLevel: 6, completedQuests: ['valkyrie-test'] },
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: true, same: true, plus: true, elements: true, ragnarok: true }
+    ),
 ];
 
 // Define quest chains for other realms
@@ -294,6 +293,7 @@ export const asgardQuests = [
         ),
         {
             cardIds: ['einherjar', 'valhalla'],
+            specialAbilities: ["Allfather's Wisdom"],
             experience: 350,
             unlocks: ['thor-challenge']
         },
@@ -301,7 +301,7 @@ export const asgardQuests = [
             playerLevel: 6,
             completedQuests: ['the-calling']
         },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: false, same: true, plus: true, elements: true, ragnarok: true }
     )
 ];
 
@@ -332,7 +332,7 @@ export const vanaheimQuests = [
             playerLevel: 7,
             completedQuests: ['asgard-arrival']
         },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: false, same: true, plus: true, elements: true, ragnarok: true }
     ),
     createQuest(
         'freyrs-blessing',
@@ -361,7 +361,7 @@ export const vanaheimQuests = [
             completedQuests: ['vanaheim-arrival'],
             specialConditions: ['win_without_fire']
         },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: false, same: true, plus: true, elements: true, ragnarok: true }
     ),
     createQuest(
         'freyjas-magic',
@@ -390,12 +390,12 @@ export const vanaheimQuests = [
             completedQuests: ['freyrs-blessing'],
             requiredCards: ['freyr']
         },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: false, same: true, plus: true, elements: true, ragnarok: true }
     ),
     createQuest(
         'njords-test',
         'Trial of the Sea',
-        'Face Njörðr's challenge to master the powers of wind and waves.',
+        "Face Njörðr's challenge to master the powers of wind and waves.",
         'vanaheim',
         createOpponent(
             'njord',
@@ -419,7 +419,7 @@ export const vanaheimQuests = [
             completedQuests: ['freyjas-magic'],
             specialConditions: ['survive_three_elements']
         },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: false, same: true, plus: true, elements: true, ragnarok: true }
     ),
     createQuest(
         'vanir-mastery',
@@ -440,6 +440,7 @@ export const vanaheimQuests = [
         ),
         {
             cardIds: ['folkvangr', 'odroerir'],
+            specialAbilities: ['Seidr Magic'],
             experience: 600,
             unlocks: ['alfheim-gate']
         },
@@ -449,800 +450,527 @@ export const vanaheimQuests = [
             requiredCards: ['freya', 'freyr', 'njord'],
             specialConditions: ['win_with_vanir_combo']
         },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: false, same: true, plus: true, elements: true, ragnarok: true }
     )
 ];
 
-// Add new cards for Vanaheim
-const newVanirCards = [
-    createCard('aegir', 'Ægir', [7, 7, 8, 6], 'ice', 'God of the Ocean', 'epic', [
-        {
-            id: 'ocean-mastery',
-            name: 'Ocean Mastery',
-            description: 'Adjacent ice element cards gain +1 to all stats',
-            triggerType: 'passive',
-            effect: {
-                type: 'statBoost',
-                value: 1,
-                target: 'adjacent',
-                condition: {
-                    type: 'elementMatch',
-                    value: 'ice'
-                }
-            }
-        }
-    ]),
-    createCard('ran', 'Rán', [6, 8, 7, 7], 'ice', 'Goddess of the Drowned', 'epic', [
-        {
-            id: 'drowning-pull',
-            name: 'Drowning Pull',
-            description: 'When capturing a card, has a chance to capture adjacent cards',
-            triggerType: 'onCapture',
-            effect: {
-                type: 'copy',
-                target: 'adjacent'
-            }
-        }
-    ])
-];
-
-// Update the cards array with new additions
-export const cards = [
-    ...majorGods,
-    ...lesserGods,
-    ...majorCreatures,
-    ...giants,
-    ...valkyries,
-    ...heroes,
-    ...artifacts,
-    ...locations,
-    ...basicUnits,
-    ...lightElves,
-    ...dwarves,
-    ...darkElves,
-    ...helheimCreatures,
-    ...additionalCreatures,
-    ...additionalArtifacts,
-    ...additionalLocations,
-    ...newVanirCards
-];
-
+// Add and export empty quest arrays for missing realms
 export const alfheimQuests = [
     createQuest(
-        'alfheim-arrival',
-        'Light of the Elves',
-        'Enter the ethereal realm of Alfheim and seek the wisdom of the Light Elves.',
+        'light-challenge',
+        "The Light's Challenge",
+        "Prove your worth to the Light Elves by mastering the art of illumination in battle.",
         'alfheim',
         createOpponent(
-            'light-elf-scout',
-            'Alviss the Scout',
-            'A graceful Light Elf archer',
+            'eirlys',
+            'Eirlys, Light Elf Duelist',
+            'A skilled duelist among the Light Elves',
             'medium',
-            ['light-elf-archer', 'alfheim-mystic', 'light-elf-archer', 'alfheim', 'yggdrasil'],
-            {
-                aggressiveness: 0.4,
-                preferredElements: ['lightning'],
-                ragnarokStrategy: 'defensive'
-            }
+            ['light-elf-archer', 'alfheim-mystic', 'yggdrasil', 'shield-maiden', 'viking-warrior'],
+            { aggressiveness: 0.5, preferredElements: ['lightning'], ragnarokStrategy: 'balanced' }
         ),
         {
-            cardIds: ['light-elf-archer', 'alfheim'],
-            experience: 650,
-            unlocks: ['elven-archery']
+            cardIds: ['alfheim-mystic'],
+            experience: 400,
+            unlocks: ['blessing-of-freyr']
         },
         {
             playerLevel: 12,
             completedQuests: ['vanir-mastery']
         },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: false, same: false, plus: false, elements: true, ragnarok: false }
     ),
     createQuest(
-        'elven-archery',
-        'The Art of the Bow',
-        'Learn the ancient elven art of archery and its application in card combat.',
+        'blessing-of-freyr',
+        'Blessing of Freyr',
+        'Earn the blessing of Freyr by defeating his chosen champion in Alfheim.',
         'alfheim',
         createOpponent(
-            'master-archer',
-            'Alruna the Bowmaster',
-            'An elite elven archer',
+            'freyr-chosen',
+            "Freyr's Chosen",
+            'A champion selected by Freyr himself',
             'hard',
-            ['light-elf-archer', 'light-elf-archer', 'alfheim-mystic', 'freya', 'brisingamen'],
-            {
-                aggressiveness: 0.6,
-                preferredElements: ['lightning'],
-                ragnarokStrategy: 'aggressive'
-            }
+            ['freyr', 'alfheim-mystic', 'light-elf-archer', 'yggdrasil', 'folkvangr'],
+            { aggressiveness: 0.6, preferredElements: ['fire', 'lightning'], ragnarokStrategy: 'aggressive' }
         ),
         {
-            cardIds: ['alfheim-mystic'],
-            experience: 700,
-            unlocks: ['mystic-training']
+            cardIds: ['freyr'],
+            experience: 500,
+            unlocks: ['radiant-convergence']
         },
         {
             playerLevel: 13,
-            completedQuests: ['alfheim-arrival'],
-            specialConditions: ['win_with_ranged_combo']
+            completedQuests: ['light-challenge']
         },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: false, same: false, plus: true, elements: true, ragnarok: false }
     ),
     createQuest(
-        'mystic-training',
-        'Secrets of Light Magic',
-        'Study the mystical arts of light with the elven sages.',
+        'radiant-convergence',
+        'Radiant Convergence',
+        'Face the council of Light Elves in a final test of wisdom and power.',
         'alfheim',
         createOpponent(
-            'elven-sage',
-            'Lysander the Sage',
-            'A wise elven mystic',
-            'hard',
-            ['alfheim-mystic', 'alfheim-mystic', 'light-elf-archer', 'freya', 'odroerir'],
-            {
-                aggressiveness: 0.5,
-                preferredElements: ['lightning', 'ice'],
-                ragnarokStrategy: 'balanced'
-            }
+            'council-of-light',
+            'Council of Light',
+            'The ruling council of Alfheim',
+            'boss',
+            ['alfheim-mystic', 'light-elf-archer', 'freyr', 'yggdrasil', 'odroerir'],
+            { aggressiveness: 0.7, preferredElements: ['lightning', 'ice'], ragnarokStrategy: 'balanced' }
         ),
         {
-            cardIds: ['elven-blessing', 'light-crystal'],
-            experience: 750,
-            unlocks: ['dark-warning']
+            cardIds: ['odroerir'],
+            specialAbilities: ["Light's Blessing"],
+            experience: 600
         },
         {
             playerLevel: 14,
-            completedQuests: ['elven-archery'],
-            specialConditions: ['cast_three_spells']
+            completedQuests: ['blessing-of-freyr']
         },
-        { same: true, plus: true, elements: true, ragnarok: true }
-    ),
-    createQuest(
-        'dark-warning',
-        'Shadows in the Light',
-        'Investigate disturbing reports of dark elf activity in Alfheim.',
-        'alfheim',
-        createOpponent(
-            'dark-scout',
-            'Svartulf the Infiltrator',
-            'A dark elf spy',
-            'hard',
-            ['dark-elf-assassin', 'dark-elf-warlock', 'svartalfheim', 'cursed-blade', 'shadow-magic'],
-            {
-                aggressiveness: 0.8,
-                preferredElements: ['fire'],
-                ragnarokStrategy: 'aggressive'
-            }
-        ),
-        {
-            cardIds: ['light-barrier', 'elven-scout'],
-            experience: 800,
-            unlocks: ['light-dark-balance']
-        },
-        {
-            playerLevel: 15,
-            completedQuests: ['mystic-training'],
-            specialConditions: ['survive_darkness']
-        },
-        { same: true, plus: true, elements: true, ragnarok: true }
-    ),
-    createQuest(
-        'light-dark-balance',
-        'Balance of Light and Shadow',
-        'Master both light and shadow to achieve true understanding.',
-        'alfheim',
-        createOpponent(
-            'elder-council',
-            'The Elven Council',
-            'The wisest of the Light Elves',
-            'boss',
-            ['alfheim-mystic', 'light-elf-archer', 'freya', 'elven-blessing', 'light-crystal'],
-            {
-                aggressiveness: 0.6,
-                preferredElements: ['lightning', 'ice'],
-                ragnarokStrategy: 'balanced'
-            }
-        ),
-        {
-            cardIds: ['elder-mystic', 'crown-of-light'],
-            experience: 850,
-            unlocks: ['nidavellir-entrance']
-        },
-        {
-            playerLevel: 16,
-            completedQuests: ['dark-warning'],
-            specialConditions: ['use_light_and_dark']
-        },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: false, same: true, plus: true, elements: true, ragnarok: false }
     )
 ];
 
 export const jotunheimQuests = [
     createQuest(
-        'giant-lands',
-        'Into the Land of Giants',
-        'Venture into the harsh realm of Jötunheim.',
+        'jotunheim-arrival',
+        'Land of the Frost Giants',
+        'You arrive in Jotunheim, home of the mighty Jotnar. The air is thick with challenge and ancient magic.',
         'jotunheim',
         createOpponent(
-            'frost-giant',
-            'Hrímgrimnir the Frost Giant',
-            'A towering frost giant',
-            'hard',
-            ['frost-giant', 'ice-wolf', 'niflheim', 'frozen-heart', 'winter-fury'],
-            {
-                aggressiveness: 0.7,
-                preferredElements: ['ice'],
-                ragnarokStrategy: 'aggressive'
-            }
+            'frost-giant-scout',
+            'Frost Giant Scout',
+            'A wary scout testing your right to enter Jotunheim',
+            'medium',
+            ['jotun-warrior', 'draugr', 'niflheim', 'berserker', 'shield-maiden'],
+            { aggressiveness: 0.5, preferredElements: ['ice'], ragnarokStrategy: 'defensive' }
         ),
         {
-            cardIds: ['frost-giant', 'ice-wolf'],
-            experience: 900,
-            unlocks: ['giant-strength']
+            cardIds: ['jotun-warrior'],
+            experience: 500,
+            unlocks: ['ice-bridge']
         },
-        {
-            playerLevel: 17,
-            completedQuests: ['thor-challenge']
-        },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { playerLevel: 15, completedQuests: ['radiant-convergence'] },
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: false, same: true, plus: true, elements: true, ragnarok: false }
     ),
     createQuest(
-        'giant-strength',
-        'Trial of Might',
-        'Prove your strength in contests against the giants.',
+        'ice-bridge',
+        'Crossing the Ice Bridge',
+        'To reach the heart of Jotunheim, you must cross a treacherous bridge guarded by a cunning giant.',
         'jotunheim',
         createOpponent(
-            'giant-champion',
-            'Thrymr the Strong',
-            'Champion of the frost giants',
+            'bridge-guardian',
+            'Hrímgrímnir',
+            'A giant who controls the icy bridge',
             'hard',
-            ['frost-giant', 'frost-giant', 'winter-fury', 'frozen-heart', 'ice-wolf'],
-            {
-                aggressiveness: 0.8,
-                preferredElements: ['ice'],
-                ragnarokStrategy: 'aggressive'
-            }
+            ['jotun-warrior', 'niflheim', 'draugr', 'muspelheim', 'shield-maiden'],
+            { aggressiveness: 0.6, preferredElements: ['ice'], ragnarokStrategy: 'balanced' }
         ),
         {
-            cardIds: ['winter-fury', 'frozen-heart'],
-            experience: 950,
-            unlocks: ['ancient-knowledge']
+            cardIds: ['ice-bridge'],
+            experience: 600,
+            unlocks: ['utgard-trial']
         },
-        {
-            playerLevel: 18,
-            completedQuests: ['giant-lands'],
-            specialConditions: ['win_by_strength']
-        },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { playerLevel: 16, completedQuests: ['jotunheim-arrival'] },
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: false, same: true, plus: true, elements: true, ragnarok: false }
     ),
     createQuest(
-        'ancient-knowledge',
-        'Wisdom of the Ancients',
-        'Learn the ancient lore of the giants and their connection to Yggdrasil',
+        'utgard-trial',
+        'Trial of Utgard',
+        'Face the challenges of Utgard, the stronghold of the giants. Outsiders rarely survive.',
         'jotunheim',
         createOpponent(
-            'giant-elder',
-            'Vafþrúðnir the Wise',
-            'An ancient giant sage',
+            'utgard-loki',
+            'Utgard-Loki',
+            'The trickster king of the giants',
             'hard',
-            ['frost-giant', 'winter-fury', 'yggdrasil', 'ancient-runes', 'ice-magic'],
-            {
-                aggressiveness: 0.5,
-                preferredElements: ['ice'],
-                ragnarokStrategy: 'balanced'
-            }
+            ['utgard-loki', 'jotun-warrior', 'draugr', 'niflheim', 'muspelheim'],
+            { aggressiveness: 0.7, preferredElements: ['ice', 'fire'], ragnarokStrategy: 'aggressive' }
         ),
         {
-            cardIds: ['ancient-runes', 'ice-magic'],
-            experience: 1000,
-            unlocks: ['frost-giant-pact']
+            cardIds: ['utgard-loki'],
+            experience: 700,
+            unlocks: ['jotunheim-boss']
         },
-        {
-            playerLevel: 19,
-            completedQuests: ['giant-strength'],
-            specialConditions: ['learn_three_secrets']
-        },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { playerLevel: 17, completedQuests: ['ice-bridge'] },
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: true, same: true, plus: true, elements: true, ragnarok: true }
     ),
     createQuest(
-        'frost-giant-pact',
-        'The Giant\'s Accord',
-        'Forge an alliance with the frost giants to gain their support.',
+        'jotunheim-boss',
+        'King of the Giants',
+        'Battle the mighty King Thrym in a legendary duel. Only victory will grant you passage onward.',
         'jotunheim',
         createOpponent(
-            'giant-king',
-            'Þrymr the Giant King',
-            'King of the Frost Giants',
+            'king-thrym',
+            'King Thrym',
+            'The colossal and cunning king of the frost giants',
             'boss',
-            ['frost-giant', 'frost-giant', 'winter-fury', 'ancient-runes', 'crown-of-frost'],
-            {
-                aggressiveness: 0.9,
-                preferredElements: ['ice'],
-                ragnarokStrategy: 'aggressive'
-            }
+            ['king-thrym', 'utgard-loki', 'jotun-warrior', 'niflheim', 'draugr'],
+            { aggressiveness: 0.9, preferredElements: ['ice'], ragnarokStrategy: 'aggressive' }
         ),
         {
-            cardIds: ['crown-of-frost', 'giant-pact'],
-            experience: 1100,
-            unlocks: ['niflheim-gate']
+            cardIds: ['thryms-hammer'],
+            specialAbilities: ["Giant's Strength"],
+            experience: 900,
+            unlocks: ['nidavellir-gate']
         },
-        {
-            playerLevel: 20,
-            completedQuests: ['ancient-knowledge'],
-            specialConditions: ['win_with_ice_mastery']
-        },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { playerLevel: 18, completedQuests: ['utgard-trial'], specialConditions: ['win_with_ice_combo'] },
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: true, same: true, plus: true, elements: true, ragnarok: true }
     )
 ];
 
 export const nidavellirQuests = [
     createQuest(
-        'nidavellir-entrance',
-        'The Dwarven Halls',
-        'Enter the underground realm of Nidavellir and seek the master craftsmen.',
+        'nidavellir-arrival',
+        'The Dwarven Forges',
+        'Enter Nidavellir and prove your worth to the master smiths.',
         'nidavellir',
         createOpponent(
-            'dwarf-guard',
-            'Mótsognir the Guard',
-            'A stalwart dwarven guardian',
+            'dvalin-apprentice',
+            'Dvalin the Apprentice',
+            'A young but skilled dwarven smith',
             'medium',
-            ['dwarf-warrior', 'dwarf-smith', 'forge-hammer', 'rune-axe', 'dwarven-shield'],
-            {
-                aggressiveness: 0.6,
-                preferredElements: ['fire'],
-                ragnarokStrategy: 'defensive'
-            }
+            ['dwarf-smith', 'shield-maiden', 'viking-warrior', 'yggdrasil', 'draugr'],
+            { aggressiveness: 0.4, preferredElements: ['none'], ragnarokStrategy: 'defensive' }
         ),
         {
-            cardIds: ['dwarf-warrior', 'dwarven-shield'],
-            experience: 950,
-            unlocks: ['master-smith']
+            cardIds: ['dwarf-smith'],
+            experience: 500,
+            unlocks: ['forge-trial']
         },
-        {
-            playerLevel: 18,
-            completedQuests: ['light-dark-balance']
-        },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { playerLevel: 19, completedQuests: ['jotunheim-boss'] },
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: false, same: true, plus: true, elements: false, ragnarok: false }
     ),
     createQuest(
-        'master-smith',
-        'The Art of the Forge',
-        'Learn the secrets of dwarven craftsmanship.',
+        'forge-trial',
+        'Trial by Fire',
+        'Survive the heat of the forges and impress the dwarven masters.',
         'nidavellir',
         createOpponent(
-            'master-craftsman',
-            'Sindri the Smith',
-            'A legendary dwarven craftsman',
+            'brokkr',
+            'Brokkr the Forge-Master',
+            'A master smith with a fiery temper',
             'hard',
-            ['dwarf-smith', 'dwarf-smith', 'forge-hammer', 'mythril-armor', 'enchanted-anvil'],
-            {
-                aggressiveness: 0.5,
-                preferredElements: ['fire'],
-                ragnarokStrategy: 'balanced'
-            }
+            ['brokkr', 'dwarf-smith', 'muspelheim', 'shield-maiden', 'draugr'],
+            { aggressiveness: 0.6, preferredElements: ['fire'], ragnarokStrategy: 'balanced' }
         ),
         {
-            cardIds: ['forge-hammer', 'mythril-armor'],
-            experience: 1000,
-            unlocks: ['enchanted-forge']
+            cardIds: ['brokkr'],
+            experience: 600,
+            unlocks: ['dark-elf-invasion']
         },
-        {
-            playerLevel: 19,
-            completedQuests: ['nidavellir-entrance'],
-            specialConditions: ['craft_artifact']
-        },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { playerLevel: 20, completedQuests: ['nidavellir-arrival'] },
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: false, same: true, plus: true, elements: true, ragnarok: false }
     ),
     createQuest(
-        'enchanted-forge',
-        'Secrets of Enchantment',
-        'Master the art of imbuing cards with magical properties.',
+        'dark-elf-invasion',
+        'The Dark Elf Invasion',
+        'Defend the forges from a sudden attack by the dark elves of Svartalfheim.',
         'nidavellir',
         createOpponent(
-            'rune-master',
-            'Dvalin the Enchanter',
-            'A master of runic magic',
+            'dark-elf-lord',
+            'Svartálfar Lord',
+            'A cunning leader of the dark elves',
             'hard',
-            ['dwarf-smith', 'rune-master', 'enchanted-anvil', 'mythril-armor', 'runic-hammer'],
-            {
-                aggressiveness: 0.7,
-                preferredElements: ['fire', 'lightning'],
-                ragnarokStrategy: 'balanced'
-            }
+            ['dark-elf', 'dwarf-smith', 'muspelheim', 'niflheim', 'draugr'],
+            { aggressiveness: 0.7, preferredElements: ['ice', 'fire'], ragnarokStrategy: 'aggressive' }
         ),
         {
-            cardIds: ['runic-hammer', 'enchanted-anvil'],
-            experience: 1050,
-            unlocks: ['dragon-forge']
+            cardIds: ['dark-elf'],
+            experience: 700,
+            unlocks: ['nidavellir-boss']
         },
-        {
-            playerLevel: 20,
-            completedQuests: ['master-smith'],
-            specialConditions: ['enchant_weapon']
-        },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { playerLevel: 21, completedQuests: ['forge-trial'] },
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: true, same: true, plus: true, elements: true, ragnarok: true }
     ),
     createQuest(
-        'dragon-forge',
-        'The Dragon\'s Fire',
-        'Harness the power of dragon fire in the legendary Dragon Forge.',
+        'nidavellir-boss',
+        'King of the Forge',
+        'Face Sindri, the legendary king of the dwarves, in a final test of skill and wit.',
         'nidavellir',
         createOpponent(
-            'forge-master',
-            'Eitri the Forge Master',
-            'The greatest of all dwarven smiths',
+            'sindri',
+            'Sindri the King',
+            'The legendary king of the dwarves',
             'boss',
-            ['dwarf-smith', 'rune-master', 'dragon-fire', 'mythril-armor', 'mjolnir'],
-            {
-                aggressiveness: 0.8,
-                preferredElements: ['fire'],
-                ragnarokStrategy: 'aggressive'
-            }
+            ['sindri', 'brokkr', 'dwarf-smith', 'dark-elf', 'yggdrasil'],
+            { aggressiveness: 0.9, preferredElements: ['none'], ragnarokStrategy: 'aggressive' }
         ),
         {
-            cardIds: ['dragon-fire', 'mjolnir-fragment'],
-            experience: 1100,
-            unlocks: ['dark-depths']
+            cardIds: ['sindri'],
+            specialAbilities: ["Forge Mastery"],
+            experience: 900,
+            unlocks: ['muspelheim-gate']
         },
-        {
-            playerLevel: 21,
-            completedQuests: ['enchanted-forge'],
-            specialConditions: ['forge_legendary']
-        },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { playerLevel: 22, completedQuests: ['dark-elf-invasion'], specialConditions: ['win_with_fire_combo'] },
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: true, same: true, plus: true, elements: true, ragnarok: true }
     )
 ];
 
 export const svartalfheimQuests = [
     createQuest(
-        'dark-depths',
-        'Into the Dark',
-        'Descend into the shadowy realm of Svartalfheim.',
+        'svartalfheim-arrival',
+        'Realm of Shadows',
+        'Enter Svartalfheim, the land of the dark elves.',
         'svartalfheim',
         createOpponent(
             'dark-elf-scout',
-            'Malekith the Shadow',
-            'A stealthy dark elf scout',
-            'hard',
-            ['dark-elf-assassin', 'shadow-magic', 'cursed-blade', 'poison-dagger', 'dark-crystal'],
-            {
-                aggressiveness: 0.7,
-                preferredElements: ['fire'],
-                ragnarokStrategy: 'aggressive'
-            }
+            'Dark Elf Scout',
+            'A scout of the shadowy Svartálfar',
+            'medium',
+            ['dark-elf', 'draugr', 'niflheim', 'muspelheim', 'shield-maiden'],
+            { aggressiveness: 0.5, preferredElements: ['none'], ragnarokStrategy: 'defensive' }
         ),
         {
-            cardIds: ['dark-elf-assassin', 'shadow-magic'],
-            experience: 1150,
-            unlocks: ['shadow-arts']
+            cardIds: ['dark-elf'],
+            experience: 900,
+            unlocks: ['shadow-ambush']
         },
-        {
-            playerLevel: 22,
-            completedQuests: ['dragon-forge']
-        },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { playerLevel: 32, completedQuests: ['helheim-boss'] },
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: false, same: true, plus: true, elements: true, ragnarok: false }
     ),
     createQuest(
-        'shadow-arts',
-        'Ways of Shadow',
-        'Learn the dark arts of stealth and deception.',
+        'shadow-ambush',
+        'Shadow Ambush',
+        'Survive an ambush by the dark elves in the twisting tunnels.',
         'svartalfheim',
         createOpponent(
-            'shadow-master',
-            'Algrim the Dark',
-            'Master of shadow magic',
+            'dark-elf-ambusher',
+            'Dark Elf Ambusher',
+            'A master of stealth and shadow',
             'hard',
-            ['dark-elf-assassin', 'shadow-magic', 'dark-crystal', 'void-portal', 'soul-drain'],
-            {
-                aggressiveness: 0.6,
-                preferredElements: ['fire'],
-                ragnarokStrategy: 'balanced'
-            }
+            ['dark-elf', 'dark-elf', 'draugr', 'niflheim', 'muspelheim'],
+            { aggressiveness: 0.7, preferredElements: ['none'], ragnarokStrategy: 'aggressive' }
         ),
         {
-            cardIds: ['void-portal', 'soul-drain'],
-            experience: 1200,
-            unlocks: ['dark-alliance']
+            cardIds: ['dark-elf'],
+            experience: 1000,
+            unlocks: ['svartalfheim-boss']
         },
-        {
-            playerLevel: 23,
-            completedQuests: ['dark-depths'],
-            specialConditions: ['master_shadows']
-        },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { playerLevel: 33, completedQuests: ['svartalfheim-arrival'] },
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: true, same: true, plus: true, elements: true, ragnarok: true }
     ),
     createQuest(
-        'dark-alliance',
-        'Alliance of Shadows',
-        'Forge an uneasy alliance with the dark elves.',
+        'svartalfheim-boss',
+        'Lord of Shadows',
+        'Face the Lord of the Dark Elves in a final battle for control of the realm.',
         'svartalfheim',
         createOpponent(
-            'dark-king',
-            'Dökkálfr the Dark King',
-            'King of the Dark Elves',
+            'dark-elf-lord',
+            'Lord of Shadows',
+            'The supreme ruler of the Svartálfar',
             'boss',
-            ['dark-elf-assassin', 'shadow-magic', 'void-portal', 'soul-drain', 'crown-of-shadows'],
-            {
-                aggressiveness: 0.9,
-                preferredElements: ['fire'],
-                ragnarokStrategy: 'aggressive'
-            }
+            ['dark-elf-lord', 'dark-elf', 'draugr', 'niflheim', 'muspelheim'],
+            { aggressiveness: 1.0, preferredElements: ['none'], ragnarokStrategy: 'aggressive' }
         ),
         {
-            cardIds: ['crown-of-shadows', 'dark-pact'],
-            experience: 1250,
-            unlocks: ['helheim-gate']
+            cardIds: ['dark-elf-lord'],
+            specialAbilities: ["Shadowmeld"],
+            experience: 1300,
+            unlocks: ['finale-gate']
         },
-        {
-            playerLevel: 24,
-            completedQuests: ['shadow-arts'],
-            specialConditions: ['unite_shadows']
-        },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { playerLevel: 34, completedQuests: ['shadow-ambush'], specialConditions: ['win_with_shadow_combo'] },
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: true, same: true, plus: true, elements: true, ragnarok: true }
     )
 ];
 
 export const muspelheimQuests = [
     createQuest(
-        'fire-realm',
-        'Realm of Eternal Fire',
-        'Enter Muspelheim, the realm of fire and home of the fire giants.',
+        'muspelheim-arrival',
+        'Land of Fire',
+        "Enter Muspelheim, realm of fire and chaos, and face Surtr's minions.",
         'muspelheim',
         createOpponent(
-            'fire-giant',
-            'Surtr\'s Champion',
-            'A mighty fire giant warrior',
-            'hard',
-            ['fire-giant', 'flame-sword', 'inferno', 'burning-rage', 'fire-giant'],
-            {
-                aggressiveness: 0.9,
-                preferredElements: ['fire'],
-                ragnarokStrategy: 'aggressive'
-            }
+            'fire-giant-scout',
+            'Fire Giant Scout',
+            "A scout of Surtr's fiery legions",
+            'medium',
+            ['fire-giant', 'muspelheim', 'draugr', 'berserker', 'shield-maiden'],
+            { aggressiveness: 0.5, preferredElements: ['fire'], ragnarokStrategy: 'aggressive' }
         ),
         {
-            cardIds: ['fire-giant', 'flame-sword'],
-            experience: 1300,
-            unlocks: ['eternal-flame']
-        },
-        {
-            playerLevel: 25,
-            completedQuests: ['niflheim-mastery']
-        },
-        { same: true, plus: true, elements: true, ragnarok: true }
-    ),
-    createQuest(
-        'eternal-flame',
-        'The Eternal Flame',
-        'Master the power of Muspelheim\'s eternal fire.',
-        'muspelheim',
-        createOpponent(
-            'flame-lord',
-            'Eldur the Flame Lord',
-            'Master of the eternal flames',
-            'hard',
-            ['fire-giant', 'inferno', 'eternal-flame', 'burning-rage', 'phoenix-fire'],
-            {
-                aggressiveness: 0.8,
-                preferredElements: ['fire'],
-                ragnarokStrategy: 'aggressive'
-            }
-        ),
-        {
-            cardIds: ['eternal-flame', 'phoenix-fire'],
-            experience: 1350,
+            cardIds: ['fire-giant'],
+            experience: 600,
             unlocks: ['surtrs-challenge']
         },
-        {
-            playerLevel: 26,
-            completedQuests: ['fire-realm'],
-            specialConditions: ['master_fire']
-        },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { playerLevel: 23, completedQuests: ['nidavellir-boss'] },
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: false, same: true, plus: true, elements: true, ragnarok: false }
     ),
     createQuest(
         'surtrs-challenge',
-        'Surtr\'s Challenge',
-        'Face Surtr, the lord of Muspelheim, in a final test of fire.',
+        "Surtr's Challenge",
+        "Face Surtr's champion in a battle of fire and fury.",
+        'muspelheim',
+        createOpponent(
+            'surtr-champion',
+            "Surtr's Champion",
+            'A mighty warrior wielding the power of Muspelheim',
+            'hard',
+            ['surtr', 'fire-giant', 'muspelheim', 'draugr', 'berserker'],
+            { aggressiveness: 0.7, preferredElements: ['fire'], ragnarokStrategy: 'aggressive' }
+        ),
+        {
+            cardIds: ['surtr'],
+            experience: 700,
+            unlocks: ['muspelheim-boss']
+        },
+        { playerLevel: 24, completedQuests: ['muspelheim-arrival'] },
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: true, same: true, plus: true, elements: true, ragnarok: true }
+    ),
+    createQuest(
+        'muspelheim-boss',
+        'Surtr, Lord of Fire',
+        'Face Surtr himself in a battle that will decide the fate of the realms.',
         'muspelheim',
         createOpponent(
             'surtr',
-            'Surtr the Fire Lord',
-            'Lord of Muspelheim',
+            'Surtr',
+            'The lord of Muspelheim, bringer of Ragnarök',
             'boss',
-            ['surtr', 'eternal-flame', 'inferno', 'burning-rage', 'sword-of-doom'],
-            {
-                aggressiveness: 1.0,
-                preferredElements: ['fire'],
-                ragnarokStrategy: 'aggressive'
-            }
+            ['surtr', 'fire-giant', 'muspelheim', 'draugr', 'berserker'],
+            { aggressiveness: 1.0, preferredElements: ['fire'], ragnarokStrategy: 'aggressive' }
         ),
         {
-            cardIds: ['sword-of-doom', 'crown-of-flame'],
-            experience: 1400,
-            unlocks: ['ragnarok-prophecy']
+            cardIds: ['surtr'],
+            specialAbilities: ["Inferno"],
+            experience: 1000,
+            unlocks: ['niflheim-gate']
         },
-        {
-            playerLevel: 27,
-            completedQuests: ['eternal-flame'],
-            specialConditions: ['survive_inferno']
-        },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { playerLevel: 25, completedQuests: ['surtrs-challenge'], specialConditions: ['win_with_fire_combo'] },
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: true, same: true, plus: true, elements: true, ragnarok: true }
     )
 ];
 
 export const niflheimQuests = [
     createQuest(
-        'niflheim-gate',
-        'Gates of Mist',
-        'Enter Niflheim, the primordial realm of ice and mist.',
+        'niflheim-arrival',
+        'Realm of Ice',
+        'Enter Niflheim, the land of primordial ice and mist.',
         'niflheim',
         createOpponent(
-            'frost-guardian',
-            'Hrímthurs the Frost Guardian',
-            'Ancient guardian of Niflheim',
-            'hard',
-            ['frost-giant', 'ice-magic', 'frozen-heart', 'winter-fury', 'mist-walker'],
-            {
-                aggressiveness: 0.6,
-                preferredElements: ['ice'],
-                ragnarokStrategy: 'defensive'
-            }
+            'ice-wraith',
+            'Ice Wraith',
+            'A spirit of the frozen wastes',
+            'medium',
+            ['ice-wraith', 'niflheim', 'draugr', 'shield-maiden', 'viking-warrior'],
+            { aggressiveness: 0.5, preferredElements: ['ice'], ragnarokStrategy: 'defensive' }
         ),
         {
-            cardIds: ['mist-walker', 'ice-magic'],
-            experience: 1250,
-            unlocks: ['primordial-ice']
+            cardIds: ['ice-wraith'],
+            experience: 700,
+            unlocks: ['frost-giant-challenge']
         },
-        {
-            playerLevel: 23,
-            completedQuests: ['frost-giant-pact']
-        },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { playerLevel: 26, completedQuests: ['muspelheim-boss'] },
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: false, same: true, plus: true, elements: true, ragnarok: false }
     ),
     createQuest(
-        'primordial-ice',
-        'Heart of Winter',
-        'Discover the secrets of primordial ice magic.',
+        'frost-giant-challenge',
+        "Frost Giant's Challenge",
+        'Face a mighty frost giant in the heart of Niflheim.',
         'niflheim',
         createOpponent(
-            'ice-sage',
-            'Ymir\'s Wisdom',
-            'Ancient keeper of ice magic',
+            'frost-giant',
+            'Frost Giant',
+            'A giant born of ice and ancient magic',
             'hard',
-            ['frost-giant', 'ice-magic', 'primordial-ice', 'frozen-heart', 'winter-crown'],
-            {
-                aggressiveness: 0.5,
-                preferredElements: ['ice'],
-                ragnarokStrategy: 'balanced'
-            }
+            ['frost-giant', 'niflheim', 'draugr', 'ice-wraith', 'berserker'],
+            { aggressiveness: 0.7, preferredElements: ['ice'], ragnarokStrategy: 'aggressive' }
         ),
         {
-            cardIds: ['primordial-ice', 'winter-crown'],
-            experience: 1300,
-            unlocks: ['niflheim-mastery']
+            cardIds: ['frost-giant'],
+            experience: 800,
+            unlocks: ['niflheim-boss']
         },
-        {
-            playerLevel: 24,
-            completedQuests: ['niflheim-gate'],
-            specialConditions: ['master_ice']
-        },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { playerLevel: 27, completedQuests: ['niflheim-arrival'] },
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: true, same: true, plus: true, elements: true, ragnarok: true }
     ),
     createQuest(
-        'niflheim-mastery',
-        'Mastery of Frost',
-        'Prove your mastery over the powers of ice and winter.',
+        'niflheim-boss',
+        'Mistress of the Mists',
+        'Face the ancient goddess Hel in her icy domain.',
         'niflheim',
         createOpponent(
-            'winter-lord',
-            'Ymir\'s Echo',
-            'Embodiment of winter\'s might',
+            'hel',
+            'Hel',
+            'Goddess of the dead and ruler of Niflheim',
             'boss',
-            ['frost-giant', 'primordial-ice', 'winter-crown', 'frozen-heart', 'ice-throne'],
-            {
-                aggressiveness: 0.7,
-                preferredElements: ['ice'],
-                ragnarokStrategy: 'balanced'
-            }
+            ['hel', 'frost-giant', 'ice-wraith', 'niflheim', 'draugr'],
+            { aggressiveness: 1.0, preferredElements: ['ice'], ragnarokStrategy: 'aggressive' }
         ),
         {
-            cardIds: ['ice-throne', 'winter-mastery'],
-            experience: 1350,
-            unlocks: ['fire-realm']
+            cardIds: ['hel'],
+            specialAbilities: ["Mist Veil"],
+            experience: 1100,
+            unlocks: ['helheim-gate']
         },
-        {
-            playerLevel: 25,
-            completedQuests: ['primordial-ice'],
-            specialConditions: ['perfect_winter']
-        },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { playerLevel: 28, completedQuests: ['frost-giant-challenge'], specialConditions: ['win_with_ice_combo'] },
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: true, same: true, plus: true, elements: true, ragnarok: true }
     )
 ];
 
 export const helheimQuests = [
     createQuest(
-        'helheim-gate',
-        'Gates of the Dead',
-        'Enter Helheim, the realm of the dishonored dead.',
+        'helheim-arrival',
+        'Land of the Dead',
+        'Descend into Helheim and face the spirits of the dead.',
         'helheim',
         createOpponent(
-            'hel-guardian',
-            'Modgud the Gatekeeper',
-            'Guardian of Helheim\'s gates',
-            'hard',
-            ['draugr', 'hel-hound', 'soul-reaper', 'death-touch', 'gates-of-hel'],
-            {
-                aggressiveness: 0.7,
-                preferredElements: ['ice', 'fire'],
-                ragnarokStrategy: 'defensive'
-            }
+            'restless-spirit',
+            'Restless Spirit',
+            'A tormented soul seeking release',
+            'medium',
+            ['restless-spirit', 'draugr', 'hel', 'niflheim', 'shield-maiden'],
+            { aggressiveness: 0.5, preferredElements: ['none'], ragnarokStrategy: 'defensive' }
         ),
         {
-            cardIds: ['draugr', 'hel-hound'],
-            experience: 1400,
-            unlocks: ['souls-path']
+            cardIds: ['restless-spirit'],
+            experience: 800,
+            unlocks: ['helheim-challenge']
         },
-        {
-            playerLevel: 28,
-            completedQuests: ['dark-alliance']
-        },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { playerLevel: 29, completedQuests: ['niflheim-boss'] },
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: false, same: true, plus: true, elements: true, ragnarok: false }
     ),
     createQuest(
-        'souls-path',
-        'Path of Lost Souls',
-        'Navigate the treacherous paths of the dishonored dead.',
+        'helheim-challenge',
+        "Hel's Judgment",
+        "Face Hel's chosen champion in a battle for your soul.",
         'helheim',
         createOpponent(
-            'soul-collector',
-            'Nár the Soul Collector',
-            'Keeper of lost souls',
+            'hel-champion',
+            "Hel's Champion",
+            'A mighty spirit loyal to Hel',
             'hard',
-            ['draugr', 'soul-reaper', 'death-touch', 'soul-cage', 'spirit-bind'],
-            {
-                aggressiveness: 0.6,
-                preferredElements: ['ice'],
-                ragnarokStrategy: 'balanced'
-            }
+            ['hel-champion', 'hel', 'draugr', 'niflheim', 'restless-spirit'],
+            { aggressiveness: 0.7, preferredElements: ['none'], ragnarokStrategy: 'aggressive' }
         ),
         {
-            cardIds: ['soul-reaper', 'spirit-bind'],
-            experience: 1450,
-            unlocks: ['hels-throne']
+            cardIds: ['hel-champion'],
+            experience: 900,
+            unlocks: ['helheim-boss']
         },
-        {
-            playerLevel: 29,
-            completedQuests: ['helheim-gate'],
-            specialConditions: ['bind_souls']
-        },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { playerLevel: 30, completedQuests: ['helheim-arrival'] },
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: true, same: true, plus: true, elements: true, ragnarok: true }
     ),
     createQuest(
-        'hels-throne',
-        'The Queen of Death',
-        'Face Hel herself in her dark domain.',
+        'helheim-boss',
+        'Hel, Queen of the Dead',
+        'Face Hel herself in a final battle for your fate.',
         'helheim',
         createOpponent(
             'hel',
-            'Hel, Queen of the Dead',
-            'Ruler of Helheim',
+            'Hel',
+            'Queen of the Dead',
             'boss',
-            ['hel', 'soul-reaper', 'death-touch', 'crown-of-death', 'helheim-gate'],
-            {
-                aggressiveness: 0.9,
-                preferredElements: ['ice', 'fire'],
-                ragnarokStrategy: 'aggressive'
-            }
+            ['hel', 'hel-champion', 'restless-spirit', 'draugr', 'niflheim'],
+            { aggressiveness: 1.0, preferredElements: ['none'], ragnarokStrategy: 'aggressive' }
         ),
         {
-            cardIds: ['crown-of-death', 'death-pact'],
-            experience: 1500,
-            unlocks: ['ragnarok-final']
+            cardIds: ['hel'],
+            specialAbilities: ["Soul Harvest"],
+            experience: 1200,
+            unlocks: ['svartalfheim-gate']
         },
-        {
-            playerLevel: 30,
-            completedQuests: ['souls-path', 'surtrs-challenge'],
-            specialConditions: ['survive_death']
-        },
-        { same: true, plus: true, elements: true, ragnarok: true }
+        { playerLevel: 31, completedQuests: ['helheim-challenge'], specialConditions: ['win_with_no_deaths'] },
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: true, same: true, plus: true, elements: true, ragnarok: true }
     )
 ];
 
@@ -1258,51 +986,4 @@ export const allQuests = [
     ...muspelheimQuests,
     ...niflheimQuests,
     ...helheimQuests
-];
-
-// Add quest condition checks to QuestService
-export const questConditions = {
-    win_without_fire: (gameState) => !gameState.playerHand.some(card => card.element === 'fire'),
-    win_with_elemental_combo: (gameState) => {
-        const elements = new Set(gameState.board.flat()
-            .filter(card => card !== null)
-            .map(card => card.element));
-        return elements.size >= 3;
-    },
-    survive_three_elements: (gameState) => {
-        const opponentElements = new Set(gameState.opponentHand.map(card => card.element));
-        return opponentElements.size >= 3 && gameState.score.player > 0;
-    },
-    master_shadows: (gameState) => {
-        const shadowCards = gameState.playerHand.filter(card => 
-            card.id.includes('shadow') || card.id.includes('dark'));
-        return shadowCards.length >= 3;
-    },
-    perfect_winter: (gameState) => {
-        const iceCards = gameState.playerHand.filter(card => card.element === 'ice');
-        return iceCards.length >= 4 && gameState.score.player > gameState.score.opponent;
-    },
-    survive_inferno: (gameState) => {
-        const fireCards = gameState.opponentHand.filter(card => card.element === 'fire');
-        return fireCards.length >= 4 && gameState.score.player > 0;
-    },
-    survive_death: (gameState) => {
-        return gameState.turnCount >= 10 && gameState.score.player > 0;
-    }
-};
-
-// Export quest-related types and interfaces
-export type QuestId = string;
-export type QuestCondition = (gameState: GameState) => boolean;
-
-export interface QuestRequirements {
-    playerLevel?: number;
-    completedQuests?: QuestId[];
-    specialConditions?: string[];
-}
-
-export interface QuestRewards {
-    cardIds: string[];
-    experience: number;
-    unlocks?: QuestId[];
-} 
+]; 

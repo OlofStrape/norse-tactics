@@ -12,6 +12,7 @@ interface QuestCardProps {
         cardIds?: string[];
         experience: number;
         unlocks?: string[];
+        specialAbilities?: string[];
     };
     requirements: {
         playerLevel?: number;
@@ -23,10 +24,11 @@ interface QuestCardProps {
         completed: boolean;
         conditions: { [key: string]: boolean };
     };
+    state: 'locked' | 'unlocked' | 'completed';
     onSelect: () => void;
 }
 
-const Card = styled(motion.div)<{ difficulty: QuestCardProps['difficulty'] }>`
+const Card = styled(motion.div)<{ difficulty: QuestCardProps['difficulty']; state: QuestCardProps['state'] }>`
     background: ${props => {
         switch (props.difficulty) {
             case 'easy':
@@ -44,13 +46,17 @@ const Card = styled(motion.div)<{ difficulty: QuestCardProps['difficulty'] }>`
     border-radius: 12px;
     padding: 20px;
     color: white;
-    cursor: pointer;
+    cursor: ${props => props.state === 'locked' ? 'not-allowed' : 'pointer'};
     width: 300px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease;
+    transition: transform 0.2s ease, filter 0.2s, box-shadow 0.2s;
+    opacity: ${props => props.state === 'locked' ? 0.5 : 1};
+    filter: ${props => props.state === 'locked' ? 'grayscale(0.7)' : 'none'};
+    border: ${props => props.state === 'completed' ? '3px solid #FFD700' : 'none'};
+    box-shadow: ${props => props.state === 'completed' ? '0 0 18px 4px #ffd70066, 0 4px 16px rgba(0,0,0,0.18)' : '0 4px 6px rgba(0, 0, 0, 0.1)'};
 
     &:hover {
-        transform: translateY(-4px);
+        transform: ${props => props.state === 'locked' ? 'none' : 'translateY(-4px)'};
     }
 `;
 
@@ -128,6 +134,7 @@ const QuestCard: React.FC<QuestCardProps> = ({
     rewards,
     requirements,
     progress,
+    state,
     onSelect
 }) => {
     const calculateProgress = () => {
@@ -140,10 +147,65 @@ const QuestCard: React.FC<QuestCardProps> = ({
     return (
         <Card
             difficulty={difficulty}
-            onClick={onSelect}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            state={state}
+            onClick={state === 'locked' ? undefined : onSelect}
+            whileHover={state === 'locked' ? undefined : { scale: 1.02 }}
+            whileTap={state === 'locked' ? undefined : { scale: 0.98 }}
         >
+            {state === 'locked' && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 16,
+                    right: 16,
+                    fontSize: 28,
+                    color: '#FFD700',
+                    opacity: 0.7,
+                    zIndex: 2,
+                    background: 'rgba(24,18,8,0.96)',
+                    borderRadius: '50%',
+                    width: 36,
+                    height: 36,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 0 8px #000a',
+                    userSelect: 'none',
+                    pointerEvents: 'none',
+                  }}
+                  tabIndex={-1}
+                  title="Locked"
+                >
+                  <span role="img" aria-label="locked">🔒</span>
+                </div>
+            )}
+            {state === 'completed' && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 16,
+                    right: 16,
+                    fontSize: 28,
+                    color: '#FFD700',
+                    opacity: 0.9,
+                    zIndex: 2,
+                    background: 'rgba(24,18,8,0.96)',
+                    borderRadius: '50%',
+                    width: 36,
+                    height: 36,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 0 8px #000a',
+                    userSelect: 'none',
+                    pointerEvents: 'none',
+                  }}
+                  tabIndex={-1}
+                  title="Completed"
+                >
+                  <span role="img" aria-label="completed">✔️</span>
+                </div>
+            )}
             <Title>{title}</Title>
             <Location>{location}</Location>
             <Description>{description}</Description>
@@ -178,6 +240,16 @@ const QuestCard: React.FC<QuestCardProps> = ({
                     {rewards.unlocks?.map(quest => (
                         <ListItem key={quest}>Unlocks: {quest}</ListItem>
                     ))}
+                    {rewards.specialAbilities && rewards.specialAbilities.length > 0 && (
+                        <div style={{ marginTop: 8 }}>
+                            <strong>Special Ability Unlocked:</strong>
+                            <ul style={{ margin: 0, paddingLeft: 18 }}>
+                                {rewards.specialAbilities.map((ability: string, i: number) => (
+                                    <li key={i}>{ability}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
                 </List>
             </Section>
 

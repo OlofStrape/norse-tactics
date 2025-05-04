@@ -1,0 +1,252 @@
+import React from 'react';
+import styled from '@emotion/styled';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+
+const Overlay = styled(motion.div)`
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(24, 18, 8, 1);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const Modal = styled(motion.div)`
+  background: linear-gradient(135deg, #2a1a0a 0%, #181818 100%);
+  border-radius: 20px;
+  box-shadow: 0 0 48px 8px #000a, 0 0 0 4px #ffd70044;
+  padding: 2.5rem 2.5rem 2rem 2.5rem;
+  min-width: 400px;
+  max-width: 600px;
+  width: 90vw;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  font-family: 'Norse', serif;
+  z-index: 3100;
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 1.2rem;
+  right: 1.2rem;
+  background: none;
+  border: none;
+  font-size: 2.2rem;
+  color: #ffd700;
+  cursor: pointer;
+  font-family: 'Norse', serif;
+  text-shadow: 0 0 8px #ffd70088;
+  transition: color 0.2s;
+  &:hover {
+    color: #fffbe6;
+  }
+`;
+
+const QuestName = styled.h2`
+  font-family: 'NorseBold', 'Norse', serif;
+  font-size: 2.2rem;
+  color: #ffd700;
+  text-shadow: 0 0 18px #ffd700, 0 2px 2px #000, 0 0 2px #ffd700;
+  margin-bottom: 0.5rem;
+  text-align: center;
+`;
+
+const Description = styled.p`
+  color: #ffe066;
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-family: 'Norse', serif;
+`;
+
+const Section = styled.div`
+  margin-bottom: 1.2rem;
+  width: 100%;
+  
+  /* Make the first section more compact and move it up */
+  &:first-of-type {
+    margin-top: 0.7rem; /* was 1.5rem */
+    background: rgba(24, 18, 8, 0.96);
+    padding: 0.5rem 0.8rem 0.7rem 0.8rem; /* was 1rem 1.2rem 1.2rem 1.2rem */
+    border-radius: 12px;
+  }
+`;
+
+const SectionTitle = styled.h3`
+  font-size: 1.1rem;
+  color: #ffd700;
+  margin-bottom: 0.3rem;
+  font-family: 'Norse', serif;
+`;
+
+const ReqList = styled.div`
+  margin: 0;
+  padding-left: 16px; /* was 20px */
+  display: flex;
+  flex-direction: column;
+  gap: 2px; /* was 4px */
+`;
+
+const ReqItem = styled.span<{ met?: boolean }>`
+  color: ${props => props.met ? '#81C784' : '#E0E0E0'};
+  font-size: 0.95rem; /* was 1rem */
+  line-height: 1.2; /* compress vertical spacing */
+  user-select: none;
+  pointer-events: none;
+  outline: none;
+`;
+
+const Rewards = styled.div`
+  display: flex;
+  gap: 1.2rem;
+  align-items: center;
+  margin-top: 0.5rem;
+`;
+
+const RewardIcon = styled.span`
+  font-size: 1.5rem;
+  color: #ffd700;
+`;
+
+const ProgressBar = styled.div<{ progress: number }>`
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  margin: 1.2rem 0 1.5rem 0;
+  position: relative;
+  overflow: hidden;
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    height: 100%;
+    width: ${props => props.progress}%;
+    background: #FFD700;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+`;
+
+const StartButton = styled.button<{ unlocked: boolean }>`
+  padding: 0.8rem 2.2rem;
+  font-size: 1.2rem;
+  border-radius: 8px;
+  border: 2px solid #ffd700;
+  background: ${props => props.unlocked ? '#ffd700' : '#444'};
+  color: ${props => props.unlocked ? '#1a1a1a' : '#aaa'};
+  font-family: 'Norse', serif;
+  font-weight: bold;
+  letter-spacing: 1px;
+  cursor: ${props => props.unlocked ? 'pointer' : 'not-allowed'};
+  box-shadow: 0 0 12px 2px #ffd70033, 0 4px 16px rgba(0,0,0,0.18);
+  text-shadow: 0 1px 6px #fff8, 0 0 2px #ffd70044;
+  margin-top: 1.2rem;
+  transition: background 0.2s, box-shadow 0.2s;
+  &:hover {
+    background: ${props => props.unlocked ? '#ffe066' : '#444'};
+    box-shadow: 0 0 18px 4px #ffd70066, 0 4px 16px rgba(0,0,0,0.18);
+  }
+`;
+
+interface QuestDetailsModalProps {
+  open: boolean;
+  onClose: () => void;
+  quest: any | null;
+  unlocked: boolean;
+  completed: boolean;
+}
+
+const QuestDetailsModal: React.FC<QuestDetailsModalProps> = ({ open, onClose, quest, unlocked, completed }) => {
+  const navigate = useNavigate();
+  React.useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [open]);
+
+  if (!open || !quest) return null;
+
+  // Example progress calculation (replace with real logic)
+  const progress = completed ? 100 : unlocked ? 80 : 0;
+
+  return (
+    <AnimatePresence>
+      <Overlay
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+      >
+        <Modal
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.95, opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          onClick={e => e.stopPropagation()}
+        >
+          <CloseButton onClick={onClose} title="Close">×</CloseButton>
+          <QuestName>{quest.name}</QuestName>
+          <Description>{quest.description}</Description>
+          <Section>
+            <SectionTitle>Requirements</SectionTitle>
+            <ReqList>
+              {quest.requirements.playerLevel && (
+                <ReqItem met={unlocked}>
+                  Level {quest.requirements.playerLevel} required
+                </ReqItem>
+              )}
+              {quest.requirements.requiredCards?.map((card: string) => (
+                <ReqItem key={card} met={unlocked}>
+                  Card required: {card}
+                </ReqItem>
+              ))}
+              {quest.requirements.completedQuests?.map((q: string) => (
+                <ReqItem key={q} met={unlocked}>
+                  Complete: {q}
+                </ReqItem>
+              ))}
+              {quest.requirements.specialConditions?.map((cond: string) => (
+                <ReqItem key={cond} met={unlocked}>
+                  {cond}
+                </ReqItem>
+              ))}
+            </ReqList>
+          </Section>
+          <Section>
+            <SectionTitle>Rewards</SectionTitle>
+            <Rewards>
+              <RewardIcon title="XP">⭐</RewardIcon>
+              <span>{quest.rewards.experience} XP</span>
+              {quest.rewards.cardIds?.map((card: string) => (
+                <span key={card}><RewardIcon title="Card">🃏</RewardIcon> {card}</span>
+              ))}
+              {quest.rewards.unlocks?.map((q: string) => (
+                <span key={q}><RewardIcon title="Unlocks">🔓</RewardIcon> {q}</span>
+              ))}
+            </Rewards>
+          </Section>
+          <ProgressBar progress={progress} />
+          <StartButton
+            unlocked={unlocked}
+            disabled={!unlocked}
+            title={unlocked ? 'Start this quest' : 'You must meet all requirements to start'}
+            onClick={unlocked ? () => { onClose(); navigate(`/game/${quest.id}`); } : undefined}
+          >
+            {completed ? 'Completed' : unlocked ? 'Start Quest' : 'Locked'}
+          </StartButton>
+        </Modal>
+      </Overlay>
+    </AnimatePresence>
+  );
+};
+
+export default QuestDetailsModal; 

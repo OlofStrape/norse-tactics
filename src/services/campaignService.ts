@@ -1,5 +1,6 @@
 import { Card, GameState, GameRules } from '../types/game';
 import { cards } from '../data/cards';
+import { midgardQuests, asgardQuests, vanaheimQuests, alfheimQuests, jotunheimQuests, nidavellirQuests, svartalfheimQuests, muspelheimQuests, niflheimQuests, helheimQuests } from '../data/campaign';
 
 export interface Quest {
     id: string;
@@ -125,8 +126,21 @@ export class CampaignService {
     }
 
     public getAvailableQuests(): Quest[] {
-        const location = campaignLocations[this.state.currentLocation as keyof typeof campaignLocations];
-        return location.quests.filter(quest => this.isQuestAvailable(quest));
+        let quests: Quest[] = [];
+        switch (this.state.currentLocation) {
+            case 'midgard': quests = midgardQuests; break;
+            case 'asgard': quests = asgardQuests; break;
+            case 'vanaheim': quests = vanaheimQuests; break;
+            case 'alfheim': quests = alfheimQuests; break;
+            case 'jotunheim': quests = jotunheimQuests; break;
+            case 'nidavellir': quests = nidavellirQuests; break;
+            case 'svartalfheim': quests = svartalfheimQuests; break;
+            case 'muspelheim': quests = muspelheimQuests; break;
+            case 'niflheim': quests = niflheimQuests; break;
+            case 'helheim': quests = helheimQuests; break;
+            default: quests = []; break;
+        }
+        return quests.filter(quest => this.isQuestAvailable(quest));
     }
 
     private isQuestAvailable(quest: Quest): boolean {
@@ -158,11 +172,19 @@ export class CampaignService {
             board: Array(3).fill(null).map(() => Array(3).fill(null)),
             player1Hand: this.state.playerDeck.slice(0, 5),
             player2Hand: quest.opponent.deck,
-            currentPlayer: 'player1',
-            score: { player1: 0, player2: 0 },
-            ragnarokActive: false,
-            ragnarokTurnsLeft: 0,
-            ragnarokEffects: []
+            currentTurn: 'player',
+            score: { player: 0, opponent: 0 },
+            rules: quest.specialRules,
+            ragnarokCounter: 0,
+            activeEffects: [],
+            isMultiplayer: false,
+            isVsAI: true,
+            aiDifficulty: 'medium',
+            player1Stats: { id: 'player', name: 'Player 1', rank: 1 },
+            player2Stats: { id: quest.opponent.id, name: quest.opponent.name, rank: 1 },
+            turnCount: 0,
+            matchStartTime: new Date(),
+            gameStatus: 'active',
         };
 
         return { gameState, opponent: quest.opponent };
@@ -223,5 +245,9 @@ export class CampaignService {
             card: availableCards[0],
             position: availablePositions[0]
         };
+    }
+
+    public getState(): CampaignState {
+        return this.state;
     }
 } 

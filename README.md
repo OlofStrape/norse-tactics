@@ -1,5 +1,13 @@
 # Norse Tactics
 
+## Major Campaign & UI Progress (2024)
+- **Campaign Mode:** Play through a multi-realm campaign with unlockable quests, XP, and rewards.
+- **Quest Map:** Interactive Norse realms map with clickable realms and quest selection.
+- **Player Progression:** Earn XP, level up, and unlock new cards and abilities. Player info panel shows avatar, name, level, and XP progress.
+- **Contextual Tutorials:** In-game tutorials appear contextually to teach new rules and abilities as you unlock them.
+- **Deck Builder & Card Collection:** Build your deck from unlocked cards and view your collection.
+- **Bug Fixes & UI Polish:** Improved quest modal layout, fixed checkmark/close button overlap, and made campaign UI more consistent and visually appealing.
+
 ## Recent Updates
 - **Norse-Themed UI:** All text now uses the Norse font, and the background features a Norse-inspired image for all game modes.
 - **Modern Transparent Look:** Game board, cells, buttons, and player/score boxes are now transparent with subtle gold and dark brown borders, and soft glowing effects for a modern, immersive feel.

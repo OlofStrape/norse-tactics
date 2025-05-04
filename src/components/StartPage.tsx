@@ -69,10 +69,12 @@ const ModeButton = styled.button<{ disabled?: boolean }>`
   font-family: 'Cinzel Decorative', serif;
   font-weight: bold;
   letter-spacing: 1px;
-  transition: background 0.2s, box-shadow 0.2s;
+  transition: box-shadow 0.2s, text-shadow 0.2s, color 0.2s;
   text-shadow: 0 1px 6px #fff8, 0 0 2px #ffd70044;
   &:hover {
-    background: ${({ disabled }) => disabled ? '#444' : '#ffe066'};
+    background: ${({ disabled }) => disabled ? '#444' : 'rgba(255,215,0,0.12)'};
+    color: ${({ disabled }) => disabled ? '#aaa' : '#ffd700'};
+    text-shadow: 0 0 18px #ffd700, 0 0 36px #ffd700, 0 2px 2px #000, 0 0 2px #ffd700;
     box-shadow: 0 0 18px 4px #ffd70066, 0 4px 16px rgba(0,0,0,0.18);
   }
 `;

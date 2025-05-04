@@ -12,9 +12,16 @@ import { motion } from 'framer-motion';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { AIDifficultySelector } from './components/AIDifficultySelector';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useParams } from 'react-router-dom';
 import StartPage from './components/StartPage';
 import { Global, css } from '@emotion/react';
+import CampaignPage from './components/CampaignPage';
+import { allQuests } from './data/campaign';
+import { GameSession } from './components/GameSession';
+import { Tutorial } from './components/Tutorial';
+import { tutorialSteps } from './data/tutorials';
+import CardCollection from './components/CardCollection';
+import DeckBuilder from './components/DeckBuilder';
 
 // Add window handler type
 declare global {
@@ -267,28 +274,22 @@ const AppRoutes: React.FC = () => {
   // Free Play game component (current game)
   const FreePlay = () => {
     const navigate = useNavigate();
-    const BackButton = (
-      <button
-        style={{
-          position: 'absolute',
-          top: 24,
-          left: 24,
-          padding: '0.5rem 1.2rem',
-          fontSize: '1.1rem',
-          borderRadius: 6,
-          border: 'none',
-          background: '#ffd700',
-          color: '#1a1a1a',
-          fontWeight: 'bold',
-          cursor: 'pointer',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
-          zIndex: 10,
-        }}
-        onClick={() => navigate('/')}
-      >
-        ← Back to Menu
-      </button>
-    );
+    const [rules, setRules] = useState<GameRules>({
+      same: false,
+      plus: false,
+      elements: false,
+      ragnarok: false,
+      captureRules: {
+        sameElement: false,
+        higherValue: false,
+        adjacent: false,
+      },
+      chainReaction: false,
+    });
+    const [aiDifficulty, setAIDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
+    const shuffled = [...cards].sort(() => Math.random() - 0.5);
+    const player1Cards = shuffled.slice(0, 5);
+    const player2Cards = shuffled.slice(5, 10);
     // Font-face and global styles for Free-play
     const fontStyles = `
       @font-face {
@@ -298,167 +299,77 @@ const AppRoutes: React.FC = () => {
         font-style: normal;
       }
       @font-face {
-        font-family: 'NorseBold';
+        font-family: 'Norsebold';
         src: url('/fonts/Norsebold.otf') format('opentype');
         font-weight: bold;
         font-style: normal;
       }
     `;
     return (
-      <DndProvider backend={HTML5Backend}>
+      <div style={{ minHeight: '100vh', background: 'linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url(/images/tutorial/Background.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', fontFamily: 'Norse, serif', padding: '2rem 0' }}>
         <style>{fontStyles}</style>
-        <Global styles={css`
-          body {
-            min-height: 100vh;
-            background: linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url('/images/tutorial/Background.jpg');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            font-family: 'Norse', serif !important;
-          }
-          button, input, textarea, select, div, span, h1, h2, h3, h4, h5, h6, p {
-            font-family: 'Norse', serif !important;
-          }
-        `} />
-        <AppContainer style={{ position: 'relative', background: 'none' }}>
-          {BackButton}
-          <Title>Norse Tactics</Title>
+        <button
+          style={{
+            position: 'absolute',
+            top: 24,
+            left: 24,
+            padding: '0.5rem 1.2rem',
+            fontSize: '1.1rem',
+            borderRadius: 6,
+            border: 'none',
+            background: '#ffd700',
+            color: '#1a1a1a',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+            zIndex: 10,
+            fontFamily: 'Norsebold, Norse, serif',
+          }}
+          onClick={() => navigate('/')}
+        >
+          ← Back to Menu
+        </button>
+        <h1 style={{
+          fontFamily: 'Norsebold, Norse, Cinzel Decorative, serif',
+          fontSize: '3rem',
+          marginBottom: '0.5rem',
+          textAlign: 'center',
+          color: 'transparent',
+          textShadow: '0 0 8px #ffd70088, 0 0 12px #ffd70044, 0 0 1px #fff',
+          WebkitTextStroke: '1px #ffd700',
+          letterSpacing: '2px',
+          fontWeight: 'bold',
+        }}>
+          Norse Tactics
+        </h1>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16, fontFamily: 'Norsebold, Norse, serif' }}>
           <AIDifficultySelector
             selectedDifficulty={aiDifficulty}
             onDifficultyChange={setAIDifficulty}
           />
-          {isAIThinking && <AILoadingIndicator />}
-          <EndGameModal
-            isOpen={isGameOver}
-            winner={winner || 'draw'}
-            playerScore={gameState.score.player}
-            opponentScore={gameState.score.opponent}
-            onRestart={initializeGame}
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16, gap: 12 }}>
+          <button style={{ padding: '0.5rem 1rem', borderRadius: 6, border: rules.same ? '2px solid #ffd700' : '2px solid #444', background: rules.same ? '#ffd700' : 'transparent', color: rules.same ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Norsebold, Norse, serif' }} onClick={() => setRules(r => ({ ...r, same: !r.same }))}>Same Rule</button>
+          <button style={{ padding: '0.5rem 1rem', borderRadius: 6, border: rules.plus ? '2px solid #ffd700' : '2px solid #444', background: rules.plus ? '#ffd700' : 'transparent', color: rules.plus ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Norsebold, Norse, serif' }} onClick={() => setRules(r => ({ ...r, plus: !r.plus }))}>Plus Rule</button>
+          <button style={{ padding: '0.5rem 1rem', borderRadius: 6, border: rules.elements ? '2px solid #ffd700' : '2px solid #444', background: rules.elements ? '#ffd700' : 'transparent', color: rules.elements ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Norsebold, Norse, serif' }} onClick={() => setRules(r => ({ ...r, elements: !r.elements }))}>Elements</button>
+          <button style={{ padding: '0.5rem 1rem', borderRadius: 6, border: rules.ragnarok ? '2px solid #ffd700' : '2px solid #444', background: rules.ragnarok ? '#ffd700' : 'transparent', color: rules.ragnarok ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Norsebold, Norse, serif' }} onClick={() => setRules(r => ({ ...r, ragnarok: !r.ragnarok }))}>Ragnarök</button>
+        </div>
+        <div style={{ maxWidth: 1200, margin: '0 auto', fontFamily: 'Norse, serif' }}>
+          <GameSession
+            playerDeck={player1Cards}
+            opponentDeck={player2Cards}
+            rules={rules}
+            aiDifficulty={aiDifficulty}
+            onGameEnd={() => {}}
+            title={undefined}
+            showControls={false}
           />
-          <RulesToggle>
-            <RuleButton active={rules.same} onClick={() => toggleRule('same')}>
-              Same Rule
-            </RuleButton>
-            <RuleButton active={rules.plus} onClick={() => toggleRule('plus')}>
-              Plus Rule
-            </RuleButton>
-            <RuleButton active={rules.elements} onClick={() => toggleRule('elements')}>
-              Elements
-            </RuleButton>
-            <RuleButton active={rules.ragnarok} onClick={() => toggleRule('ragnarok')}>
-              Ragnarök
-            </RuleButton>
-          </RulesToggle>
-          <GameContainer>
-            <PlayerHand>
-              <PlayerInfo isActive={gameState.currentTurn === 'player'}>
-                Player 1 (Score: 
-                  <motion.span
-                    key={gameState.score.player}
-                    initial={{ scale: 1, color: '#ffd700' }}
-                    animate={{ scale: [1.2, 1], color: ['#fff', '#ffd700'] }}
-                    transition={{ duration: 0.4 }}
-                    style={{ display: 'inline-block', marginLeft: 4 }}
-                  >
-                    {gameState.score.player}
-                  </motion.span>
-                )
-              </PlayerInfo>
-              <HandContainer>
-                {gameState.player1Hand.map(card => (
-                  <CardWrapper key={card.id}>
-                    <GameCard
-                      card={card}
-                      isPlayable={gameState.currentTurn === 'player'}
-                      onClick={() => handleCardSelect(card)}
-                      isCapturing={capturingCards.has(card.id)}
-                      isChainReaction={chainReactionCards.has(card.id)}
-                    />
-                  </CardWrapper>
-                ))}
-              </HandContainer>
-            </PlayerHand>
-
-            <GameBoard
-              gameState={gameState}
-              onCellClick={handleCellClick}
-              onCapture={handleCapture}
-            />
-
-            <PlayerHand>
-              <PlayerInfo isActive={gameState.currentTurn === 'opponent'}>
-                Player 2 (Score: 
-                  <motion.span
-                    key={gameState.score.opponent}
-                    initial={{ scale: 1, color: '#ffd700' }}
-                    animate={{ scale: [1.2, 1], color: ['#fff', '#ffd700'] }}
-                    transition={{ duration: 0.4 }}
-                    style={{ display: 'inline-block', marginLeft: 4 }}
-                  >
-                    {gameState.score.opponent}
-                  </motion.span>
-                )
-              </PlayerInfo>
-              <HandContainer>
-                {gameState.player2Hand.map(card => (
-                  <CardWrapper key={card.id}>
-                    <GameCard
-                      card={card}
-                      isPlayable={gameState.currentTurn === 'opponent'}
-                      onClick={() => handleCardSelect(card)}
-                      isCapturing={capturingCards.has(card.id)}
-                      isChainReaction={chainReactionCards.has(card.id)}
-                    />
-                  </CardWrapper>
-                ))}
-              </HandContainer>
-            </PlayerHand>
-          </GameContainer>
-
-          <GameInfo>
-            {selectedCard ? (
-              `Selected: ${selectedCard.name} - Place it on the board`
-            ) : (
-              `${gameState.currentTurn === 'player' ? 'Player 1' : 'Player 2'}'s turn`
-            )}
-          </GameInfo>
-        </AppContainer>
-      </DndProvider>
+        </div>
+      </div>
     );
   };
 
   // Placeholder components for Campaign and Multiplayer
-  const Campaign = () => {
-    const navigate = useNavigate();
-    const BackButton = (
-      <button
-        style={{
-          position: 'absolute',
-          top: 24,
-          left: 24,
-          padding: '0.5rem 1.2rem',
-          fontSize: '1.1rem',
-          borderRadius: 6,
-          border: 'none',
-          background: '#ffd700',
-          color: '#1a1a1a',
-          fontWeight: 'bold',
-          cursor: 'pointer',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
-          zIndex: 10,
-        }}
-        onClick={() => navigate('/')}
-      >
-        ← Back to Menu
-      </button>
-    );
-    return (
-      <div style={{ color: 'white', textAlign: 'center', marginTop: '5rem', fontSize: '2rem', position: 'relative' }}>
-        {BackButton}
-        Campaign Mode (Coming Soon)
-      </div>
-    );
-  };
   const Multiplayer = () => {
     const navigate = useNavigate();
     const BackButton = (
@@ -491,12 +402,140 @@ const AppRoutes: React.FC = () => {
     );
   };
 
+  // GamePage for campaign quests
+  const GamePage = () => {
+    const { questId } = useParams();
+    const navigate = useNavigate();
+    const quest = allQuests.find(q => q.id === questId);
+    // Fallback: if quest not found, go back
+    useEffect(() => {
+      if (!quest) navigate('/campaign');
+    }, [quest, navigate]);
+    if (!quest) return null;
+    // Load player progress
+    const progress = (() => {
+      const data = localStorage.getItem('campaignProgress');
+      if (data) return JSON.parse(data);
+      return { specialAbilities: [], tutorials: {} };
+    })();
+    type TutorialKey = keyof typeof tutorialSteps;
+    const [tutorialToShow, setTutorialToShow] = React.useState<TutorialKey | null>(null);
+    const playerDeck = (() => {
+      const saved = localStorage.getItem('playerDeck');
+      if (saved) {
+        const ids = JSON.parse(saved);
+        return cards.filter(c => ids.includes(c.id));
+      }
+      // fallback: 5 common cards
+      return cards.filter(c => c.rarity === 'common').slice(0, 5);
+    })();
+    const opponentDeck = quest.opponent.deck;
+    const rules = quest.specialRules;
+    const handleGameEnd = (winner: 'player' | 'opponent' | 'draw') => {
+      if (winner === 'player') {
+        // Mark quest as completed
+        if (!progress.completedQuests.includes(quest.id)) {
+          progress.completedQuests.push(quest.id);
+          progress.experience += quest.rewards.experience || 0;
+          progress.playerLevel = Math.max(progress.playerLevel, Math.floor(progress.experience / 1000) + 1);
+          // Save progress to localStorage
+          localStorage.setItem('campaignProgress', JSON.stringify(progress));
+        }
+      }
+      setTimeout(() => navigate('/campaign'), 1200);
+    };
+    // Show tutorials for all relevant rules and triggers
+    React.useEffect(() => {
+      if (rules?.plus && !progress.tutorials?.plusRule) {
+        setTutorialToShow('plusRule');
+        return;
+      }
+      if (rules?.same && !progress.tutorials?.sameRule) {
+        setTutorialToShow('sameRule');
+        return;
+      }
+      if (rules?.elements && !progress.tutorials?.elementsRule) {
+        setTutorialToShow('elementsRule');
+        return;
+      }
+      if (rules?.ragnarok && !progress.tutorials?.ragnarokRule) {
+        setTutorialToShow('ragnarokRule');
+        return;
+      }
+      if (rules?.chainReaction && !progress.tutorials?.chainReactionRule) {
+        setTutorialToShow('chainReactionRule');
+        return;
+      }
+      if (rules?.captureRules?.sameElement && !progress.tutorials?.sameElementRule) {
+        setTutorialToShow('sameElementRule');
+        return;
+      }
+      if (rules?.captureRules?.higherValue && !progress.tutorials?.higherValueRule) {
+        setTutorialToShow('higherValueRule');
+        return;
+      }
+      if (rules?.captureRules?.adjacent && !progress.tutorials?.adjacentRule) {
+        setTutorialToShow('adjacentRule');
+        return;
+      }
+      // Add more triggers for special abilities if needed
+      // Example: if (someAbilityActive && !progress.tutorials?.berserkerRage) { setTutorialToShow('berserkerRage'); return; }
+    }, [rules, progress.tutorials]);
+
+    const handleTutorialComplete = () => {
+      if (!tutorialToShow) return;
+      setTutorialToShow(null);
+      const updatedProgress = {
+        ...progress,
+        tutorials: { ...progress.tutorials, [tutorialToShow]: true }
+      };
+      localStorage.setItem('campaignProgress', JSON.stringify(updatedProgress));
+    };
+    return (
+      <div style={{ minHeight: '100vh', background: 'linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url(/images/tutorial/Background.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', fontFamily: 'Norse, serif', padding: '2rem 0' }}>
+        <style>{`
+          @font-face {
+            font-family: 'Norse';
+            src: url('/fonts/Norse.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+          }
+          @font-face {
+            font-family: 'Norsebold';
+            src: url('/fonts/Norsebold.otf') format('opentype');
+            font-weight: bold;
+            font-style: normal;
+          }
+        `}</style>
+        {tutorialToShow && tutorialToShow in tutorialSteps && (
+          <Tutorial
+            steps={tutorialSteps[tutorialToShow]}
+            onComplete={handleTutorialComplete}
+          />
+        )}
+        <GameSession
+          playerDeck={playerDeck}
+          opponentDeck={opponentDeck}
+          rules={rules}
+          aiDifficulty={'medium'}
+          onGameEnd={handleGameEnd}
+          title={quest.name}
+          unlockedAbilities={progress.specialAbilities || []}
+          showControls={false}
+        />
+      </div>
+    );
+  };
+
   return (
     <Routes>
       <Route path="/" element={<StartPage multiplayerUnlocked={multiplayerUnlocked} />} />
       <Route path="/free-play" element={<FreePlay />} />
-      <Route path="/campaign" element={<Campaign />} />
+      <Route path="/campaign" element={<CampaignPage />} />
+      <Route path="/game/:questId" element={<GamePage />} />
       <Route path="/multiplayer" element={<Multiplayer />} />
+      <Route path="/collection" element={<CardCollection />} />
+      <Route path="/deck-builder" element={<DeckBuilder />} />
     </Routes>
   );
 };
@@ -504,7 +543,9 @@ const AppRoutes: React.FC = () => {
 const App: React.FC = () => {
   return (
     <Router>
-      <AppRoutes />
+      <DndProvider backend={HTML5Backend}>
+        <AppRoutes />
+      </DndProvider>
     </Router>
   );
 };

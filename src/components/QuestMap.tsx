@@ -19,10 +19,13 @@ interface QuestMapProps {
 
 const MapContainer = styled.div`
     width: 100%;
-    height: 800px;
-    background: #1a1a1a;
+    height: 1000px;
+    background: transparent;
     position: relative;
     overflow: hidden;
+    border-radius: 24px;
+    box-shadow: 0 0 32px #000a;
+    font-family: 'Norse', serif;
 `;
 
 const YggdrasilTrunk = styled.div`
@@ -57,19 +60,24 @@ const RealmNode = styled(motion.div)<{
     height: 100px;
     border-radius: 50%;
     background: ${props => {
-        if (!props.unlocked) return 'linear-gradient(135deg, #424242 0%, #212121 100%)';
-        if (props.completed) return 'linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%)';
-        return 'linear-gradient(135deg, #1976D2 0%, #0D47A1 100%)';
+        if (!props.unlocked) return 'linear-gradient(135deg, #b0a98f 0%, #6e6651 100%)'; // muted stone for locked
+        if (props.completed) return 'linear-gradient(135deg, #FFD700 0%, #bfa100 100%)'; // vibrant gold for completed
+        return 'linear-gradient(135deg, #e6d8a3 0%, #bfa100 100%)'; // gold/stone for unlocked
     }};
     cursor: ${props => props.unlocked ? 'pointer' : 'not-allowed'};
     transform: translate(-50%, -50%);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: #181818;
     font-weight: bold;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 24px 4px #ffd70033, 0 0 20px rgba(0, 0, 0, 0.3);
     z-index: 3;
+    transition: box-shadow 0.2s, background 0.2s;
+
+    &:hover {
+        box-shadow: ${props => props.unlocked ? '0 0 32px 8px #ffd70088, 0 0 20px rgba(0,0,0,0.3)' : '0 0 20px rgba(0,0,0,0.3)'};
+    }
 
     &::before {
         content: '';
@@ -77,7 +85,7 @@ const RealmNode = styled(motion.div)<{
         width: 110%;
         height: 110%;
         border-radius: 50%;
-        border: 2px solid ${props => props.unlocked ? '#FFD700' : '#424242'};
+        border: 2px solid ${props => props.unlocked ? '#FFD700' : '#b0a98f'};
         opacity: ${props => props.unlocked ? 1 : 0.5};
     }
 `;
@@ -92,6 +100,7 @@ const RealmLabel = styled.div`
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     pointer-events: none;
     transform: translateY(60px);
+    font-family: 'Norse', serif;
 `;
 
 const Connection = styled.svg<{ active: boolean }>`
@@ -149,10 +158,7 @@ const QuestMap: React.FC<QuestMapProps> = ({ realms, onRealmSelect }) => {
 
     return (
         <MapContainer>
-            <YggdrasilTrunk />
-            <YggdrasilBranches>
-                {drawConnections()}
-            </YggdrasilBranches>
+            {/* Connections are optional, can be re-added if you want lines between realms */}
             {realms.map(realm => (
                 <RealmNode
                     key={realm.id}
