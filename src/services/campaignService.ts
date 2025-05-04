@@ -1,6 +1,18 @@
 import { Card, GameState, GameRules } from '../types/game';
 import { cards } from '../data/cards';
 import { midgardQuests, asgardQuests, vanaheimQuests, alfheimQuests, jotunheimQuests, nidavellirQuests, svartalfheimQuests, muspelheimQuests, niflheimQuests, helheimQuests } from '../data/campaign';
+import { xpForLevel, getLevelFromXP } from '../utils/xp';
+
+export interface DialogueLine {
+    speaker: string;
+    text: string;
+    portraitUrl?: string;
+}
+
+export interface StoryChoice {
+    text: string;
+    result: string; // Could be next dialogue/story segment or effect
+}
 
 export interface Quest {
     id: string;
@@ -11,6 +23,12 @@ export interface Quest {
     rewards: QuestRewards;
     requirements: QuestRequirements;
     specialRules: GameRules;
+    // Storytelling fields
+    storyIntro?: string;
+    storyOutro?: string;
+    storyImages?: string[];
+    dialogue?: DialogueLine[];
+    choices?: StoryChoice[];
 }
 
 export interface Opponent {
@@ -217,10 +235,8 @@ export class CampaignService {
     }
 
     private checkLevelUp(): void {
-        const experiencePerLevel = 1000;
-        const newLevel = Math.floor(this.state.experience / experiencePerLevel) + 1;
-        
-        if (newLevel > this.state.playerLevel) {
+        const newLevel = getLevelFromXP(this.state.experience);
+        if (newLevel !== this.state.playerLevel) {
             this.state.playerLevel = newLevel;
             // Could add level-up rewards here
         }

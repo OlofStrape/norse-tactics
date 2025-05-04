@@ -49,6 +49,12 @@ const Subtitle = styled.div`
   margin-top: -0.5rem;
   margin-bottom: 2.5rem;
   letter-spacing: 0.08em;
+  text-align: center;
+  @media (max-width: 600px) {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    padding: 0 0.5rem;
+  }
 `;
 
 const ButtonGroup = styled.div`
@@ -108,11 +114,8 @@ const StartPage: React.FC<StartPageProps> = ({ multiplayerUnlocked }) => {
         }
       `} />
       <Title>NORSE</Title>
-      <Subtitle>A card game</Subtitle>
+      <Subtitle>Outsmart the gods. Conquer the nine realms</Subtitle>
       <ButtonGroup>
-        <ModeButton onClick={() => navigate('/free-play')}>
-          Free Play
-        </ModeButton>
         <ModeButton onClick={() => navigate('/campaign')}>
           Campaign
         </ModeButton>
@@ -122,6 +125,9 @@ const StartPage: React.FC<StartPageProps> = ({ multiplayerUnlocked }) => {
         >
           Multiplayer
           {!multiplayerUnlocked && <LockText>(Unlock by completing Campaign)</LockText>}
+        </ModeButton>
+        <ModeButton onClick={() => navigate('/free-play')}>
+          Free Play
         </ModeButton>
       </ButtonGroup>
     </Container>

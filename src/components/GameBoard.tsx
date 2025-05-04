@@ -12,6 +12,11 @@ const BoardContainer = styled.div`
   align-items: center;
   gap: 2rem;
   padding: 2rem;
+  overflow-x: auto;
+  @media (max-width: 600px) {
+    padding: 0.5rem;
+    gap: 0.7rem;
+  }
 `;
 
 const Grid = styled.div`
@@ -23,6 +28,11 @@ const Grid = styled.div`
   border-radius: 16px;
   border: 4px solid #ffd700;
   box-shadow: 0 0 12px 2px #ffd70055, 0 4px 24px rgba(0,0,0,0.18);
+  @media (max-width: 600px) {
+    gap: 0.4rem;
+    padding: 0.4rem;
+    border-width: 2px;
+  }
 `;
 
 const runeSet = [
@@ -71,6 +81,15 @@ const Cell = styled.div<{ isPlayable: boolean }>`
   &:hover {
     transform: ${props => props.isPlayable ? 'scale(1.05)' : 'none'};
     border-color: ${props => props.isPlayable ? '#ffd700' : 'rgba(60, 40, 20, 0.7)'};
+  }
+  @media (max-width: 600px) {
+    width: 24vw;
+    height: 32vw;
+    min-width: 80px;
+    min-height: 100px;
+    max-width: 120px;
+    max-height: 160px;
+    border-width: 2px;
   }
 `;
 

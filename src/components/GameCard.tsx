@@ -11,6 +11,12 @@ const CardContainer = styled.div`
   position: relative;
   will-change: transform;
   overflow: visible;
+  @media (max-width: 600px) {
+    max-width: 90vw;
+    max-height: 120vw;
+    min-width: 60px;
+    min-height: 80px;
+  }
 `;
 
 const Flipper = styled(motion.div)`

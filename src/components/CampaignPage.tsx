@@ -10,6 +10,9 @@ import QuestPanelModal from './QuestPanelModal';
 import GameCard from './GameCard';
 import { cards } from '../data/cards';
 import { getLevelFromXP, xpForLevel, xpToNextLevel } from '../utils/xp';
+import StoryModal from './StoryModal';
+import DialogueModal from './DialogueModal';
+import LoreJournal from './LoreJournal';
 
 const fontStyles = `
   @font-face {
@@ -108,6 +111,13 @@ const realms = [
 // Add this type for chapter keys
 type ChapterKey = keyof typeof campaignStory.chapters;
 
+// Extend StoryChoice type to include flag
+interface StoryChoice {
+  text: string;
+  result: string;
+  flag?: Record<string, any>;
+}
+
 // Progress state management
 function loadProgress() {
   const data = localStorage.getItem('campaignProgress');
@@ -120,7 +130,8 @@ function loadProgress() {
     experience: 0,
     specialAbilities: [],
     unlockedCards: starter,
-    deck: starter
+    deck: starter,
+    storyFlags: {}
   };
 }
 function saveProgress(progress: any) {
@@ -152,6 +163,11 @@ const CampaignPage: React.FC = () => {
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(playerProfile.name);
   const [avatarSelectOpen, setAvatarSelectOpen] = useState(false);
+  const [showStory, setShowStory] = useState(false);
+  const [showDialogue, setShowDialogue] = useState(false);
+  const [showOutro, setShowOutro] = useState(false);
+  const [choiceResult, setChoiceResult] = useState<string | null>(null);
+  const [showLoreJournal, setShowLoreJournal] = useState(false);
 
   // Calculate level from XP using new formula
   const playerLevel = getLevelFromXP(progress.experience);
@@ -189,8 +205,14 @@ const CampaignPage: React.FC = () => {
     let unlocked = true;
     if (req.playerLevel && playerLevel < req.playerLevel) unlocked = false;
     if (req.completedQuests && req.completedQuests.length > 0 && !req.completedQuests.every((q: string) => progress.completedQuests.includes(q))) unlocked = false;
+    // NEW: Check storyFlags requirements
+    if (req.storyFlags) {
+      for (const flag in req.storyFlags) {
+        if (progress.storyFlags?.[flag] !== req.storyFlags[flag]) unlocked = false;
+      }
+    }
     // For now, treat all as unlocked if no requirements
-    if (!req.playerLevel && !req.completedQuests) unlocked = true;
+    if (!req.playerLevel && !req.completedQuests && !req.storyFlags) unlocked = true;
     if (unlocked) return 'unlocked';
     return 'locked';
   }
@@ -222,11 +244,22 @@ const CampaignPage: React.FC = () => {
       unlockedCards: newUnlocked,
       deck: newDeck
     });
+    // Show outro story if present
+    if (quest.storyOutro) {
+      setQuestToStart(quest);
+      setShowOutro(true);
+    }
   }
 
   // Handler for quest start (open modal instead of navigating immediately)
   function handleStartQuest(quest: any) {
     setQuestToStart(quest);
+    if (quest.storyIntro) setShowStory(true);
+    else if (quest.dialogue) setShowDialogue(true);
+    else {
+      // Start quest directly (existing logic)
+      setModalOpen(true);
+    }
   }
 
   // Handler for confirming quest start (navigate)
@@ -399,6 +432,12 @@ const CampaignPage: React.FC = () => {
           </ul>
         </div>
       )}
+      <button
+        onClick={() => setShowLoreJournal(true)}
+        style={{ position: 'absolute', top: 24, right: 24, padding: '0.5rem 1.2rem', borderRadius: 6, border: '2px solid #ffd700', background: '#181818cc', color: '#ffd700', fontFamily: 'Norse', fontWeight: 'bold', letterSpacing: 1, cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.12)', zIndex: 10, transition: 'background 0.2s, box-shadow 0.2s', textShadow: '0 1px 6px #fff8, 0 0 2px #ffd70044' }}
+      >
+        Lore Journal
+      </button>
       <QuestMap realms={realms} onRealmSelect={handleRealmSelect} />
       <QuestPanelModal
         open={modalOpen}
@@ -510,6 +549,52 @@ const CampaignPage: React.FC = () => {
           </div>
         </div>
       )}
+      <StoryModal
+        open={showStory}
+        onClose={() => {
+          setShowStory(false);
+          setChoiceResult(null);
+          if (questToStart?.dialogue) setShowDialogue(true);
+          else setModalOpen(true); // Proceed to quest modal
+        }}
+        title={questToStart?.name}
+        text={questToStart?.storyIntro}
+        images={questToStart?.storyImages}
+        choices={questToStart?.choices as StoryChoice[]}
+        onChoice={(choice: StoryChoice) => {
+          setChoiceResult(choice.result);
+          if (choice.flag) {
+            setProgress((prev: typeof progress) => ({
+              ...prev,
+              storyFlags: { ...prev.storyFlags, ...choice.flag }
+            }));
+          }
+        }}
+      />
+      {choiceResult && (
+        <div style={{ color: '#ffd700', marginTop: 12, textAlign: 'center', fontSize: 18 }}>{choiceResult}</div>
+      )}
+      <DialogueModal
+        open={showDialogue}
+        onClose={() => {
+          setShowDialogue(false);
+          setModalOpen(true); // Proceed to quest modal
+        }}
+        dialogue={questToStart?.dialogue || []}
+      />
+      <StoryModal
+        open={showOutro}
+        onClose={() => setShowOutro(false)}
+        title={questToStart?.name}
+        text={questToStart?.storyOutro}
+        images={questToStart?.storyImages}
+      />
+      <LoreJournal
+        open={showLoreJournal}
+        onClose={() => setShowLoreJournal(false)}
+        progress={progress}
+        allQuests={allQuests}
+      />
     </Container>
   );
 };

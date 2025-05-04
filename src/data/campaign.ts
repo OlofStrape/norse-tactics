@@ -44,7 +44,14 @@ const createQuest = (
         completedQuests?: string[];
         specialConditions?: string[];
     },
-    specialRules: GameRules
+    specialRules: GameRules,
+    storyFields?: {
+        storyIntro?: string;
+        storyOutro?: string;
+        storyImages?: string[];
+        dialogue?: import('../services/campaignService').DialogueLine[];
+        choices?: import('../services/campaignService').StoryChoice[];
+    }
 ): Quest => ({
     id,
     name,
@@ -56,7 +63,8 @@ const createQuest = (
         cards: rewards.cardIds?.map(id => cards.find(c => c.id === id)!)
     },
     requirements,
-    specialRules
+    specialRules,
+    ...(storyFields || {})
 });
 
 export const campaignStory = {
@@ -161,7 +169,20 @@ export const midgardQuests = [
             unlocks: ['village-defense']
         },
         { playerLevel: 1 },
-        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: false, same: true, plus: false, elements: false, ragnarok: false }
+        { captureRules: { sameElement: false, higherValue: false, adjacent: false }, chainReaction: false, same: true, plus: false, elements: false, ragnarok: false },
+        {
+            storyIntro: "As dawn breaks over Midgard, Astrid the Shield-Maiden greets you at the training grounds. 'To survive the coming storm, you must master the art of combat.'",
+            storyOutro: "With Astrid's approval, you feel the first spark of destiny. The path to legend has begun.",
+            storyImages: ["/images/story/astrid_intro.jpg"],
+            dialogue: [
+                { speaker: "Astrid", text: "Welcome, young warrior. Are you ready to begin your training?", portraitUrl: "/images/portraits/astrid.png" },
+                { speaker: "You", text: "I am ready, Shield-Maiden." }
+            ],
+            choices: [
+                { text: "Ask about the coming storm", result: "Astrid's eyes darken. 'Ragnarök is coming. Only the strong will endure.'" },
+                { text: "Begin training", result: "Astrid nods. 'Let us begin!'" }
+            ]
+        }
     ),
     createQuest(
         'village-defense',
