@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import QuestMap from './QuestMap';
 import QuestCard from './QuestCard';
 import { campaignStory, allQuests } from '../data/campaign';
@@ -10,9 +10,6 @@ import QuestPanelModal from './QuestPanelModal';
 import GameCard from './GameCard';
 import { cards } from '../data/cards';
 import { getLevelFromXP, xpForLevel, xpToNextLevel } from '../utils/xp';
-import StoryModal from './StoryModal';
-import DialogueModal from './DialogueModal';
-import LoreJournal from './LoreJournal';
 
 const fontStyles = `
   @font-face {
@@ -148,6 +145,10 @@ function savePlayerProfile(name: string, avatar: string) {
   localStorage.setItem('playerName', name);
   localStorage.setItem('playerAvatar', avatar);
 }
+
+const LoreJournal = React.lazy(() => import('./LoreJournal'));
+const StoryModal = React.lazy(() => import('./StoryModal'));
+const DialogueModal = React.lazy(() => import('./DialogueModal'));
 
 const CampaignPage: React.FC = () => {
   const [selectedRealm, setSelectedRealm] = useState<ChapterKey | null>(null);
@@ -317,7 +318,7 @@ const CampaignPage: React.FC = () => {
       <Global styles={css`
         body {
           min-height: 100vh;
-          background: linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url('/images/tutorial/Background.jpg');
+          background: linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url('https://res.cloudinary.com/dvfobknn4/image/upload/v1746867992/Background_snigeo.png');
           background-size: cover;
           background-position: center;
           background-repeat: no-repeat;
@@ -549,51 +550,53 @@ const CampaignPage: React.FC = () => {
           </div>
         </div>
       )}
-      <StoryModal
-        open={showStory}
-        onClose={() => {
-          setShowStory(false);
-          setChoiceResult(null);
-          if (questToStart?.dialogue) setShowDialogue(true);
-          else setModalOpen(true); // Proceed to quest modal
-        }}
-        title={questToStart?.name}
-        text={questToStart?.storyIntro}
-        images={questToStart?.storyImages}
-        choices={questToStart?.choices as StoryChoice[]}
-        onChoice={(choice: StoryChoice) => {
-          setChoiceResult(choice.result);
-          if (choice.flag) {
-            setProgress((prev: typeof progress) => ({
-              ...prev,
-              storyFlags: { ...prev.storyFlags, ...choice.flag }
-            }));
-          }
-        }}
-      />
-      {choiceResult && (
-        <div style={{ color: '#ffd700', marginTop: 12, textAlign: 'center', fontSize: 18 }}>{choiceResult}</div>
-      )}
-      <DialogueModal
-        open={showDialogue}
-        onClose={() => {
-          setShowDialogue(false);
-          setModalOpen(true); // Proceed to quest modal
-        }}
-        dialogue={questToStart?.dialogue || []}
-      />
+      <Suspense fallback={<div style={{ color: '#ffd700', textAlign: 'center', marginTop: 40 }}>Loading...</div>}>
+        <StoryModal
+          open={showStory}
+          onClose={() => {
+            setShowStory(false);
+            setChoiceResult(null);
+            if (questToStart?.dialogue) setShowDialogue(true);
+            else setModalOpen(true);
+          }}
+          title={questToStart?.name}
+          text={questToStart?.storyIntro}
+          images={questToStart?.storyImages}
+          choices={questToStart?.choices as StoryChoice[]}
+          onChoice={(choice: StoryChoice) => {
+            setChoiceResult(choice.result);
+            if (choice.flag) {
+              setProgress((prev: typeof progress) => ({
+                ...prev,
+                storyFlags: { ...prev.storyFlags, ...choice.flag }
+              }));
+            }
+          }}
+        />
+        {choiceResult && (
+          <div style={{ color: '#ffd700', marginTop: 12, textAlign: 'center', fontSize: 18 }}>{choiceResult}</div>
+        )}
+        <DialogueModal
+          open={showDialogue}
+          onClose={() => {
+            setShowDialogue(false);
+            setModalOpen(true);
+          }}
+          dialogue={questToStart?.dialogue || []}
+        />
+        <LoreJournal
+          open={showLoreJournal}
+          onClose={() => setShowLoreJournal(false)}
+          progress={progress}
+          allQuests={allQuests}
+        />
+      </Suspense>
       <StoryModal
         open={showOutro}
         onClose={() => setShowOutro(false)}
         title={questToStart?.name}
         text={questToStart?.storyOutro}
         images={questToStart?.storyImages}
-      />
-      <LoreJournal
-        open={showLoreJournal}
-        onClose={() => setShowLoreJournal(false)}
-        progress={progress}
-        allQuests={allQuests}
       />
     </Container>
   );

@@ -103,7 +103,7 @@ const StartPage: React.FC<StartPageProps> = ({ multiplayerUnlocked }) => {
       <Global styles={css`
         body {
           min-height: 100vh;
-          background: linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url('/images/tutorial/Background.jpg');
+          background: linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url('https://res.cloudinary.com/dvfobknn4/image/upload/v1746867992/Background_snigeo.png');
           background-size: cover;
           background-position: center;
           background-repeat: no-repeat;

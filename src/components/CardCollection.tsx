@@ -73,7 +73,7 @@ const CardCollection: React.FC = () => {
     }
   `;
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url(/images/tutorial/Background.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', fontFamily: 'Norse, serif', padding: '2rem 0' }}>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url(https://res.cloudinary.com/dvfobknn4/image/upload/v1746867992/Background_snigeo.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', fontFamily: 'Norse, serif', padding: '2rem 0' }}>
       <style>{fontStyles}</style>
       <button
         style={{

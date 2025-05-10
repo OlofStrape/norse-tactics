@@ -306,7 +306,7 @@ const AppRoutes: React.FC = () => {
       }
     `;
     return (
-      <div style={{ minHeight: '100vh', background: 'linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url(/images/tutorial/Background.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', fontFamily: 'Norse, serif', padding: '2rem 0' }}>
+      <div style={{ minHeight: '100vh', background: 'linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url(https://res.cloudinary.com/dvfobknn4/image/upload/v1746867992/Background_snigeo.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', fontFamily: 'Norse, serif', padding: '2rem 0' }}>
         <style>{fontStyles}</style>
         <button
           style={{
@@ -492,62 +492,5 @@ const AppRoutes: React.FC = () => {
       localStorage.setItem('campaignProgress', JSON.stringify(updatedProgress));
     };
     return (
-      <div style={{ minHeight: '100vh', background: 'linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url(/images/tutorial/Background.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', fontFamily: 'Norse, serif', padding: '2rem 0' }}>
+      <div style={{ minHeight: '100vh', background: 'linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url(https://res.cloudinary.com/dvfobknn4/image/upload/v1746867992/Background_snigeo.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', fontFamily: 'Norse, serif', padding: '2rem 0' }}>
         <style>{`
-          @font-face {
-            font-family: 'Norse';
-            src: url('/fonts/Norse.otf') format('opentype');
-            font-weight: normal;
-            font-style: normal;
-          }
-          @font-face {
-            font-family: 'Norsebold';
-            src: url('/fonts/Norsebold.otf') format('opentype');
-            font-weight: bold;
-            font-style: normal;
-          }
-        `}</style>
-        {tutorialToShow && tutorialToShow in tutorialSteps && (
-          <Tutorial
-            steps={tutorialSteps[tutorialToShow]}
-            onComplete={handleTutorialComplete}
-          />
-        )}
-        <GameSession
-          playerDeck={playerDeck}
-          opponentDeck={opponentDeck}
-          rules={rules}
-          aiDifficulty={'medium'}
-          onGameEnd={handleGameEnd}
-          title={quest.name}
-          unlockedAbilities={progress.specialAbilities || []}
-          showControls={false}
-        />
-      </div>
-    );
-  };
-
-  return (
-    <Routes>
-      <Route path="/" element={<StartPage multiplayerUnlocked={multiplayerUnlocked} />} />
-      <Route path="/free-play" element={<FreePlay />} />
-      <Route path="/campaign" element={<CampaignPage />} />
-      <Route path="/game/:questId" element={<GamePage />} />
-      <Route path="/multiplayer" element={<Multiplayer />} />
-      <Route path="/collection" element={<CardCollection />} />
-      <Route path="/deck-builder" element={<DeckBuilder />} />
-    </Routes>
-  );
-};
-
-const App: React.FC = () => {
-  return (
-    <Router>
-      <DndProvider backend={HTML5Backend}>
-        <AppRoutes />
-      </DndProvider>
-    </Router>
-  );
-};
-
-export default App; 
