@@ -133,6 +133,29 @@ const fontStyles = css`
   }
 `;
 
+const BackButton = styled.button`
+  position: absolute;
+  top: 10px;
+  left: 8px;
+  padding: 0.5rem 1.2rem;
+  font-size: 1.1rem;
+  border-radius: 6px;
+  border: none;
+  background: rgba(24,24,24,0.18);
+  color: #ffd700;
+  font-family: 'Norse', 'Cinzel Decorative', serif;
+  font-weight: 400;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: none;
+  z-index: 10;
+  transition: background 0.2s;
+  text-shadow: 0 1px 6px #fff6, 0 0 2px #ffd70022;
+  &:hover {
+    background: rgba(24,24,24,0.28);
+  }
+`;
+
 const AppRoutes: React.FC = () => {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
@@ -339,37 +362,7 @@ const AppRoutes: React.FC = () => {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', background: 'linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url(https://res.cloudinary.com/dvfobknn4/image/upload/v1746867992/Background_snigeo.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', fontFamily: 'Norse, serif', padding: '0', position: 'relative' }}>
         <style>{fontStyles}</style>
-        <button
-          style={{
-            position: 'absolute',
-            top: 24,
-            left: 24,
-            padding: '0.4rem 0.7rem',
-            fontSize: '1.3rem',
-            borderRadius: 6,
-            border: 'none',
-            background: '#ffd700',
-            color: '#1a1a1a',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
-            zIndex: 10,
-            fontFamily: 'Norsebold, Norse, serif',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-          }}
-          onClick={() => navigate('/')}
-        >
-          <span style={{ fontSize: '1.5rem', lineHeight: 1 }}>←</span>
-          <span className="back-menu-text" style={{ display: 'inline-block' }}>Back to Menu</span>
-        </button>
-        <style>{`
-          @media (max-width: 600px) {
-            .back-menu-text { display: none !important; }
-            button[style] { padding: 0.4rem 0.7rem !important; font-size: 1.5rem !important; }
-          }
-        `}</style>
+        <BackButton onClick={() => navigate('/')} aria-label="Back to Menu">←</BackButton>
         <div style={{ width: '100%', maxWidth: 420, margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
           <h1 style={{
             fontFamily: 'Norsebold, Norse, Cinzel Decorative, serif',

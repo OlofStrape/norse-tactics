@@ -63,7 +63,7 @@ module.exports = {
         }
       ]
     }),
-    new BundleAnalyzerPlugin(), // Visualize bundle size
+    process.env.ANALYZE && new BundleAnalyzerPlugin(), // Visualize bundle size only if ANALYZE is set
   ].filter(Boolean),
   devServer: {
     static: {

@@ -205,24 +205,22 @@ const BackButton = styled.button`
   position: absolute;
   top: 16px;
   left: 16px;
-  width: 38px;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(32,32,32,0.18);
+  padding: 0.5rem 1.2rem;
+  font-size: 1.1rem;
+  border-radius: 6px;
   border: none;
-  border-radius: 50%;
+  background: rgba(24,24,24,0.18);
   color: #ffd700;
-  font-size: 1.6rem;
-  opacity: 0.55;
+  font-family: 'Norse', 'Cinzel Decorative', serif;
+  font-weight: 400;
+  letter-spacing: 1px;
   cursor: pointer;
-  z-index: 20;
-  transition: background 0.2s, color 0.2s, opacity 0.2s;
-  &:hover, &:focus {
-    background: rgba(32,32,32,0.32);
-    color: #fff8b0;
-    opacity: 1;
+  box-shadow: none;
+  z-index: 10;
+  transition: background 0.2s;
+  text-shadow: 0 1px 6px #fff6, 0 0 2px #ffd70022;
+  &:hover {
+    background: rgba(24,24,24,0.28);
   }
 `;
 
@@ -547,9 +545,7 @@ export const GameSession: React.FC<GameSessionProps> = ({
       <style>{fontStyles}</style>
       <AppContainer style={{ position: 'relative', background: 'none' }}>
         <BackButton onClick={() => navigate('/')} aria-label="Back to Menu">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M14 18L8 11L14 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+          ←
         </BackButton>
         <MuteButton onClick={() => setMuted(m => !m)} aria-label={muted ? 'Unmute' : 'Mute'}>
           {muted ? (
