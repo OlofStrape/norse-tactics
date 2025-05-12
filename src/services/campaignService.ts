@@ -1,6 +1,6 @@
 import { Card, GameState, GameRules } from '../types/game';
 import { cards } from '../data/cards';
-import { midgardQuests, asgardQuests, vanaheimQuests, alfheimQuests, jotunheimQuests, nidavellirQuests, svartalfheimQuests, muspelheimQuests, niflheimQuests, helheimQuests } from '../data/campaign';
+import { midgardQuests, asgardQuests, vanaheimQuests, alfheimQuests, jotunheimQuests, nidavellirQuests, muspelheimQuests, niflheimQuests, helheimQuests } from '../data/campaign';
 import { xpForLevel, getLevelFromXP } from '../utils/xp';
 
 export interface DialogueLine {
@@ -152,7 +152,6 @@ export class CampaignService {
             case 'alfheim': quests = alfheimQuests; break;
             case 'jotunheim': quests = jotunheimQuests; break;
             case 'nidavellir': quests = nidavellirQuests; break;
-            case 'svartalfheim': quests = svartalfheimQuests; break;
             case 'muspelheim': quests = muspelheimQuests; break;
             case 'niflheim': quests = niflheimQuests; break;
             case 'helheim': quests = helheimQuests; break;

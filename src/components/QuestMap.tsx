@@ -10,6 +10,7 @@ interface Realm {
     connections: string[];
     unlocked: boolean;
     completed: boolean;
+    progressPercent?: number;
 }
 
 interface QuestMapProps {
@@ -19,13 +20,27 @@ interface QuestMapProps {
 
 const MapContainer = styled.div`
     width: 100%;
-    height: 1000px;
+    max-width: 270px;
+    margin: 0 auto;
+    aspect-ratio: 3/4;
+    height: auto;
+    min-height: 320px;
+    max-height: 90vh;
     background: transparent;
     position: relative;
     overflow: hidden;
     border-radius: 24px;
     box-shadow: 0 0 32px #000a;
     font-family: 'Norse', serif;
+    touch-action: pan-x pan-y;
+    @media (max-width: 700px) {
+        aspect-ratio: 3/4;
+        min-height: 180px;
+        max-height: 70vw;
+        min-width: 180px;
+        max-width: 98vw;
+        padding: 0;
+    }
 `;
 
 const YggdrasilTrunk = styled.div`
@@ -53,19 +68,17 @@ const RealmNode = styled(motion.div)<{
     x: number;
     y: number;
 }>`
-    position: absolute;
-    left: ${props => props.x}%;
-    top: ${props => props.y}%;
-    width: 100px;
-    height: 100px;
+    width: 90%;
+    height: 90%;
+    max-width: 120px;
+    max-height: 120px;
     border-radius: 50%;
     background: ${props => {
-        if (!props.unlocked) return 'linear-gradient(135deg, #b0a98f 0%, #6e6651 100%)'; // muted stone for locked
-        if (props.completed) return 'linear-gradient(135deg, #FFD700 0%, #bfa100 100%)'; // vibrant gold for completed
-        return 'linear-gradient(135deg, #e6d8a3 0%, #bfa100 100%)'; // gold/stone for unlocked
+        if (!props.unlocked) return 'linear-gradient(135deg, #b0a98f 0%, #6e6651 100%)';
+        if (props.completed) return 'linear-gradient(135deg, #FFD700 0%, #bfa100 100%)';
+        return 'linear-gradient(135deg, #e6d8a3 0%, #bfa100 100%)';
     }};
     cursor: ${props => props.unlocked ? 'pointer' : 'not-allowed'};
-    transform: translate(-50%, -50%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -74,33 +87,32 @@ const RealmNode = styled(motion.div)<{
     box-shadow: 0 0 24px 4px #ffd70033, 0 0 20px rgba(0, 0, 0, 0.3);
     z-index: 3;
     transition: box-shadow 0.2s, background 0.2s;
-
+    font-size: 1.1rem;
+    @media (max-width: 700px) {
+        width: 90%;
+        height: 90%;
+        max-width: 60px;
+        max-height: 60px;
+        font-size: 0.7rem;
+    }
     &:hover {
         box-shadow: ${props => props.unlocked ? '0 0 32px 8px #ffd70088, 0 0 20px rgba(0,0,0,0.3)' : '0 0 20px rgba(0,0,0,0.3)'};
-    }
-
-    &::before {
-        content: '';
-        position: absolute;
-        width: 110%;
-        height: 110%;
-        border-radius: 50%;
-        border: 2px solid ${props => props.unlocked ? '#FFD700' : '#b0a98f'};
-        opacity: ${props => props.unlocked ? 1 : 0.5};
     }
 `;
 
 const RealmLabel = styled.div`
-    position: absolute;
-    width: 150px;
+    width: 100%;
+    margin-top: 0.3em;
     text-align: center;
     color: #FFD700;
-    font-size: 16px;
+    font-size: 1.1em;
     font-weight: bold;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     pointer-events: none;
-    transform: translateY(60px);
     font-family: 'Norse', serif;
+    @media (max-width: 700px) {
+        font-size: 0.85em;
+    }
 `;
 
 const Connection = styled.svg<{ active: boolean }>`
@@ -115,6 +127,70 @@ const Connection = styled.svg<{ active: boolean }>`
         fill: none;
     }
 `;
+
+const GridContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+`;
+
+const GridRealmNode = styled(motion.div)<{ unlocked: boolean; completed: boolean }>`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+`;
+
+// Add Padlock SVG component
+const PadlockIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" style={{ display: 'block' }}>
+    <rect x="8" y="14" width="16" height="10" rx="3" fill="#222" stroke="#ffd700" strokeWidth="2" />
+    <path d="M12 14v-3a4 4 0 1 1 8 0v3" stroke="#ffd700" strokeWidth="2" fill="none" />
+    <circle cx="16" cy="20" r="2" fill="#ffd700" />
+  </svg>
+);
+
+// Add ProgressCircle SVG component
+const ProgressCircle = ({ percent, color = '#ffd700' }: { percent: number; color?: string }) => {
+  const size = 60;
+  const r = size / 2 - 4;
+  const c = 2 * Math.PI * r;
+  const dash = c * (percent / 100);
+  return (
+    <svg width={size} height={size} style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', pointerEvents: 'none', zIndex: 2 }}>
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        stroke="#444"
+        strokeWidth="4"
+        fill="none"
+      />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        stroke={color}
+        strokeWidth="4"
+        fill="none"
+        strokeDasharray={`${dash} ${c - dash}`}
+        strokeLinecap="round"
+        style={{ transition: 'stroke-dasharray 0.4s' }}
+      />
+    </svg>
+  );
+};
 
 const QuestMap: React.FC<QuestMapProps> = ({ realms, onRealmSelect }) => {
     const drawConnections = () => {
@@ -158,24 +234,41 @@ const QuestMap: React.FC<QuestMapProps> = ({ realms, onRealmSelect }) => {
 
     return (
         <MapContainer>
-            {/* Connections are optional, can be re-added if you want lines between realms */}
-            {realms.map(realm => (
-                <RealmNode
-                    key={realm.id}
-                    unlocked={realm.unlocked}
-                    completed={realm.completed}
-                    x={realm.position.x}
-                    y={realm.position.y}
-                    onClick={() => realm.unlocked && onRealmSelect(realm.id)}
-                    variants={nodeVariants}
-                    initial="initial"
-                    animate="animate"
-                    whileHover={realm.unlocked ? "hover" : undefined}
-                    transition={{ duration: 0.3 }}
-                >
-                    <RealmLabel>{realm.name}</RealmLabel>
-                </RealmNode>
-            ))}
+            <GridContainer>
+                {realms.map((realm, idx) => (
+                    <GridRealmNode
+                        key={realm.id}
+                        unlocked={realm.unlocked}
+                        completed={realm.completed}
+                        onClick={() => realm.unlocked && onRealmSelect(realm.id)}
+                        variants={nodeVariants}
+                        initial="initial"
+                        animate="animate"
+                        whileHover={realm.unlocked ? "hover" : undefined}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <RealmNode
+                            unlocked={realm.unlocked}
+                            completed={realm.completed}
+                            x={0}
+                            y={0}
+                            style={{ position: 'relative', left: 'unset', top: 'unset', transform: 'none' }}
+                        >
+                            {/* Progress ring for unlocked nodes */}
+                            {realm.unlocked && (
+                                <ProgressCircle percent={realm.progressPercent || 0} color={realm.completed ? '#ffd700' : '#8888ff'} />
+                            )}
+                            {/* Padlock for locked nodes */}
+                            {!realm.unlocked && (
+                                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 3 }}>
+                                    <PadlockIcon />
+                                </div>
+                            )}
+                        </RealmNode>
+                        <RealmLabel>{realm.name}</RealmLabel>
+                    </GridRealmNode>
+                ))}
+            </GridContainer>
         </MapContainer>
     );
 };

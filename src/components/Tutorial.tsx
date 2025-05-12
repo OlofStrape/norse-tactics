@@ -31,11 +31,13 @@ const TutorialTitle = styled.h2`
   color: #ffd700;
   margin: 0 0 1rem 0;
   text-align: center;
+  font-family: 'NorseBold', 'Norse', serif;
 `;
 
 const TutorialText = styled.p`
   margin: 0 0 1.5rem 0;
   line-height: 1.5;
+  font-family: 'Norse', serif;
 `;
 
 const TutorialImage = styled.img`
@@ -61,6 +63,7 @@ const TutorialButton = styled.button<{ primary?: boolean }>`
   cursor: pointer;
   font-weight: bold;
   transition: all 0.2s ease;
+  font-family: 'Norse', serif;
 
   &:hover {
     background: ${props => props.primary ? '#ffed4a' : '#4a4a4a'};

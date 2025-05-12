@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from '@emotion/styled';
 import { motion } from 'framer-motion';
 
@@ -54,9 +54,21 @@ const Card = styled(motion.div)<{ difficulty: QuestCardProps['difficulty']; stat
     filter: ${props => props.state === 'locked' ? 'grayscale(0.7)' : 'none'};
     border: ${props => props.state === 'completed' ? '3px solid #FFD700' : 'none'};
     box-shadow: ${props => props.state === 'completed' ? '0 0 18px 4px #ffd70066, 0 4px 16px rgba(0,0,0,0.18)' : '0 4px 6px rgba(0, 0, 0, 0.1)'};
+    position: relative;
 
     &:hover {
         transform: ${props => props.state === 'locked' ? 'none' : 'translateY(-4px)'};
+    }
+
+    @media (max-width: 700px) {
+        width: 98vw;
+        min-width: 0;
+        max-width: 99vw;
+        padding: 10px 8px 14px 8px;
+    }
+    @media (max-width: 500px) {
+        width: 99vw;
+        padding: 7px 2vw 10px 2vw;
     }
 `;
 
@@ -65,42 +77,93 @@ const Title = styled.h2`
     font-size: 24px;
     font-weight: bold;
     color: #FFD700;
+    word-break: break-word;
+    @media (max-width: 700px) {
+        font-size: 18px;
+    }
+    @media (max-width: 500px) {
+        font-size: 15px;
+    }
 `;
 
 const Location = styled.div`
     font-size: 14px;
     color: #E0E0E0;
     margin-bottom: 16px;
+    word-break: break-word;
+    @media (max-width: 700px) {
+        font-size: 12px;
+        margin-bottom: 8px;
+    }
+    @media (max-width: 500px) {
+        font-size: 11px;
+        margin-bottom: 4px;
+    }
 `;
 
 const Description = styled.p`
     margin: 0 0 16px 0;
     font-size: 16px;
     line-height: 1.5;
+    word-break: break-word;
+    @media (max-width: 700px) {
+        font-size: 13px;
+        margin-bottom: 8px;
+    }
+    @media (max-width: 500px) {
+        font-size: 12px;
+        margin-bottom: 4px;
+    }
 `;
 
 const Section = styled.div`
     margin-bottom: 16px;
+    @media (max-width: 700px) {
+        margin-bottom: 8px;
+    }
+    @media (max-width: 500px) {
+        margin-bottom: 4px;
+    }
 `;
 
 const SectionTitle = styled.h3`
     margin: 0 0 8px 0;
     font-size: 18px;
     color: #FFD700;
+    @media (max-width: 700px) {
+        font-size: 15px;
+        margin-bottom: 4px;
+    }
+    @media (max-width: 500px) {
+        font-size: 13px;
+        margin-bottom: 2px;
+    }
 `;
 
 const List = styled.ul`
     margin: 0;
     padding-left: 20px;
+    @media (max-width: 700px) {
+        padding-left: 12px;
+    }
+    @media (max-width: 500px) {
+        padding-left: 8px;
+    }
 `;
 
 const ListItem = styled.li<{ completed?: boolean }>`
     margin-bottom: 4px;
     color: ${props => props.completed ? '#81C784' : '#E0E0E0'};
-    
+    word-break: break-word;
     &::marker {
         content: ${props => props.completed ? '"✓ "' : '"• "'};
         color: ${props => props.completed ? '#81C784' : '#E0E0E0'};
+    }
+    @media (max-width: 700px) {
+        font-size: 12px;
+    }
+    @media (max-width: 500px) {
+        font-size: 11px;
     }
 `;
 
@@ -112,7 +175,6 @@ const ProgressBar = styled.div<{ progress: number }>`
     margin-top: 16px;
     position: relative;
     overflow: hidden;
-
     &::after {
         content: '';
         position: absolute;
@@ -123,6 +185,14 @@ const ProgressBar = styled.div<{ progress: number }>`
         background: #FFD700;
         border-radius: 2px;
         transition: width 0.3s ease;
+    }
+    @media (max-width: 700px) {
+        height: 3px;
+        margin-top: 8px;
+    }
+    @media (max-width: 500px) {
+        height: 2px;
+        margin-top: 4px;
     }
 `;
 
@@ -137,6 +207,7 @@ const QuestCard: React.FC<QuestCardProps> = ({
     state,
     onSelect
 }) => {
+    const [expanded, setExpanded] = useState(state !== 'completed');
     const calculateProgress = () => {
         if (progress.completed) return 100;
         const conditions = Object.values(progress.conditions);
@@ -144,11 +215,18 @@ const QuestCard: React.FC<QuestCardProps> = ({
         return (conditions.filter(Boolean).length / conditions.length) * 100;
     };
 
+    // For completed quests, collapse by default, expand on click
+    const handleCardClick = () => {
+        if (state === 'locked') return;
+        if (state === 'completed') setExpanded(e => !e);
+        else onSelect();
+    };
+
     return (
         <Card
             difficulty={difficulty}
             state={state}
-            onClick={state === 'locked' ? undefined : onSelect}
+            onClick={handleCardClick}
             whileHover={state === 'locked' ? undefined : { scale: 1.02 }}
             whileTap={state === 'locked' ? undefined : { scale: 0.98 }}
         >
@@ -207,9 +285,18 @@ const QuestCard: React.FC<QuestCardProps> = ({
                 </div>
             )}
             <Title>{title}</Title>
-            <Location>{location}</Location>
-            <Description>{description}</Description>
+            {state === 'completed' && !expanded ? null : <Location>{location}</Location>}
+            {state === 'completed' && !expanded ? null : <Description>{description}</Description>}
 
+            {/* Collapse all details for completed quests unless expanded */}
+            {state === 'completed' && !expanded ? (
+                <div style={{ color: '#FFD700', textAlign: 'center', fontWeight: 'bold', fontSize: 16, marginTop: 8 }}>
+                  Completed
+                  <span style={{ fontSize: 18, marginLeft: 8, verticalAlign: 'middle' }}>✔️</span>
+                  <div style={{ fontSize: 13, color: '#aaa', marginTop: 4 }}>(Click to expand)</div>
+                </div>
+            ) : (
+            <>
             <Section>
                 <SectionTitle>Requirements</SectionTitle>
                 <List>
@@ -258,18 +345,14 @@ const QuestCard: React.FC<QuestCardProps> = ({
                     <SectionTitle>Special Conditions</SectionTitle>
                     <List>
                         {requirements.specialConditions.map(condition => (
-                            <ListItem 
-                                key={condition}
-                                completed={progress.conditions[condition]}
-                            >
-                                {condition}
-                            </ListItem>
+                            <ListItem key={condition}>{condition}</ListItem>
                         ))}
                     </List>
                 </Section>
             )}
-
             <ProgressBar progress={calculateProgress()} />
+            </>
+            )}
         </Card>
     );
 };

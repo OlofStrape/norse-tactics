@@ -10,21 +10,9 @@ import QuestPanelModal from './QuestPanelModal';
 import GameCard from './GameCard';
 import { cards } from '../data/cards';
 import { getLevelFromXP, xpForLevel, xpToNextLevel } from '../utils/xp';
-
-const fontStyles = `
-  @font-face {
-    font-family: 'Norse';
-    src: url('/fonts/Norse.otf') format('opentype');
-    font-weight: normal;
-    font-style: normal;
-  }
-  @font-face {
-    font-family: 'NorseBold';
-    src: url('/fonts/Norsebold.otf') format('opentype');
-    font-weight: bold;
-    font-style: normal;
-  }
-`;
+import { realms as baseRealms, realmProgression } from '../data/realms';
+import { PlayerProgress } from '../types/player';
+import { Quest } from '../services/campaignService';
 
 const Container = styled.div`
   min-height: 100vh;
@@ -33,13 +21,14 @@ const Container = styled.div`
   align-items: center;
   justify-content: flex-start;
   position: relative;
-  padding: 2rem 0 0 0;
+  padding: 1.1rem 0 0 0;
 `;
 
 const Title = styled.h1`
   font-family: 'Norse', 'Cinzel Decorative', serif;
   font-size: 3rem;
-  margin-bottom: 0.5rem;
+  margin-top: 0.2rem;
+  margin-bottom: 0.3rem;
   text-align: center;
   color: #ffd700;
   text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
@@ -50,7 +39,7 @@ const SubTitle = styled.div`
   font-size: 1.2rem;
   color: #ffd700;
   text-shadow: 0 0 6px rgba(255, 215, 0, 0.3);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.1rem;
   letter-spacing: 0.08em;
 `;
 
@@ -63,47 +52,154 @@ const QuestList = styled.div`
 
 const BackButton = styled.button`
   position: absolute;
-  top: 24px;
-  left: 24px;
+  top: 10px;
+  left: 8px;
   padding: 0.5rem 1.2rem;
   font-size: 1.1rem;
   border-radius: 6px;
-  border: 2px solid #ffd700;
-  background: #181818cc;
+  border: none;
+  background: rgba(24,24,24,0.18);
   color: #ffd700;
   font-family: 'Norse', 'Cinzel Decorative', serif;
-  font-weight: bold;
+  font-weight: 400;
   letter-spacing: 1px;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  box-shadow: none;
   z-index: 10;
-  transition: background 0.2s, box-shadow 0.2s;
-  text-shadow: 0 1px 6px #fff8, 0 0 2px #ffd70044;
+  transition: background 0.2s;
+  text-shadow: 0 1px 6px #fff6, 0 0 2px #ffd70022;
   &:hover {
-    background: #2a1a0a;
-    box-shadow: 0 0 18px 4px #ffd70066, 0 4px 16px rgba(0,0,0,0.18);
+    background: rgba(24,24,24,0.28);
+  }
+`;
+
+const InfoPanel = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  width: 100%;
+  max-width: 270px;
+  background: #222c;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px #0006;
+  padding: 1.1rem 0;
+  margin: 0 auto 1.2rem auto;
+  gap: 2rem;
+  box-sizing: border-box;
+  @media (max-width: 700px) {
+    flex-direction: column;
+    align-items: center;
+    max-width: 98vw;
+    padding: 0.7rem 0;
+    gap: 0.5rem;
+  }
+`;
+
+const InfoPanelTop = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 1.2rem;
+`;
+
+const AvatarBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  margin-bottom: 0.2rem;
+  @media (max-width: 700px) {
+    margin-bottom: 0.3rem;
+  }
+`;
+
+const NameBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 0.2rem;
+  width: 100%;
+`;
+
+const LevelBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  background: #181818cc;
+  border-radius: 10px;
+  padding: 0.5rem 0.7rem;
+  margin-bottom: 0.2rem;
+  @media (max-width: 700px) {
+    padding: 0.4rem 0.3rem;
+  }
+`;
+
+const ButtonBlock = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 0.7rem;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 0.2rem;
+  @media (max-width: 700px) {
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.3rem;
   }
 `;
 
 const campaignService = new CampaignService();
 
-// Example realm data for QuestMap (should be replaced with real data)
-const realms = [
-  // Row 1
-  { id: 'midgard', name: 'Midgard', description: 'The world of mortals', position: { x: 30, y: 15 }, connections: [], unlocked: true, completed: false },
-  { id: 'asgard', name: 'Asgard', description: 'Realm of the gods', position: { x: 50, y: 15 }, connections: [], unlocked: true, completed: false },
-  { id: 'vanaheim', name: 'Vanaheim', description: 'Realm of the Vanir', position: { x: 70, y: 15 }, connections: [], unlocked: true, completed: false },
-  // Row 2
-  { id: 'alfheim', name: 'Alfheim', description: 'Realm of the Light Elves', position: { x: 30, y: 40 }, connections: [], unlocked: true, completed: false },
-  { id: 'jotunheim', name: 'Jotunheim', description: 'Land of Giants', position: { x: 50, y: 40 }, connections: [], unlocked: true, completed: false },
-  { id: 'nidavellir', name: 'Nidavellir', description: 'Realm of the Dwarves', position: { x: 70, y: 40 }, connections: [], unlocked: true, completed: false },
-  // Row 3
-  { id: 'svartalfheim', name: 'Svartalfheim', description: 'Realm of the Dark Elves', position: { x: 30, y: 65 }, connections: [], unlocked: true, completed: false },
-  { id: 'muspelheim', name: 'Muspelheim', description: 'Realm of Fire', position: { x: 50, y: 65 }, connections: [], unlocked: true, completed: false },
-  { id: 'niflheim', name: 'Niflheim', description: 'Realm of Ice', position: { x: 70, y: 65 }, connections: [], unlocked: true, completed: false },
-  // Helheim at the bottom center
-  { id: 'helheim', name: 'Helheim', description: 'Realm of the Dead', position: { x: 50, y: 90 }, connections: [], unlocked: true, completed: false },
-];
+// Helper to compute realm progress and lock/unlock state
+function getRealmStates(progress: any, playerLevel: number) {
+  // Map of realmId -> quests in that realm
+  const questsByRealm: { [realmId: string]: typeof allQuests } = allQuests.reduce((acc: { [realmId: string]: typeof allQuests }, quest) => {
+    if (!acc[quest.location]) acc[quest.location] = [];
+    acc[quest.location].push(quest);
+    return acc;
+  }, {});
+
+  // Helper: is realm completed?
+  function isRealmCompleted(realmId: string): boolean {
+    const quests = questsByRealm[realmId] || [];
+    return quests.length > 0 && quests.every((q: any) => progress.completedQuests.includes(q.id));
+  }
+
+  // Helper: is realm unlocked?
+  function isRealmUnlocked(realmId: string): boolean {
+    if (realmId === 'midgard') return true;
+    const req = realmProgression[realmId as keyof typeof realmProgression];
+    if (!req) return false;
+    // All required quests must be completed
+    if (req.requiredQuests && req.requiredQuests.length > 0 && !req.requiredQuests.every((q: string) => progress.completedQuests.includes(q))) return false;
+    // Level requirement
+    if (req.requiredLevel && playerLevel < req.requiredLevel) return false;
+    return true;
+  }
+
+  // Helper: percent complete for progress bar
+  function getRealmProgressPercent(realmId: string): number {
+    const quests = questsByRealm[realmId] || [];
+    if (quests.length === 0) return 0;
+    const completed = quests.filter((q: any) => progress.completedQuests.includes(q.id)).length;
+    return Math.round((completed / quests.length) * 100);
+  }
+
+  // Build the new realms array
+  return baseRealms.map(realm => ({
+    ...realm,
+    unlocked: isRealmUnlocked(realm.id),
+    completed: isRealmCompleted(realm.id),
+    progressPercent: getRealmProgressPercent(realm.id)
+  }));
+}
 
 // Add this type for chapter keys
 type ChapterKey = keyof typeof campaignStory.chapters;
@@ -191,7 +287,7 @@ const CampaignPage: React.FC = () => {
 
   // Find the realm object by id
   const selectedRealmObj = selectedRealm
-    ? realms.find(r => r.id === selectedRealm) ?? null
+    ? baseRealms.find(r => r.id === selectedRealm) ?? null
     : null;
   // Get quests for the selected realm
   const selectedRealmQuests = selectedRealmObj
@@ -266,7 +362,8 @@ const CampaignPage: React.FC = () => {
   // Handler for confirming quest start (navigate)
   function handleBeginBattle() {
     if (questToStart) {
-      navigate(`/game/${questToStart.id}`);
+      console.log('Starting quest:', questToStart);
+      navigate(`/campaign/${questToStart.id}`);
       setQuestToStart(null);
     }
   }
@@ -312,10 +409,23 @@ const CampaignPage: React.FC = () => {
     setAvatarSelectOpen(false);
   }
 
+  const computedRealms = getRealmStates(progress, playerLevel);
+
   return (
     <Container>
-      <style>{fontStyles}</style>
       <Global styles={css`
+        @font-face {
+          font-family: 'Norse';
+          src: url('/fonts/Norse.otf') format('opentype');
+          font-weight: normal;
+          font-style: normal;
+        }
+        @font-face {
+          font-family: 'NorseBold';
+          src: url('/fonts/Norsebold.otf') format('opentype');
+          font-weight: bold;
+          font-style: normal;
+        }
         body {
           min-height: 100vh;
           background: linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url('https://res.cloudinary.com/dvfobknn4/image/upload/v1746867992/Background_snigeo.png');
@@ -328,101 +438,114 @@ const CampaignPage: React.FC = () => {
           font-family: 'Norse', serif !important;
         }
       `} />
-      <BackButton onClick={() => navigate('/')}>← Back to Menu</BackButton>
+      <BackButton onClick={() => navigate('/')}>←</BackButton>
       <Title>Campaign</Title>
       <SubTitle>{selectedRealm ? campaignStory.chapters[selectedRealm].title : 'Select a realm to view quests'}</SubTitle>
-      {/* Player Info Panel */}
-      <div style={{
-        background: '#222',
-        color: '#ffd700',
-        borderRadius: 12,
-        padding: '1rem 2rem',
-        marginBottom: 24,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 32,
-        fontFamily: 'Norse, serif',
-        boxShadow: '0 0 16px #000a'
-      }}>
-        {/* Avatar, Name, Level, XP */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 24, minWidth: 320 }}>
-          {/* Avatar and Name */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginRight: 8 }}>
-            <div style={{ width: 72, height: 100, borderRadius: 10, background: '#181818', boxShadow: '0 0 8px #000a', marginBottom: 6, position: 'relative', cursor: 'pointer' }} onClick={() => setAvatarSelectOpen(true)} title="Change Avatar">
-              {playerProfile.avatar ? (
-                <img src={cards.find(c => c.id === playerProfile.avatar)?.image} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: 10, objectFit: 'cover', border: '2px solid #ffd700' }} />
-              ) : (
-                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffd700', fontSize: 32 }}>?</div>
-              )}
-              <span style={{ position: 'absolute', bottom: 2, right: 6, fontSize: 18, color: '#ffd700', textShadow: '0 0 6px #000' }}>✎</span>
-            </div>
-            {editingName ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <input
-                  value={nameInput}
-                  onChange={e => setNameInput(e.target.value)}
-                  style={{ fontSize: 18, borderRadius: 6, border: '1px solid #ffd700', padding: '2px 8px', fontFamily: 'Norse, serif', color: '#222', background: '#ffd700', fontWeight: 'bold', width: 90 }}
-                  maxLength={16}
-                  autoFocus
-                />
-                <button onClick={handleSaveName} style={{ background: '#ffd700', color: '#222', border: 'none', borderRadius: 6, fontWeight: 'bold', padding: '2px 10px', cursor: 'pointer' }}>✔</button>
-                <button onClick={() => setEditingName(false)} style={{ background: '#888', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', padding: '2px 10px', cursor: 'pointer' }}>✖</button>
+      <InfoPanel>
+        <InfoPanelTop>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flex: 1, minWidth: 0 }}>
+            <AvatarBlock>
+              <div style={{ width: 72, height: 100, borderRadius: 10, background: '#181818', boxShadow: '0 0 8px #000a', marginBottom: 4, position: 'relative', cursor: 'pointer' }} onClick={() => setAvatarSelectOpen(true)} title="Change Avatar">
+                {playerProfile.avatar ? (
+                  <img src={cards.find(c => c.id === playerProfile.avatar)?.image} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: 10, objectFit: 'cover', border: '2px solid #ffd700' }} />
+                ) : (
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffd700', fontSize: 32 }}>?</div>
+                )}
+                <span style={{ position: 'absolute', bottom: 2, right: 6, fontSize: 18, color: '#ffd700', textShadow: '0 0 6px #000' }}>✎</span>
               </div>
-            ) : (
-              <div style={{ fontSize: 20, fontWeight: 'bold', color: '#ffd700', cursor: 'pointer', textShadow: '0 0 6px #ffd70088' }} onClick={() => setEditingName(true)} title="Edit Name">{playerProfile.name}</div>
-            )}
+            </AvatarBlock>
+            <NameBlock>
+              {editingName ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <input
+                    value={nameInput}
+                    onChange={e => setNameInput(e.target.value)}
+                    style={{ fontSize: 18, borderRadius: 6, border: '1px solid #ffd700', padding: '2px 8px', fontFamily: 'Norse, serif', color: '#222', background: '#ffd700', fontWeight: 'bold', width: 90 }}
+                    maxLength={16}
+                    autoFocus
+                  />
+                  <button onClick={handleSaveName} style={{ background: '#ffd700', color: '#222', border: 'none', borderRadius: 6, fontWeight: 'bold', padding: '2px 10px', cursor: 'pointer' }}>✔</button>
+                  <button onClick={() => setEditingName(false)} style={{ background: '#888', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', padding: '2px 10px', cursor: 'pointer' }}>✖</button>
+                </div>
+              ) : (
+                <div style={{ fontSize: 20, fontWeight: 'bold', color: '#ffd700', cursor: 'pointer', textShadow: '0 0 6px #ffd70088' }} onClick={() => setEditingName(true)} title="Edit Name">{playerProfile.name}</div>
+              )}
+            </NameBlock>
           </div>
-          {/* Level and XP */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', minWidth: 120 }}>
-            <div style={{ fontSize: 22, fontWeight: 'bold', marginBottom: 2 }}>Level {progress.playerLevel}</div>
-            <div style={{ fontSize: 16, marginBottom: 4 }}>XP: {progress.experience - ((progress.playerLevel - 1) * 1000)} / {progress.playerLevel * 1000}</div>
-            <div style={{ height: 8, background: '#444', borderRadius: 4, width: 140, marginBottom: 2 }}>
-              <div style={{ height: 8, background: '#ffd700', borderRadius: 4, width: `${Math.min(100, Math.round((progress.experience - ((progress.playerLevel - 1) * 1000)) / (progress.playerLevel * 1000) * 100))}%`, transition: 'width 0.3s' }} />
-            </div>
+          <ButtonBlock style={{ alignItems: 'flex-end', flex: 1, maxWidth: 180 }}>
+            <button
+              style={{
+                padding: '0.7rem 1.2rem',
+                fontSize: '1.05rem',
+                borderRadius: 8,
+                border: '2px solid #ffd700',
+                background: '#181818',
+                color: '#ffd700',
+                fontFamily: 'Norsebold, Norse, serif',
+                fontWeight: 'bold',
+                letterSpacing: 1,
+                cursor: 'pointer',
+                boxShadow: '0 0 12px 2px #ffd70033',
+                transition: 'background 0.2s, color 0.2s',
+                width: '100%',
+                maxWidth: 160,
+              }}
+              onClick={() => navigate('/collection')}
+            >
+              Card Collection
+            </button>
+            <button
+              style={{
+                padding: '0.7rem 1.2rem',
+                fontSize: '1.05rem',
+                borderRadius: 8,
+                border: '2px solid #ffd700',
+                background: '#181818',
+                color: '#ffd700',
+                fontFamily: 'Norsebold, Norse, serif',
+                fontWeight: 'bold',
+                letterSpacing: 1,
+                cursor: 'pointer',
+                boxShadow: '0 0 12px 2px #ffd70033',
+                transition: 'background 0.2s, color 0.2s',
+                width: '100%',
+                maxWidth: 160,
+              }}
+              onClick={() => navigate('/deck-builder')}
+            >
+              Deck Builder
+            </button>
+            <button
+              style={{
+                padding: '0.7rem 1.2rem',
+                fontSize: '1.05rem',
+                borderRadius: 8,
+                border: '2px solid #ffd700',
+                background: '#181818',
+                color: '#ffd700',
+                fontFamily: 'Norsebold, Norse, serif',
+                fontWeight: 'bold',
+                letterSpacing: 1,
+                cursor: 'pointer',
+                boxShadow: '0 0 12px 2px #ffd70033',
+                transition: 'background 0.2s, color 0.2s',
+                width: '100%',
+                maxWidth: 160,
+              }}
+              onClick={() => setShowLoreJournal(true)}
+            >
+              Lore Journal
+            </button>
+          </ButtonBlock>
+        </InfoPanelTop>
+        <LevelBlock>
+          <div style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 2 }}>Level {progress.playerLevel}</div>
+          <div style={{ fontSize: 15, marginBottom: 4 }}>XP: {progress.experience - ((progress.playerLevel - 1) * 1000)} / {progress.playerLevel * 1000}</div>
+          <div style={{ height: 8, background: '#444', borderRadius: 4, width: '100%', maxWidth: 140, marginBottom: 2 }}>
+            <div style={{ height: 8, background: '#ffd700', borderRadius: 4, width: `${Math.min(100, Math.round((progress.experience - ((progress.playerLevel - 1) * 1000)) / (progress.playerLevel * 1000) * 100))}%`, transition: 'width 0.3s' }} />
           </div>
-        </div>
-        {/* Card Collection & Deck Builder Buttons */}
-        <div style={{ display: 'flex', gap: 16, marginLeft: 'auto' }}>
-          <button
-            style={{
-              padding: '0.7rem 2rem',
-              fontSize: '1.1rem',
-              borderRadius: 8,
-              border: '2px solid #ffd700',
-              background: '#181818',
-              color: '#ffd700',
-              fontFamily: 'Norsebold, Norse, serif',
-              fontWeight: 'bold',
-              letterSpacing: 1,
-              cursor: 'pointer',
-              boxShadow: '0 0 12px 2px #ffd70033',
-              transition: 'background 0.2s, color 0.2s',
-            }}
-            onClick={() => navigate('/collection')}
-          >
-            Card Collection
-          </button>
-          <button
-            style={{
-              padding: '0.7rem 2rem',
-              fontSize: '1.1rem',
-              borderRadius: 8,
-              border: '2px solid #ffd700',
-              background: '#181818',
-              color: '#ffd700',
-              fontFamily: 'Norsebold, Norse, serif',
-              fontWeight: 'bold',
-              letterSpacing: 1,
-              cursor: 'pointer',
-              boxShadow: '0 0 12px 2px #ffd70033',
-              transition: 'background 0.2s, color 0.2s',
-            }}
-            onClick={() => navigate('/deck-builder')}
-          >
-            Deck Builder
-          </button>
-        </div>
-      </div>
+        </LevelBlock>
+      </InfoPanel>
       {progress.specialAbilities && progress.specialAbilities.length > 0 && (
         <div style={{ margin: '1rem 0', background: '#222', color: '#ffd700', padding: '0.75rem 1.5rem', borderRadius: 8, boxShadow: '0 0 8px #ffd70055' }}>
           <strong>Unlocked Abilities:</strong>
@@ -433,13 +556,7 @@ const CampaignPage: React.FC = () => {
           </ul>
         </div>
       )}
-      <button
-        onClick={() => setShowLoreJournal(true)}
-        style={{ position: 'absolute', top: 24, right: 24, padding: '0.5rem 1.2rem', borderRadius: 6, border: '2px solid #ffd700', background: '#181818cc', color: '#ffd700', fontFamily: 'Norse', fontWeight: 'bold', letterSpacing: 1, cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.12)', zIndex: 10, transition: 'background 0.2s, box-shadow 0.2s', textShadow: '0 1px 6px #fff8, 0 0 2px #ffd70044' }}
-      >
-        Lore Journal
-      </button>
-      <QuestMap realms={realms} onRealmSelect={handleRealmSelect} />
+      <QuestMap realms={computedRealms} onRealmSelect={handleRealmSelect} />
       <QuestPanelModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}

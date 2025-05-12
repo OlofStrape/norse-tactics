@@ -13,24 +13,26 @@ const BoardContainer = styled.div`
   gap: 2rem;
   padding: 2rem;
   overflow-x: auto;
-  @media (max-width: 600px) {
-    padding: 0.5rem;
-    gap: 0.7rem;
+  @media (max-width: 700px) {
+    padding: 0.2rem;
+    gap: 0.3rem;
   }
 `;
 
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
+  grid-template-rows: repeat(3, 1fr);
+  width: 100%;
+  height: 100%;
+  gap: 8px;
+  align-items: stretch;
+  justify-items: stretch;
   background: transparent;
-  padding: 1rem;
   border-radius: 16px;
-  border: 4px solid #ffd700;
-  box-shadow: 0 0 12px 2px #ffd70055, 0 4px 24px rgba(0,0,0,0.18);
-  @media (max-width: 600px) {
-    gap: 0.4rem;
-    padding: 0.4rem;
+  box-sizing: border-box;
+  @media (max-width: 700px) {
+    gap: 2px;
     border-width: 2px;
   }
 `;
@@ -54,8 +56,13 @@ const runeSet = [
 ];
 
 const Cell = styled.div<{ isPlayable: boolean }>`
-  width: 120px;
-  height: 160px;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 3 / 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
   background: transparent;
   border: 3px solid rgba(60, 40, 20, 0.7);
   border-radius: 10px;
@@ -63,13 +70,10 @@ const Cell = styled.div<{ isPlayable: boolean }>`
     0 2px 8px rgba(0,0,0,0.18),
     0 1.5px 0 #666 inset,
     0 0 0 2px #8888 inset;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   cursor: ${props => props.isPlayable ? 'pointer' : 'default'};
   transition: all 0.2s ease;
-  position: relative;
   overflow: hidden;
+  box-sizing: border-box;
   &:before {
     content: '';
     position: absolute;
@@ -82,25 +86,17 @@ const Cell = styled.div<{ isPlayable: boolean }>`
     transform: ${props => props.isPlayable ? 'scale(1.05)' : 'none'};
     border-color: ${props => props.isPlayable ? '#ffd700' : 'rgba(60, 40, 20, 0.7)'};
   }
-  @media (max-width: 600px) {
-    width: 24vw;
-    height: 32vw;
-    min-width: 80px;
-    min-height: 100px;
-    max-width: 120px;
-    max-height: 160px;
-    border-width: 2px;
-  }
 `;
 
 const Rune = styled.span`
-  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
   font-size: 3.5rem;
   color: #181818;
   opacity: 0.22;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
   pointer-events: none;
   user-select: none;
   mix-blend-mode: multiply;

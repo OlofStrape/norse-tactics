@@ -12,70 +12,123 @@ import { AIDifficultySelector } from './AIDifficultySelector';
 
 const AppContainer = styled.div`
   min-height: 100vh;
-  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
-  color: white;
-  padding: 2rem;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  color: white;
+  padding: 1rem;
 `;
 
 const Title = styled.h1`
   font-family: 'Norse', 'Cinzel Decorative', serif;
-  font-size: 3rem;
-  margin-bottom: 2rem;
+  font-size: 2.2rem;
+  margin-bottom: 1rem;
   text-align: center;
   color: #ffd700;
   text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  @media (max-width: 700px) {
+    display: none;
+  }
 `;
 
 const GameContainer = styled.div`
   display: flex;
-  gap: 2rem;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
 `;
 
-const PlayerHand = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  width: 200px;
+const HandContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2.5rem;
+  justify-items: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 0.2rem;
+  margin-bottom: 0.2rem;
+  &.player1 {
+    margin-top: 0;
+    margin-bottom: 1.2rem;
+  }
+  &.player2 {
+    margin-top: 1.2rem;
+    margin-bottom: 0;
+  }
+  @media (max-width: 700px) {
+    gap: 1.7rem;
+    margin-top: 0.1rem;
+    margin-bottom: 0.1rem;
+    &.player1 {
+      margin-top: 0;
+      margin-bottom: 0.7rem;
+    }
+    &.player2 {
+      margin-top: 0.7rem;
+      margin-bottom: 0;
+    }
+  }
 `;
 
 const PlayerInfo = styled.div<{ isActive: boolean }>`
-  padding: 1rem;
+  padding: 0.7rem 2rem;
   background: ${props => props.isActive ? '#ffd700' : 'transparent'};
   border-radius: 8px;
   text-align: center;
   border: 2px solid ${props => props.isActive ? '#ffd700' : 'rgba(60, 40, 20, 0.7)'};
   color: ${props => props.isActive ? '#bfa100' : 'white'};
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
   font-weight: bold;
   font-size: 1.1rem;
-  &:hover {
-    background: ${props => props.isActive ? '#ffed4a' : 'rgba(255,255,255,0.08)'};
+  margin: 0.08rem 0 0.04rem 0;
+  width: 100%;
+  max-width: 420px;
+  @media (max-width: 700px) {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    max-width: 98vw;
   }
 `;
 
-const HandContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  align-items: center;
+const CardWrapper = styled.div`
+  width: 80px;
+  height: 120px;
+  @media (max-width: 700px) {
+    width: 44px;
+    height: 66px;
+    min-width: 36px;
+    min-height: 48px;
+    max-width: 60px;
+    max-height: 90px;
+  }
 `;
 
-const CardWrapper = styled.div`
-  width: 120px;
-  height: 160px;
+const BoardWrapper = styled.div`
+  width: 100%;
+  max-width: 270px;
+  aspect-ratio: 3 / 4;
+  height: auto;
+  margin: 1rem auto;
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
+  border-radius: 16px;
 `;
 
 const GameInfo = styled.div`
-  margin-top: 2rem;
+  margin-top: 0.7rem;
   text-align: center;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
+  @media (max-width: 700px) {
+    font-size: 0.95rem;
+    margin-top: 0.3rem;
+  }
 `;
 
 const RulesToggle = styled.div`
@@ -96,6 +149,55 @@ const RuleButton = styled.button<{ active: boolean }>`
   &:hover {
     background: ${props => props.active ? '#ffed4a' : 'rgba(255,255,255,0.08)'};
   }
+`;
+
+// Add a new TurnBar styled component for the top bar
+const TurnBar = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 480px;
+  margin: 1.2rem auto 0.3rem auto;
+  padding: 0.5rem 0.2rem;
+  font-size: 1.1rem;
+  font-family: 'NorseBold', 'Norse', serif;
+  background: rgba(40, 30, 10, 0.85);
+  border-radius: 10px;
+  box-shadow: 0 1px 8px #0004;
+  gap: 1.2rem;
+  @media (max-width: 700px) {
+    font-size: 1rem;
+    max-width: 98vw;
+    gap: 0.5rem;
+    padding: 0.3rem 0.1rem;
+    margin-top: 0.7rem;
+    margin-bottom: 0.2rem;
+  }
+`;
+
+const PlayerLabel = styled.span<{ active: boolean }>`
+  color: ${({ active }) => (active ? '#ffd700' : '#fff')};
+  font-weight: ${({ active }) => (active ? 'bold' : 'normal')};
+  text-shadow: ${({ active }) => (active ? '0 0 8px #ffd70088' : 'none')};
+  transition: color 0.2s, text-shadow 0.2s;
+`;
+
+const Score = styled.span`
+  color: #ffd700;
+  margin: 0 0.2rem;
+`;
+
+const Clock = styled.span`
+  color: #fff;
+  font-size: 1.1em;
+  font-family: 'NorseBold', 'Norse', serif;
+  background: #222a;
+  border-radius: 6px;
+  padding: 0.1em 0.7em;
+  margin: 0 0.5em;
+  min-width: 2.2em;
+  text-align: center;
 `;
 
 interface GameSessionProps {
@@ -129,6 +231,8 @@ export const GameSession: React.FC<GameSessionProps> = ({
   const [winner, setWinner] = useState<'player' | 'opponent' | 'draw' | null>(null);
   const [usedAbilities, setUsedAbilities] = useState<string[]>([]);
   const [activeAbility, setActiveAbility] = useState<string | null>(null);
+  const [turnTimer, setTurnTimer] = useState(30);
+  const [missedTurnCount, setMissedTurnCount] = useState(0);
 
   useEffect(() => {
     const initialState = GameLogic.initializeGame(playerDeck, opponentDeck);
@@ -169,6 +273,71 @@ export const GameSession: React.FC<GameSessionProps> = ({
     return () => { delete window.handleGameCapture; };
   }, [handleCapture]);
 
+  // Add a useEffect to show the card preview only on mobile
+  useEffect(() => {
+    const updatePreviewVisibility = () => {
+      const preview = document.querySelector('.card-preview-mobile') as HTMLElement;
+      if (preview) {
+        preview.style.display = window.innerWidth <= 700 && selectedCard ? 'block' : 'none';
+      }
+    };
+    window.addEventListener('resize', updatePreviewVisibility);
+    updatePreviewVisibility();
+    return () => window.removeEventListener('resize', updatePreviewVisibility);
+  }, [selectedCard]);
+
+  // Timer effect for player turn
+  useEffect(() => {
+    if (!gameState || isGameOver) return;
+    if (gameState.currentTurn !== 'player') return;
+    setTurnTimer(30);
+    let interval = setInterval(() => {
+      setTurnTimer(prev => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          // Timeout: play random card
+          if (gameState.currentTurn === 'player') {
+            // Find all playable cards and positions
+            const hand = gameState.player1Hand;
+            const emptyCells: { row: number; col: number }[] = [];
+            for (let row = 0; row < 3; row++) {
+              for (let col = 0; col < 3; col++) {
+                if (!gameState.board[row][col]) emptyCells.push({ row, col });
+              }
+            }
+            if (hand.length > 0 && emptyCells.length > 0) {
+              const card = hand[Math.floor(Math.random() * hand.length)];
+              const pos = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+              handleCellClick(pos, card);
+              setMissedTurnCount(c => c + 1);
+            }
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+    // eslint-disable-next-line
+  }, [gameState?.currentTurn, isGameOver]);
+
+  // Reset missedTurnCount if player plays in time
+  useEffect(() => {
+    if (!gameState) return;
+    if (gameState.currentTurn !== 'player') return;
+    if (turnTimer === 30) setMissedTurnCount(0);
+  }, [gameState?.turnCount]);
+
+  // If missed two turns in a row, auto-lose
+  useEffect(() => {
+    if (missedTurnCount >= 2) {
+      setIsGameOver(true);
+      setWinner('opponent');
+      onGameEnd('opponent');
+    }
+  }, [missedTurnCount, onGameEnd]);
+
+  // All hooks are now above this early return
   if (!gameState) {
     return (
       <AppContainer>
@@ -178,15 +347,22 @@ export const GameSession: React.FC<GameSessionProps> = ({
   }
 
   const handleCardSelect = (card: Card) => {
-    if (gameState.currentTurn === 'player' && gameState.player1Hand.includes(card)) {
+    if (window.innerWidth <= 700) {
+      // On mobile, select card only
       setSelectedCard(card);
-    } else if (gameState.currentTurn === 'opponent' && gameState.player2Hand.includes(card)) {
-      setSelectedCard(card);
+    } else {
+      // On desktop, select and play immediately
+      if (gameState.currentTurn === 'player' && gameState.player1Hand.includes(card)) {
+        setSelectedCard(card);
+      } else if (gameState.currentTurn === 'opponent' && gameState.player2Hand.includes(card)) {
+        setSelectedCard(card);
+      }
     }
   };
 
   const handleCellClick = (position: Position, cardArg?: Card) => {
     let cardToPlay = cardArg || selectedCard;
+    if (window.innerWidth <= 700 && !selectedCard) return; // Require selection on mobile
     if (!cardToPlay) return;
 
     // If Berserker Rage is active and it's the player's turn, apply the effect
@@ -303,12 +479,6 @@ export const GameSession: React.FC<GameSessionProps> = ({
       <style>{fontStyles}</style>
       <AppContainer style={{ position: 'relative', background: 'none' }}>
         {title && <Title>{title}</Title>}
-        {showControls && (
-          <AIDifficultySelector
-            selectedDifficulty={aiDifficulty}
-            onDifficultyChange={() => {}}
-          />
-        )}
         {isAIThinking && <AILoadingIndicator />}
         <EndGameModal
           isOpen={isGameOver}
@@ -317,119 +487,71 @@ export const GameSession: React.FC<GameSessionProps> = ({
           opponentScore={gameState.score.opponent}
           onRestart={() => window.location.reload()}
         />
-        {showControls && (
-          <RulesToggle>
-            <RuleButton active={rules.same} onClick={() => toggleRule('same')}>
-              Same Rule
-            </RuleButton>
-            <RuleButton active={rules.plus} onClick={() => toggleRule('plus')}>
-              Plus Rule
-            </RuleButton>
-            <RuleButton active={rules.elements} onClick={() => toggleRule('elements')}>
-              Elements
-            </RuleButton>
-            <RuleButton active={rules.ragnarok} onClick={() => toggleRule('ragnarok')}>
-              Ragnarök
-            </RuleButton>
-          </RulesToggle>
-        )}
+        {/* Turn marker bar at the very top */}
+        <TurnBar>
+          <PlayerLabel active={gameState.currentTurn === 'player'}>
+            Player 1 <Score>({gameState.score.player})</Score>
+          </PlayerLabel>
+          <Clock>⏳ {gameState.currentTurn === 'player' ? turnTimer : 30}</Clock>
+          <PlayerLabel active={gameState.currentTurn === 'opponent'}>
+            Player 2 <Score>({gameState.score.opponent})</Score>
+          </PlayerLabel>
+        </TurnBar>
         <GameContainer>
-          <PlayerHand>
-            <PlayerInfo isActive={gameState.currentTurn === 'player'}>
-              Player 1 (Score: 
-                <motion.span
-                  key={gameState.score.player}
-                  initial={{ scale: 1, color: '#ffd700' }}
-                  animate={{ scale: [1.2, 1], color: ['#fff', '#ffd700'] }}
-                  transition={{ duration: 0.4 }}
-                  style={{ display: 'inline-block', marginLeft: 4 }}
-                >
-                  {gameState.score.player}
-                </motion.span>
-              )
-            </PlayerInfo>
-            <HandContainer>
-              {gameState.player1Hand.map(card => (
-                <CardWrapper key={card.id}>
-                  <GameCard
-                    card={card}
-                    isPlayable={gameState.currentTurn === 'player'}
-                    onClick={() => handleCardSelect(card)}
-                    isCapturing={capturingCards.has(card.id)}
-                    isChainReaction={chainReactionCards.has(card.id)}
-                  />
-                </CardWrapper>
-              ))}
-            </HandContainer>
-          </PlayerHand>
-          <GameBoard
-            gameState={gameState}
-            onCellClick={handleCellClick}
-            onCapture={handleCapture}
-          />
-          <PlayerHand>
-            <PlayerInfo isActive={gameState.currentTurn === 'opponent'}>
-              Player 2 (Score: 
-                <motion.span
-                  key={gameState.score.opponent}
-                  initial={{ scale: 1, color: '#ffd700' }}
-                  animate={{ scale: [1.2, 1], color: ['#fff', '#ffd700'] }}
-                  transition={{ duration: 0.4 }}
-                  style={{ display: 'inline-block', marginLeft: 4 }}
-                >
-                  {gameState.score.opponent}
-                </motion.span>
-              )
-            </PlayerInfo>
-            <HandContainer>
-              {gameState.player2Hand.map(card => (
-                <CardWrapper key={card.id}>
-                  <GameCard
-                    card={card}
-                    isPlayable={gameState.currentTurn === 'opponent'}
-                    onClick={() => handleCardSelect(card)}
-                    isCapturing={capturingCards.has(card.id)}
-                    isChainReaction={chainReactionCards.has(card.id)}
-                  />
-                </CardWrapper>
-              ))}
-            </HandContainer>
-          </PlayerHand>
+          {/* Player 2 hand (top, horizontal) */}
+          <HandContainer className="player2">
+            {(() => {
+              const hand = gameState.player2Hand;
+              const emptySlots = Math.max(0, 5 - hand.length);
+              return [
+                ...hand.map(card => (
+                  <CardWrapper key={card.id} style={selectedCard && selectedCard.id === card.id ? { border: '2px solid #ffd700', boxShadow: '0 0 8px #ffd700' } : {}}>
+                    <GameCard
+                      card={card}
+                      isPlayable={gameState.currentTurn === 'opponent'}
+                      onClick={() => handleCardSelect(card)}
+                      isCapturing={capturingCards.has(card.id)}
+                      isChainReaction={chainReactionCards.has(card.id)}
+                    />
+                  </CardWrapper>
+                )),
+                ...Array(emptySlots).fill(null).map((_, i) => <div key={`empty-p2-${i}`} />)
+              ];
+            })()}
+          </HandContainer>
+          <div style={{ height: '2.4rem' }} />
+          {/* Board in the center */}
+          <BoardWrapper>
+            <GameBoard
+              gameState={gameState}
+              onCellClick={handleCellClick}
+              onCapture={handleCapture}
+            />
+          </BoardWrapper>
+          <div style={{ height: '1.2rem' }} />
+          {/* Player 1 hand (bottom, horizontal) */}
+          <HandContainer className="player1">
+            {(() => {
+              const hand = gameState.player1Hand;
+              const emptySlots = Math.max(0, 5 - hand.length);
+              return [
+                ...hand.map(card => (
+                  <CardWrapper key={card.id} style={selectedCard && selectedCard.id === card.id ? { border: '2px solid #ffd700', boxShadow: '0 0 8px #ffd700' } : {}}>
+                    <GameCard
+                      card={card}
+                      isPlayable={gameState.currentTurn === 'player'}
+                      onClick={() => handleCardSelect(card)}
+                      isCapturing={capturingCards.has(card.id)}
+                      isChainReaction={chainReactionCards.has(card.id)}
+                    />
+                  </CardWrapper>
+                )),
+                ...Array(emptySlots).fill(null).map((_, i) => <div key={`empty-p1-${i}`} />)
+              ];
+            })()}
+          </HandContainer>
         </GameContainer>
-        <GameInfo>
-          {selectedCard ? (
-            `Selected: ${selectedCard.name} - Place it on the board`
-          ) : (
-            `${gameState.currentTurn === 'player' ? 'Player 1' : 'Player 2'}'s turn`
-          )}
-        </GameInfo>
-        {/* Unlocked Abilities UI */}
-        {unlockedAbilities && unlockedAbilities.length > 0 && (
-          <div style={{ margin: '1rem 0', background: '#222', color: '#ffd700', padding: '0.75rem 1.5rem', borderRadius: 8, boxShadow: '0 0 8px #ffd70055' }}>
-            <strong>Unlocked Abilities:</strong>
-            <ul style={{ margin: 0, paddingLeft: 18 }}>
-              {unlockedAbilities.map((ability, i) => (
-                <li key={i} style={{ marginBottom: 6 }}>
-                  {ability}
-                  <button
-                    style={{ marginLeft: 12, padding: '2px 10px', borderRadius: 6, border: 'none', background: usedAbilities.includes(ability) ? '#888' : (activeAbility === ability ? '#ffd700' : '#ffd700'), color: '#222', fontWeight: 'bold', cursor: usedAbilities.includes(ability) ? 'not-allowed' : 'pointer', boxShadow: activeAbility === ability ? '0 0 8px #ffd700' : undefined }}
-                    disabled={usedAbilities.includes(ability) || activeAbility === ability}
-                    onClick={() => handleActivateAbility(ability)}
-                  >
-                    {usedAbilities.includes(ability) ? 'Used' : (activeAbility === ability ? 'Active' : 'Activate')}
-                  </button>
-                </li>
-              ))}
-            </ul>
-            {/* Show a visual indicator if Berserker Rage is active */}
-            {activeAbility === 'Berserker Rage' && (
-              <div style={{ color: '#ffd700', fontWeight: 'bold', marginTop: 8, textShadow: '0 0 6px #ffd700' }}>
-                Berserker Rage active! Your next card will be empowered.
-              </div>
-            )}
-          </div>
-        )}
       </AppContainer>
     </>
   );
-}; 
+};

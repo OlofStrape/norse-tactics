@@ -1,1 +1,8 @@
 node_modules
+build/
+dist/
+*.log
+*.tmp
+# Uncomment the next lines if you move images to a CDN
+# public/images/campaign/
+# public/images/tutorial/

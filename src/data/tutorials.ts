@@ -1,4 +1,10 @@
 export const tutorialSteps = {
+  basicRules: [
+    {
+      title: "How to Play Norse Tactics",
+      content: "Place your cards on the board to capture your opponent's cards. If your card's side value is higher than the adjacent side of an opponent's card, you capture it! The player with the most cards at the end wins. Plan your moves and use your cards' strengths wisely!"
+    }
+  ],
   plusRule: [
     {
       title: "Plus Rule",

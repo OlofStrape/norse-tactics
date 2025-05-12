@@ -28,6 +28,19 @@ const Modal = styled(motion.div)`
   position: relative;
   font-family: 'Norse', serif;
   z-index: 3100;
+
+  @media (max-width: 700px) {
+    min-width: 0;
+    max-width: 98vw;
+    width: 99vw;
+    padding: 1.2rem 0.7rem 1.2rem 0.7rem;
+  }
+  @media (max-width: 500px) {
+    min-width: 0;
+    max-width: 100vw;
+    width: 100vw;
+    padding: 0.7rem 0.2rem 1rem 0.2rem;
+  }
 `;
 
 const CloseButton = styled.button`
@@ -54,6 +67,14 @@ const QuestName = styled.h2`
   text-shadow: 0 0 18px #ffd700, 0 2px 2px #000, 0 0 2px #ffd700;
   margin-bottom: 0.5rem;
   text-align: center;
+  @media (max-width: 700px) {
+    font-size: 1.4rem;
+    margin-bottom: 0.3rem;
+  }
+  @media (max-width: 500px) {
+    font-size: 1.1rem;
+    margin-bottom: 0.2rem;
+  }
 `;
 
 const Description = styled.p`
@@ -62,6 +83,14 @@ const Description = styled.p`
   margin-bottom: 1.5rem;
   text-align: center;
   font-family: 'Norse', serif;
+  @media (max-width: 700px) {
+    font-size: 0.95rem;
+    margin-bottom: 0.7rem;
+  }
+  @media (max-width: 500px) {
+    font-size: 0.85rem;
+    margin-bottom: 0.4rem;
+  }
 `;
 
 const Section = styled.div`
@@ -75,6 +104,20 @@ const Section = styled.div`
     padding: 0.5rem 0.8rem 0.7rem 0.8rem; /* was 1rem 1.2rem 1.2rem 1.2rem */
     border-radius: 12px;
   }
+  @media (max-width: 700px) {
+    margin-bottom: 0.7rem;
+    &:first-of-type {
+      margin-top: 0.3rem;
+      padding: 0.3rem 0.3rem 0.4rem 0.3rem;
+    }
+  }
+  @media (max-width: 500px) {
+    margin-bottom: 0.3rem;
+    &:first-of-type {
+      margin-top: 0.1rem;
+      padding: 0.15rem 0.1rem 0.2rem 0.1rem;
+    }
+  }
 `;
 
 const SectionTitle = styled.h3`
@@ -82,6 +125,14 @@ const SectionTitle = styled.h3`
   color: #ffd700;
   margin-bottom: 0.3rem;
   font-family: 'Norse', serif;
+  @media (max-width: 700px) {
+    font-size: 0.95rem;
+    margin-bottom: 0.15rem;
+  }
+  @media (max-width: 500px) {
+    font-size: 0.8rem;
+    margin-bottom: 0.08rem;
+  }
 `;
 
 const ReqList = styled.div`
@@ -90,6 +141,14 @@ const ReqList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 2px; /* was 4px */
+  @media (max-width: 700px) {
+    padding-left: 8px;
+    gap: 1px;
+  }
+  @media (max-width: 500px) {
+    padding-left: 4px;
+    gap: 0;
+  }
 `;
 
 const ReqItem = styled.span<{ met?: boolean }>`
@@ -99,6 +158,12 @@ const ReqItem = styled.span<{ met?: boolean }>`
   user-select: none;
   pointer-events: none;
   outline: none;
+  @media (max-width: 700px) {
+    font-size: 0.85rem;
+  }
+  @media (max-width: 500px) {
+    font-size: 0.75rem;
+  }
 `;
 
 const Rewards = styled.div`
@@ -106,11 +171,26 @@ const Rewards = styled.div`
   gap: 1.2rem;
   align-items: center;
   margin-top: 0.5rem;
+  flex-wrap: wrap;
+  @media (max-width: 700px) {
+    gap: 0.5rem;
+    margin-top: 0.2rem;
+  }
+  @media (max-width: 500px) {
+    gap: 0.2rem;
+    margin-top: 0.1rem;
+  }
 `;
 
 const RewardIcon = styled.span`
   font-size: 1.5rem;
   color: #ffd700;
+  @media (max-width: 700px) {
+    font-size: 1.1rem;
+  }
+  @media (max-width: 500px) {
+    font-size: 0.9rem;
+  }
 `;
 
 const ProgressBar = styled.div<{ progress: number }>`
@@ -130,6 +210,14 @@ const ProgressBar = styled.div<{ progress: number }>`
     background: #FFD700;
     border-radius: 3px;
     transition: width 0.3s ease;
+  }
+  @media (max-width: 700px) {
+    height: 4px;
+    margin: 0.5rem 0 0.7rem 0;
+  }
+  @media (max-width: 500px) {
+    height: 2px;
+    margin: 0.2rem 0 0.3rem 0;
   }
 `;
 
@@ -151,6 +239,16 @@ const StartButton = styled.button<{ unlocked: boolean }>`
   &:hover {
     background: ${props => props.unlocked ? '#ffe066' : '#444'};
     box-shadow: 0 0 18px 4px #ffd70066, 0 4px 16px rgba(0,0,0,0.18);
+  }
+  @media (max-width: 700px) {
+    padding: 0.5rem 1.2rem;
+    font-size: 1rem;
+    margin-top: 0.6rem;
+  }
+  @media (max-width: 500px) {
+    padding: 0.3rem 0.7rem;
+    font-size: 0.9rem;
+    margin-top: 0.3rem;
   }
 `;
 
@@ -239,7 +337,7 @@ const QuestDetailsModal: React.FC<QuestDetailsModalProps> = ({ open, onClose, qu
             unlocked={unlocked}
             disabled={!unlocked}
             title={unlocked ? 'Start this quest' : 'You must meet all requirements to start'}
-            onClick={unlocked ? () => { onClose(); navigate(`/game/${quest.id}`); } : undefined}
+            onClick={unlocked ? () => { onClose(); navigate(`/campaign/${quest.id}`); } : undefined}
           >
             {completed ? 'Completed' : unlocked ? 'Start Quest' : 'Locked'}
           </StartButton>

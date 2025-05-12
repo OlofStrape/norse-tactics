@@ -33,7 +33,7 @@ export const realms: Realm[] = [
         name: 'Alfheim',
         description: 'Home of the Light Elves.',
         position: { x: 80, y: 65 }, // Right
-        connections: ['midgard', 'vanaheim', 'svartalfheim'],
+        connections: ['midgard', 'vanaheim'],
         unlocked: false,
         completed: false
     },
@@ -51,16 +51,7 @@ export const realms: Realm[] = [
         name: 'Nidavellir',
         description: 'Underground realm of the dwarves.',
         position: { x: 20, y: 65 }, // Left
-        connections: ['svartalfheim', 'midgard'],
-        unlocked: false,
-        completed: false
-    },
-    {
-        id: 'svartalfheim',
-        name: 'Svartalfheim',
-        description: 'Home of the Dark Elves.',
-        position: { x: 35, y: 80 }, // Bottom left
-        connections: ['nidavellir', 'alfheim', 'helheim'],
+        connections: ['midgard'],
         unlocked: false,
         completed: false
     },
@@ -86,8 +77,8 @@ export const realms: Realm[] = [
         id: 'helheim',
         name: 'Helheim',
         description: 'Realm of the dead.',
-        position: { x: 50, y: 90 }, // Bottom center
-        connections: ['niflheim', 'muspelheim', 'svartalfheim'],
+        position: { x: 80, y: 90 }, // Far bottom right (moved)
+        connections: ['niflheim', 'muspelheim', 'nidavellir'],
         unlocked: false,
         completed: false
     }
@@ -112,7 +103,7 @@ export const realmProgression = {
     'alfheim': {
         requiredLevel: 12,
         requiredQuests: ['vanir-mastery'],
-        unlocksRealms: ['svartalfheim']
+        unlocksRealms: ['nidavellir']
     },
     'jotunheim': {
         requiredLevel: 15,
@@ -123,11 +114,6 @@ export const realmProgression = {
         requiredLevel: 18,
         requiredQuests: ['light-dark-balance'],
         unlocksRealms: []
-    },
-    'svartalfheim': {
-        requiredLevel: 20,
-        requiredQuests: ['alfheim-mastery'],
-        unlocksRealms: ['helheim']
     },
     'muspelheim': {
         requiredLevel: 25,

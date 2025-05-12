@@ -90,6 +90,14 @@ const CardName = styled.div`
   font-weight: bold;
   text-align: center;
   margin-bottom: 0.25rem;
+  word-break: break-word;
+  font-size: 1rem;
+  @media (max-width: 700px) {
+    font-size: 0.8rem;
+  }
+  @media (max-width: 500px) {
+    font-size: 0.7rem;
+  }
 `;
 
 const CardStats = styled.div`
@@ -101,26 +109,38 @@ const CardStats = styled.div`
 
 const StatValue = styled.div<{ position: 'top' | 'right' | 'bottom' | 'left' }>`
   position: absolute;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.65);
   color: white;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   font-weight: bold;
-  font-size: 1rem;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  font-size: 0.95rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
   z-index: 2;
   ${props => {
     switch (props.position) {
-      case 'top': return 'top: 5px; left: 50%; transform: translateX(-50%);';
-      case 'right': return 'right: 5px; top: 50%; transform: translateY(-50%);';
-      case 'bottom': return 'bottom: 5px; left: 50%; transform: translateX(-50%);';
-      case 'left': return 'left: 5px; top: 50%; transform: translateY(-50%);';
+      case 'top': return 'top: 4px; left: 50%; transform: translateX(-50%);';
+      case 'right': return 'right: 4px; top: 50%; transform: translateY(-50%);';
+      case 'bottom': return 'bottom: 4px; left: 50%; transform: translateX(-50%);';
+      case 'left': return 'left: 4px; top: 50%; transform: translateY(-50%);';
     }
   }}
+  @media (max-width: 700px) {
+    width: 15px;
+    height: 15px;
+    font-size: 0.7rem;
+    border-width: 1px;
+  }
+  @media (max-width: 500px) {
+    width: 12px;
+    height: 12px;
+    font-size: 0.6rem;
+    border-width: 0.8px;
+  }
 `;
 
 const ElementIcon = styled.div<{ element: string }>`
@@ -234,65 +254,64 @@ const GameCard: React.FC<GameCardProps> = ({
   }, [isChainReaction]);
 
   return (
-    <div
+    <CardContainer
       ref={isPlayable ? drag : undefined}
       style={{ position: 'relative', width: '100%', height: '100%', opacity: isDragging ? 0.5 : 1, cursor: isPlayable ? 'grab' : 'default' }}
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
+      onClick={isPlayable ? onClick : undefined}
     >
-      <CardContainer onClick={isPlayable ? onClick : undefined}>
-        <Flipper
-          animate={isCapturing ? { rotateY: 360, scale: [1, 1.15, 1] } : { rotateY: 0, scale: 1 }}
-          transition={{ duration: 0.4, ease: 'easeInOut' }}
-        >
-          {/* Front Face */}
-          <CardFace rarity={card.rarity} owner={card.owner} style={{ zIndex: 2, transform: 'rotateY(0deg)' }}>
-            <CardImage image={card.image} />
-            <CardInfo>
-              <CardName>{card.name}</CardName>
-            </CardInfo>
-            <ElementIcon element={card.element || 'none'} />
-            <CardStats>
-              <StatValue position="top">{card.top}</StatValue>
-              <StatValue position="right">{card.right}</StatValue>
-              <StatValue position="bottom">{card.bottom}</StatValue>
-              <StatValue position="left">{card.left}</StatValue>
-            </CardStats>
-          </CardFace>
-          {/* Back Face */}
-          <CardBack owner={card.owner} rarity={card.rarity} style={{ zIndex: 1 }}>
-            <CardInfo>
-              <CardName>{card.name}</CardName>
-            </CardInfo>
-            <ElementIcon element={card.element || 'none'} />
-            <CardStats>
-              <StatValue position="top">{card.top}</StatValue>
-              <StatValue position="right">{card.right}</StatValue>
-              <StatValue position="bottom">{card.bottom}</StatValue>
-              <StatValue position="left">{card.left}</StatValue>
-            </CardStats>
-          </CardBack>
-          <AnimatePresence>
-            {showCaptureEffect && (
-              <CaptureEffect
-                element={card.element || 'none'}
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 2, opacity: 0 }}
-                transition={{ duration: 0.25 }}
-              />
-            )}
-            {showChainEffect && (
-              <ChainEffect
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 2, opacity: 0 }}
-                transition={{ duration: 0.15 }}
-              />
-            )}
-          </AnimatePresence>
-        </Flipper>
-      </CardContainer>
+      <Flipper
+        animate={isCapturing ? { rotateY: 360, scale: [1, 1.15, 1] } : { rotateY: 0, scale: 1 }}
+        transition={{ duration: 0.4, ease: 'easeInOut' }}
+      >
+        {/* Front Face */}
+        <CardFace rarity={card.rarity} owner={card.owner} style={{ zIndex: 2, transform: 'rotateY(0deg)' }}>
+          <CardImage image={card.image} />
+          <CardInfo>
+            <CardName>{card.name}</CardName>
+          </CardInfo>
+          <ElementIcon element={card.element || 'none'} />
+          <CardStats>
+            <StatValue position="top">{card.top}</StatValue>
+            <StatValue position="right">{card.right}</StatValue>
+            <StatValue position="bottom">{card.bottom}</StatValue>
+            <StatValue position="left">{card.left}</StatValue>
+          </CardStats>
+        </CardFace>
+        {/* Back Face */}
+        <CardBack owner={card.owner} rarity={card.rarity} style={{ zIndex: 1 }}>
+          <CardInfo>
+            <CardName>{card.name}</CardName>
+          </CardInfo>
+          <ElementIcon element={card.element || 'none'} />
+          <CardStats>
+            <StatValue position="top">{card.top}</StatValue>
+            <StatValue position="right">{card.right}</StatValue>
+            <StatValue position="bottom">{card.bottom}</StatValue>
+            <StatValue position="left">{card.left}</StatValue>
+          </CardStats>
+        </CardBack>
+        <AnimatePresence>
+          {showCaptureEffect && (
+            <CaptureEffect
+              element={card.element || 'none'}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 2, opacity: 0 }}
+              transition={{ duration: 0.25 }}
+            />
+          )}
+          {showChainEffect && (
+            <ChainEffect
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 2, opacity: 0 }}
+              transition={{ duration: 0.15 }}
+            />
+          )}
+        </AnimatePresence>
+      </Flipper>
       {/* Tooltip for hand cards only */}
       {isPlayable && showTooltip && (
         <Tooltip>
@@ -312,7 +331,7 @@ const GameCard: React.FC<GameCardProps> = ({
           )}
         </Tooltip>
       )}
-    </div>
+    </CardContainer>
   );
 };
 

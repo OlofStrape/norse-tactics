@@ -12,7 +12,7 @@ import { motion } from 'framer-motion';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { AIDifficultySelector } from './components/AIDifficultySelector';
-import { BrowserRouter as Router, Routes, Route, useNavigate, useParams } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useParams, useLocation } from 'react-router-dom';
 import StartPage from './components/StartPage';
 import { Global, css } from '@emotion/react';
 import CampaignPage from './components/CampaignPage';
@@ -118,6 +118,21 @@ const RuleButton = styled.button<{ active: boolean }>`
   }
 `;
 
+const fontStyles = css`
+  @font-face {
+    font-family: 'Norse';
+    src: url('/fonts/Norse.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+  }
+  @font-face {
+    font-family: 'NorseBold';
+    src: url('/fonts/Norsebold.otf') format('opentype');
+    font-weight: bold;
+    font-style: normal;
+  }
+`;
+
 const AppRoutes: React.FC = () => {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
@@ -156,6 +171,25 @@ const AppRoutes: React.FC = () => {
   useEffect(() => {
     // Initialize game state after component mount
     initializeGame();
+  }, []);
+
+  useEffect(() => {
+    // Check campaign progress for multiplayer unlock
+    const data = localStorage.getItem('campaignProgress');
+    if (data) {
+      try {
+        const progress = JSON.parse(data);
+        if (progress.completedQuests && Array.isArray(progress.completedQuests)) {
+          setMultiplayerUnlocked(progress.completedQuests.includes('helheim-boss'));
+        } else {
+          setMultiplayerUnlocked(false);
+        }
+      } catch {
+        setMultiplayerUnlocked(false);
+      }
+    } else {
+      setMultiplayerUnlocked(false);
+    }
   }, []);
 
   const handleCapture = useCallback((cardId: string, isChainReaction: boolean) => {
@@ -271,7 +305,7 @@ const AppRoutes: React.FC = () => {
     setRules(prev => ({ ...prev, [rule]: !prev[rule] }));
   };
 
-  // Free Play game component (current game)
+  // Free Play setup page
   const FreePlay = () => {
     const navigate = useNavigate();
     const [rules, setRules] = useState<GameRules>({
@@ -287,9 +321,6 @@ const AppRoutes: React.FC = () => {
       chainReaction: false,
     });
     const [aiDifficulty, setAIDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
-    const shuffled = [...cards].sort(() => Math.random() - 0.5);
-    const player1Cards = shuffled.slice(0, 5);
-    const player2Cards = shuffled.slice(5, 10);
     // Font-face and global styles for Free-play
     const fontStyles = `
       @font-face {
@@ -306,15 +337,15 @@ const AppRoutes: React.FC = () => {
       }
     `;
     return (
-      <div style={{ minHeight: '100vh', background: 'linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url(https://res.cloudinary.com/dvfobknn4/image/upload/v1746867992/Background_snigeo.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', fontFamily: 'Norse, serif', padding: '2rem 0' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', background: 'linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url(https://res.cloudinary.com/dvfobknn4/image/upload/v1746867992/Background_snigeo.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', fontFamily: 'Norse, serif', padding: '0', position: 'relative' }}>
         <style>{fontStyles}</style>
         <button
           style={{
             position: 'absolute',
             top: 24,
             left: 24,
-            padding: '0.5rem 1.2rem',
-            fontSize: '1.1rem',
+            padding: '0.4rem 0.7rem',
+            fontSize: '1.3rem',
             borderRadius: 6,
             border: 'none',
             background: '#ffd700',
@@ -324,44 +355,89 @@ const AppRoutes: React.FC = () => {
             boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
             zIndex: 10,
             fontFamily: 'Norsebold, Norse, serif',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
           }}
           onClick={() => navigate('/')}
         >
-          ← Back to Menu
+          <span style={{ fontSize: '1.5rem', lineHeight: 1 }}>←</span>
+          <span className="back-menu-text" style={{ display: 'inline-block' }}>Back to Menu</span>
         </button>
-        <h1 style={{
-          fontFamily: 'Norsebold, Norse, Cinzel Decorative, serif',
-          fontSize: '3rem',
-          marginBottom: '0.5rem',
-          textAlign: 'center',
-          color: 'transparent',
-          textShadow: '0 0 8px #ffd70088, 0 0 12px #ffd70044, 0 0 1px #fff',
-          WebkitTextStroke: '1px #ffd700',
-          letterSpacing: '2px',
-          fontWeight: 'bold',
-        }}>
-          Norse Tactics
-        </h1>
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16, fontFamily: 'Norsebold, Norse, serif' }}>
-          <AIDifficultySelector
-            selectedDifficulty={aiDifficulty}
-            onDifficultyChange={setAIDifficulty}
-          />
+        <style>{`
+          @media (max-width: 600px) {
+            .back-menu-text { display: none !important; }
+            button[style] { padding: 0.4rem 0.7rem !important; font-size: 1.5rem !important; }
+          }
+        `}</style>
+        <div style={{ width: '100%', maxWidth: 420, margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+          <h1 style={{
+            fontFamily: 'Norsebold, Norse, Cinzel Decorative, serif',
+            fontSize: '3rem',
+            marginBottom: '0.5rem',
+            textAlign: 'center',
+            color: 'transparent',
+            textShadow: '0 0 8px #ffd70088, 0 0 12px #ffd70044, 0 0 1px #fff',
+            WebkitTextStroke: '1px #ffd700',
+            letterSpacing: '2px',
+            fontWeight: 'bold',
+          }}>
+            Norse Tactics
+          </h1>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16, fontFamily: 'Norsebold, Norse, serif' }}>
+            <AIDifficultySelector
+              selectedDifficulty={aiDifficulty}
+              onDifficultyChange={setAIDifficulty}
+            />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 16, maxWidth: 200, width: '100%' }}>
+            <button style={{ padding: '0.08rem 0.2rem', fontSize: '0.78rem', borderRadius: 4, border: rules.same ? '2px solid #ffd700' : '2px solid #444', background: rules.same ? '#ffd700' : 'transparent', color: rules.same ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Norsebold, Norse, serif', width: '100%', minHeight: 36, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} onClick={() => setRules(r => ({ ...r, same: !r.same }))}>Same<br />Rule</button>
+            <button style={{ padding: '0.08rem 0.2rem', fontSize: '0.78rem', borderRadius: 4, border: rules.plus ? '2px solid #ffd700' : '2px solid #444', background: rules.plus ? '#ffd700' : 'transparent', color: rules.plus ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Norsebold, Norse, serif', width: '100%', minHeight: 36, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} onClick={() => setRules(r => ({ ...r, plus: !r.plus }))}>Plus<br />Rule</button>
+            <button style={{ padding: '0.08rem 0.2rem', fontSize: '0.78rem', borderRadius: 4, border: rules.elements ? '2px solid #ffd700' : '2px solid #444', background: rules.elements ? '#ffd700' : 'transparent', color: rules.elements ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Norsebold, Norse, serif', width: '100%', minHeight: 36, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} onClick={() => setRules(r => ({ ...r, elements: !r.elements }))}>Elements</button>
+            <button style={{ padding: '0.08rem 0.2rem', fontSize: '0.78rem', borderRadius: 4, border: rules.ragnarok ? '2px solid #ffd700' : '2px solid #444', background: rules.ragnarok ? '#ffd700' : 'transparent', color: rules.ragnarok ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Norsebold, Norse, serif', width: '100%', minHeight: 36, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} onClick={() => setRules(r => ({ ...r, ragnarok: !r.ragnarok }))}>Ragnarök</button>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 32 }}>
+            <button
+              style={{ padding: '1rem 2.5rem', fontSize: '1.6rem', borderRadius: 8, border: '3px solid #ffd700', background: '#ffd700', color: '#1a1a1a', fontFamily: 'Norsebold, Norse, serif', fontWeight: 'bold', letterSpacing: 1, cursor: 'pointer', boxShadow: '0 0 12px 2px #ffd70033', transition: 'box-shadow 0.2s, text-shadow 0.2s, color 0.2s' }}
+              onClick={() => navigate('/free-play/game', { state: { rules, aiDifficulty } })}
+            >
+              Start Game
+            </button>
+          </div>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16, gap: 12 }}>
-          <button style={{ padding: '0.5rem 1rem', borderRadius: 6, border: rules.same ? '2px solid #ffd700' : '2px solid #444', background: rules.same ? '#ffd700' : 'transparent', color: rules.same ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Norsebold, Norse, serif' }} onClick={() => setRules(r => ({ ...r, same: !r.same }))}>Same Rule</button>
-          <button style={{ padding: '0.5rem 1rem', borderRadius: 6, border: rules.plus ? '2px solid #ffd700' : '2px solid #444', background: rules.plus ? '#ffd700' : 'transparent', color: rules.plus ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Norsebold, Norse, serif' }} onClick={() => setRules(r => ({ ...r, plus: !r.plus }))}>Plus Rule</button>
-          <button style={{ padding: '0.5rem 1rem', borderRadius: 6, border: rules.elements ? '2px solid #ffd700' : '2px solid #444', background: rules.elements ? '#ffd700' : 'transparent', color: rules.elements ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Norsebold, Norse, serif' }} onClick={() => setRules(r => ({ ...r, elements: !r.elements }))}>Elements</button>
-          <button style={{ padding: '0.5rem 1rem', borderRadius: 6, border: rules.ragnarok ? '2px solid #ffd700' : '2px solid #444', background: rules.ragnarok ? '#ffd700' : 'transparent', color: rules.ragnarok ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Norsebold, Norse, serif' }} onClick={() => setRules(r => ({ ...r, ragnarok: !r.ragnarok }))}>Ragnarök</button>
-        </div>
-        <div style={{ maxWidth: 1200, margin: '0 auto', fontFamily: 'Norse, serif' }}>
+      </div>
+    );
+  };
+
+  // Free Play actual game page (no controls, just board and hands)
+  const FreePlayGame = () => {
+    const location = useLocation();
+    const { state } = location as any;
+    const rules = state?.rules || {
+      same: false,
+      plus: false,
+      elements: false,
+      ragnarok: false,
+      captureRules: {
+        sameElement: false,
+        higherValue: false,
+        adjacent: false,
+      },
+      chainReaction: false,
+    };
+    const aiDifficulty = state?.aiDifficulty || 'medium';
+    const shuffled = [...cards].sort(() => Math.random() - 0.5);
+    const player1Cards = shuffled.slice(0, 5);
+    const player2Cards = shuffled.slice(5, 10);
+    return (
+      <div style={{ minHeight: '100vh', background: 'linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url(https://res.cloudinary.com/dvfobknn4/image/upload/v1746867992/Background_snigeo.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', fontFamily: 'Norse, serif', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{ width: '100vw', maxWidth: 600, height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
           <GameSession
             playerDeck={player1Cards}
             opponentDeck={player2Cards}
             rules={rules}
             aiDifficulty={aiDifficulty}
             onGameEnd={() => {}}
-            title={undefined}
             showControls={false}
           />
         </div>
@@ -411,7 +487,7 @@ const AppRoutes: React.FC = () => {
     useEffect(() => {
       if (!quest) navigate('/campaign');
     }, [quest, navigate]);
-    if (!quest) return null;
+    if (!quest) return <div style={{ color: '#ffd700', textAlign: 'center', marginTop: 40 }}>Quest not found. Please return to the campaign map.</div>;
     // Load player progress
     const progress = (() => {
       const data = localStorage.getItem('campaignProgress');
@@ -444,8 +520,12 @@ const AppRoutes: React.FC = () => {
       }
       setTimeout(() => navigate('/campaign'), 1200);
     };
-    // Show tutorials for all relevant rules and triggers
     React.useEffect(() => {
+      // Show basic rules tutorial for the very first quest if not seen
+      if (quest.id === 'training-grounds' && !progress.tutorials?.basicRules) {
+        setTutorialToShow('basicRules');
+        return;
+      }
       if (rules?.plus && !progress.tutorials?.plusRule) {
         setTutorialToShow('plusRule');
         return;
@@ -480,7 +560,7 @@ const AppRoutes: React.FC = () => {
       }
       // Add more triggers for special abilities if needed
       // Example: if (someAbilityActive && !progress.tutorials?.berserkerRage) { setTutorialToShow('berserkerRage'); return; }
-    }, [rules, progress.tutorials]);
+    }, [rules, progress.tutorials, quest.id]);
 
     const handleTutorialComplete = () => {
       if (!tutorialToShow) return;
@@ -491,6 +571,53 @@ const AppRoutes: React.FC = () => {
       };
       localStorage.setItem('campaignProgress', JSON.stringify(updatedProgress));
     };
+
+    // Render the Tutorial modal if needed
+    if (tutorialToShow) {
+      return <Tutorial steps={tutorialSteps[tutorialToShow]} onComplete={handleTutorialComplete} />;
+    }
+
     return (
-      <div style={{ minHeight: '100vh', background: 'linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url(https://res.cloudinary.com/dvfobknn4/image/upload/v1746867992/Background_snigeo.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', fontFamily: 'Norse, serif', padding: '2rem 0' }}>
-        <style>{`
+      <div style={{ minHeight: '100vh', height: '100vh', background: 'linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url(https://res.cloudinary.com/dvfobknn4/image/upload/v1746867992/Background_snigeo.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', fontFamily: 'Norse, serif', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{ width: '100%', maxWidth: 1200, margin: 0, fontFamily: 'Norse, serif', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+          <GameSession
+            playerDeck={playerDeck}
+            opponentDeck={opponentDeck}
+            rules={rules}
+            aiDifficulty={quest.opponent.difficulty === 'boss' ? 'hard' : quest.opponent.difficulty || 'medium'}
+            onGameEnd={handleGameEnd}
+            showControls={true}
+          />
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <Routes>
+      <Route path="/" element={<StartPage multiplayerUnlocked={multiplayerUnlocked} />} />
+      <Route path="/free-play" element={<FreePlay />} />
+      <Route path="/free-play/game" element={<FreePlayGame />} />
+      <Route path="/campaign" element={<CampaignPage />} />
+      <Route path="/campaign/:questId" element={<GamePage />} />
+      <Route path="/collection" element={<CardCollection />} />
+      <Route path="/deckbuilder" element={<DeckBuilder />} />
+      {/* Add other routes as needed */}
+    </Routes>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <>
+      <Global styles={fontStyles} />
+      <DndProvider backend={HTML5Backend}>
+        <Router>
+          <AppRoutes />
+        </Router>
+      </DndProvider>
+    </>
+  );
+};
+
+export default App;
