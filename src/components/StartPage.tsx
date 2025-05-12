@@ -10,13 +10,13 @@ import { motion } from 'framer-motion';
 const fontStyles = `
   @font-face {
     font-family: 'Norse';
-    src: url('/fonts/Norse.otf') format('opentype');
+    src: url('/fonts/Norse1.otf') format('opentype');
     font-weight: normal;
     font-style: normal;
   }
   @font-face {
     font-family: 'NorseBold';
-    src: url('/fonts/Norsebold.otf') format('opentype');
+    src: url('/fonts/Norsebold1.otf') format('opentype');
     font-weight: bold;
     font-style: normal;
   }
