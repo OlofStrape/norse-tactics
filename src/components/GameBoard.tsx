@@ -205,12 +205,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onCellClick, on
   };
 
   return (
-    <BoardContainer>
-      <Grid>
-        {Array.from({ length: 3 }, (_, row) => (
-          Array.from({ length: 3 }, (_, col) => renderCell(row, col))
-        ))}
-      </Grid>
+    <BoardContainer style={{ position: 'relative' }}>
+      <div style={{ width: '100%', position: 'relative' }}>
+        <Grid>
+          {Array.from({ length: 3 }, (_, row) => (
+            Array.from({ length: 3 }, (_, col) => renderCell(row, col))
+          ))}
+        </Grid>
+      </div>
     </BoardContainer>
   );
 }; 

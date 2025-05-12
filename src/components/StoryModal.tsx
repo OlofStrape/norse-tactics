@@ -59,10 +59,27 @@ const StoryModal: React.FC<StoryModalProps> = ({ open, onClose, title, text, ima
               {text && <p style={{ color: '#ffe066', fontSize: '1.1rem', marginBottom: '1.5rem', textAlign: 'center', fontFamily: 'Norse, serif' }}>{text}</p>}
               {choices.length > 0 ? (
                 choices.map((choice, i) => (
-                  <button key={i} onClick={() => onChoice?.(choice)} style={{ padding: '0.8rem 2.2rem', fontSize: '1.2rem', borderRadius: 8, border: '2px solid #ffd700', background: '#ffd700', color: '#1a1a1a', fontFamily: 'Norse, serif', fontWeight: 'bold', letterSpacing: 1, cursor: 'pointer', boxShadow: '0 0 12px 2px #ffd70033, 0 4px 16px rgba(0,0,0,0.18)', textShadow: '0 1px 6px #fff8, 0 0 2px #ffd70044', margin: '0.5rem 0', transition: 'background 0.2s, box-shadow 0.2s' }}>{choice.text}</button>
+                  <motion.button
+                    key={i}
+                    onClick={() => onChoice?.(choice)}
+                    style={{ padding: '0.8rem 2.2rem', fontSize: '1.2rem', borderRadius: 8, border: '2px solid #ffd700', background: '#ffd700', color: '#1a1a1a', fontFamily: 'Norse, serif', fontWeight: 700, letterSpacing: 1, cursor: 'pointer', boxShadow: '0 0 12px 2px #ffd70033', transition: 'background 0.2s, color 0.2s' }}
+                    whileHover={{ scale: 1.06, boxShadow: '0 0 18px #ffd70088' }}
+                    whileTap={{ scale: 0.97 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                  >
+                    {choice.text}
+                  </motion.button>
                 ))
               ) : (
-                <button onClick={onClose} style={{ padding: '0.8rem 2.2rem', fontSize: '1.2rem', borderRadius: 8, border: '2px solid #ffd700', background: '#ffd700', color: '#1a1a1a', fontFamily: 'Norse, serif', fontWeight: 'bold', letterSpacing: 1, cursor: 'pointer', boxShadow: '0 0 12px 2px #ffd70033, 0 4px 16px rgba(0,0,0,0.18)', textShadow: '0 1px 6px #fff8, 0 0 2px #ffd70044', marginTop: '1.2rem', transition: 'background 0.2s, box-shadow 0.2s' }}>Continue</button>
+                <motion.button
+                  onClick={onClose}
+                  style={{ padding: '0.8rem 2.2rem', fontSize: '1.2rem', borderRadius: 8, border: '2px solid #ffd700', background: '#ffd700', color: '#1a1a1a', fontFamily: 'Norse, serif', fontWeight: 700, letterSpacing: 1, cursor: 'pointer', boxShadow: '0 0 12px 2px #ffd70033', transition: 'background 0.2s, color 0.2s' }}
+                  whileHover={{ scale: 1.06, boxShadow: '0 0 18px #ffd70088' }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                >
+                  Continue
+                </motion.button>
               )}
             </div>
           </motion.div>

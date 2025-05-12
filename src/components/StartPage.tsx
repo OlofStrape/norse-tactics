@@ -2,6 +2,9 @@ import React from 'react';
 import styled from '@emotion/styled';
 import { useNavigate } from 'react-router-dom';
 import { Global, css } from '@emotion/react';
+import { Tutorial } from './Tutorial';
+import { tutorialSteps } from '../data/tutorials';
+import { motion } from 'framer-motion';
 
 // Add font-face rules for Norse and Norse Bold
 const fontStyles = `
@@ -25,6 +28,7 @@ const Container = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: 1.5rem 0.5rem;
 `;
 
 const Title = styled.h1`
@@ -39,6 +43,11 @@ const Title = styled.h1`
   margin-bottom: 2rem;
   letter-spacing: 0.15em;
   text-align: center;
+  @media (max-width: 600px) {
+    font-size: 3.2rem;
+    margin-bottom: 1rem;
+    padding: 0 0.5rem;
+  }
 `;
 
 const Subtitle = styled.div`
@@ -63,7 +72,7 @@ const ButtonGroup = styled.div`
   gap: 1.5rem;
 `;
 
-const ModeButton = styled.button<{ disabled?: boolean }>`
+const ModeButton = styled(motion.button)<{ disabled?: boolean }>`
   padding: 1rem 2.5rem;
   font-size: 1.6rem;
   border-radius: 8px;
@@ -77,6 +86,14 @@ const ModeButton = styled.button<{ disabled?: boolean }>`
   letter-spacing: 1px;
   transition: box-shadow 0.2s, text-shadow 0.2s, color 0.2s;
   text-shadow: 0 1px 6px #fff8, 0 0 2px #ffd70044;
+  min-width: 220px;
+  min-height: 56px;
+  @media (max-width: 600px) {
+    font-size: 1.1rem;
+    min-width: 160px;
+    min-height: 44px;
+    padding: 0.7rem 1.2rem;
+  }
   &:hover {
     background: ${({ disabled }) => disabled ? '#444' : 'rgba(255,215,0,0.12)'};
     color: ${({ disabled }) => disabled ? '#aaa' : '#ffd700'};
@@ -91,12 +108,38 @@ const LockText = styled.span`
   margin-left: 1rem;
 `;
 
+const HowToPlayButton = styled(motion.button)`
+  margin-top: 2.5rem;
+  padding: 0.7rem 2rem;
+  font-size: 1.2rem;
+  border-radius: 8px;
+  border: 2px solid #ffd700;
+  background: rgba(255,215,0,0.08);
+  color: #ffd700;
+  font-family: 'Norse', serif;
+  font-weight: bold;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 0 8px 2px #ffd70022;
+  transition: background 0.2s, color 0.2s;
+  &:hover {
+    background: #ffd700;
+    color: #1a1a1a;
+  }
+  @media (max-width: 600px) {
+    font-size: 1rem;
+    padding: 0.5rem 1.2rem;
+    margin-top: 1.2rem;
+  }
+`;
+
 interface StartPageProps {
   multiplayerUnlocked: boolean;
 }
 
 const StartPage: React.FC<StartPageProps> = ({ multiplayerUnlocked }) => {
   const navigate = useNavigate();
+  const [showHowToPlay, setShowHowToPlay] = React.useState(false);
   return (
     <Container>
       <style>{fontStyles}</style>
@@ -116,20 +159,45 @@ const StartPage: React.FC<StartPageProps> = ({ multiplayerUnlocked }) => {
       <Title>NORSE</Title>
       <Subtitle>Outsmart the gods. Conquer the nine realms</Subtitle>
       <ButtonGroup>
-        <ModeButton onClick={() => navigate('/campaign')}>
+        <ModeButton
+          whileHover={{ scale: 1.06, boxShadow: '0 0 18px #ffd70088' }}
+          whileTap={{ scale: 0.97 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          onClick={() => navigate('/campaign')}
+        >
           Campaign
         </ModeButton>
         <ModeButton
+          whileHover={{ scale: multiplayerUnlocked ? 1.06 : 1, boxShadow: multiplayerUnlocked ? '0 0 18px #ffd70088' : undefined }}
+          whileTap={{ scale: multiplayerUnlocked ? 0.97 : 1 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
           onClick={() => multiplayerUnlocked && navigate('/multiplayer')}
           disabled={!multiplayerUnlocked}
         >
           Multiplayer
           {!multiplayerUnlocked && <LockText>(Unlock by completing Campaign)</LockText>}
         </ModeButton>
-        <ModeButton onClick={() => navigate('/free-play')}>
+        <ModeButton
+          whileHover={{ scale: 1.06, boxShadow: '0 0 18px #ffd70088' }}
+          whileTap={{ scale: 0.97 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          onClick={() => navigate('/free-play')}
+        >
           Free Play
         </ModeButton>
       </ButtonGroup>
+      <HowToPlayButton
+        whileHover={{ scale: 1.06, boxShadow: '0 0 18px #ffd70088' }}
+        whileTap={{ scale: 0.97 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        onClick={() => setShowHowToPlay(true)}
+        aria-label="How to Play"
+      >
+        How to Play
+      </HowToPlayButton>
+      {showHowToPlay && (
+        <Tutorial steps={tutorialSteps.basicRules} onComplete={() => setShowHowToPlay(false)} />
+      )}
     </Container>
   );
 };

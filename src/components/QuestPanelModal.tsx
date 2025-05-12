@@ -30,20 +30,19 @@ const Modal = styled(motion.div)`
   font-family: 'Norse', serif;
 `;
 
-const CloseButton = styled.button`
+const CloseButton = styled(motion.button)`
   position: absolute;
-  top: 1.2rem;
-  right: 1.2rem;
+  top: 16px;
+  right: 16px;
   background: none;
   border: none;
-  font-size: 2.2rem;
   color: #ffd700;
+  font-size: 2rem;
   cursor: pointer;
-  font-family: 'Norse', serif;
-  text-shadow: 0 0 8px #ffd70088;
+  z-index: 10;
   transition: color 0.2s;
   &:hover {
-    color: #fffbe6;
+    color: #fff8b0;
   }
 `;
 
@@ -143,7 +142,15 @@ const QuestPanelModal: React.FC<QuestPanelModalProps> = ({ open, onClose, realm,
           transition={{ duration: 0.2 }}
           onClick={e => e.stopPropagation()}
         >
-          <CloseButton onClick={onClose} title="Close">×</CloseButton>
+          <CloseButton
+            whileHover={{ scale: 1.12, color: '#fff8b0' }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            onClick={onClose}
+            title="Close"
+          >
+            ×
+          </CloseButton>
           <RealmName>{realm.name}</RealmName>
           <RealmDescription>{realm.description}</RealmDescription>
           {!detailsOpen && (

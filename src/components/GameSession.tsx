@@ -5,10 +5,11 @@ import GameCard from './GameCard';
 import { GameLogic } from '../services/gameLogic';
 import { Card, GameState, Position, GameRules } from '../types/game';
 import { AILogic } from '../services/aiLogic';
-import { AILoadingIndicator } from './AILoadingIndicator';
+import { LoadingSpinner } from './AILoadingIndicator';
 import { EndGameModal } from './EndGameModal';
 import { motion } from 'framer-motion';
 import { AIDifficultySelector } from './AIDifficultySelector';
+import { useNavigate } from 'react-router-dom';
 
 const AppContainer = styled.div`
   min-height: 100vh;
@@ -200,6 +201,56 @@ const Clock = styled.span`
   text-align: center;
 `;
 
+const BackButton = styled.button`
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(32,32,32,0.18);
+  border: none;
+  border-radius: 50%;
+  color: #ffd700;
+  font-size: 1.6rem;
+  opacity: 0.55;
+  cursor: pointer;
+  z-index: 20;
+  transition: background 0.2s, color 0.2s, opacity 0.2s;
+  &:hover, &:focus {
+    background: rgba(32,32,32,0.32);
+    color: #fff8b0;
+    opacity: 1;
+  }
+`;
+
+const MuteButton = styled.button`
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(32,32,32,0.18);
+  border: none;
+  border-radius: 50%;
+  color: #ffd700;
+  font-size: 1.6rem;
+  opacity: 0.55;
+  cursor: pointer;
+  z-index: 20;
+  transition: background 0.2s, color 0.2s, opacity 0.2s;
+  &:hover, &:focus {
+    background: rgba(32,32,32,0.32);
+    color: #fff8b0;
+    opacity: 1;
+  }
+`;
+
 interface GameSessionProps {
   playerDeck: Card[];
   opponentDeck: Card[];
@@ -209,6 +260,18 @@ interface GameSessionProps {
   title?: string;
   unlockedAbilities?: string[];
   showControls?: boolean;
+}
+
+// Simple sound manager hook
+function useSound() {
+  const [muted, setMuted] = React.useState(() => {
+    const stored = localStorage.getItem('norse_muted');
+    return stored === 'true';
+  });
+  useEffect(() => {
+    localStorage.setItem('norse_muted', muted ? 'true' : 'false');
+  }, [muted]);
+  return [muted, setMuted] as const;
 }
 
 export const GameSession: React.FC<GameSessionProps> = ({
@@ -233,6 +296,9 @@ export const GameSession: React.FC<GameSessionProps> = ({
   const [activeAbility, setActiveAbility] = useState<string | null>(null);
   const [turnTimer, setTurnTimer] = useState(30);
   const [missedTurnCount, setMissedTurnCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const [muted, setMuted] = useSound();
 
   useEffect(() => {
     const initialState = GameLogic.initializeGame(playerDeck, opponentDeck);
@@ -243,6 +309,7 @@ export const GameSession: React.FC<GameSessionProps> = ({
     setSelectedCard(null);
     setCapturingCards(new Set());
     setChainReactionCards(new Set());
+    setIsLoading(true);
     // eslint-disable-next-line
   }, [playerDeck, opponentDeck, aiDifficulty]);
 
@@ -342,6 +409,7 @@ export const GameSession: React.FC<GameSessionProps> = ({
     return (
       <AppContainer>
         <Title>Loading...</Title>
+        {isLoading && <LoadingSpinner text="Loading game..." />}
       </AppContainer>
     );
   }
@@ -478,8 +546,28 @@ export const GameSession: React.FC<GameSessionProps> = ({
     <>
       <style>{fontStyles}</style>
       <AppContainer style={{ position: 'relative', background: 'none' }}>
+        <BackButton onClick={() => navigate('/')} aria-label="Back to Menu">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M14 18L8 11L14 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </BackButton>
+        <MuteButton onClick={() => setMuted(m => !m)} aria-label={muted ? 'Unmute' : 'Mute'}>
+          {muted ? (
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 8V14H8L14 20V2L8 8H4Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+              <line x1="17" y1="7" x2="21" y2="15" stroke="currentColor" strokeWidth="2"/>
+              <line x1="21" y1="7" x2="17" y2="15" stroke="currentColor" strokeWidth="2"/>
+            </svg>
+          ) : (
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 8V14H8L14 20V2L8 8H4Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+              <path d="M17 7C18.6569 8.65685 18.6569 11.3431 17 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <path d="M19 4C22.3137 7.31371 22.3137 12.6863 19 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          )}
+        </MuteButton>
         {title && <Title>{title}</Title>}
-        {isAIThinking && <AILoadingIndicator />}
+        {isAIThinking && <LoadingSpinner text="AI is thinking..." />}
         <EndGameModal
           isOpen={isGameOver}
           winner={winner || 'draw'}

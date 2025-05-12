@@ -29,6 +29,9 @@ export interface Quest {
     storyImages?: string[];
     dialogue?: DialogueLine[];
     choices?: StoryChoice[];
+    isSideQuest?: boolean;
+    isRepeatable?: boolean;
+    bonusXP?: number;
 }
 
 export interface Opponent {
@@ -47,6 +50,7 @@ export interface QuestRewards {
     items?: string[];
     experience: number;
     unlocks?: string[]; // IDs of new quests or locations unlocked
+    bonusXP?: number;
 }
 
 export interface QuestRequirements {
@@ -207,7 +211,7 @@ export class CampaignService {
         return { gameState, opponent: quest.opponent };
     }
 
-    public completeQuest(questId: string, victory: boolean): void {
+    public completeQuest(questId: string, victory: boolean, bonusXP: number = 0): void {
         if (!victory) return;
 
         const quest = this.getAvailableQuests().find(q => q.id === questId);
@@ -215,7 +219,15 @@ export class CampaignService {
 
         // Add rewards
         this.state.experience += quest.rewards.experience;
-        this.state.completedQuests.push(questId);
+        if (quest.rewards.bonusXP) {
+            this.state.experience += quest.rewards.bonusXP;
+        }
+        if (bonusXP) {
+            this.state.experience += bonusXP;
+        }
+        if (!quest.isRepeatable) {
+            this.state.completedQuests.push(questId);
+        }
 
         if (quest.rewards.cards) {
             this.state.unlockedCards.push(...quest.rewards.cards);
@@ -264,5 +276,22 @@ export class CampaignService {
 
     public getState(): CampaignState {
         return this.state;
+    }
+
+    public getSideAndRepeatableQuests(): Quest[] {
+        let quests: Quest[] = [];
+        switch (this.state.currentLocation) {
+            case 'midgard': quests = midgardQuests; break;
+            case 'asgard': quests = asgardQuests; break;
+            case 'vanaheim': quests = vanaheimQuests; break;
+            case 'alfheim': quests = alfheimQuests; break;
+            case 'jotunheim': quests = jotunheimQuests; break;
+            case 'nidavellir': quests = nidavellirQuests; break;
+            case 'muspelheim': quests = muspelheimQuests; break;
+            case 'niflheim': quests = niflheimQuests; break;
+            case 'helheim': quests = helheimQuests; break;
+            default: quests = []; break;
+        }
+        return quests.filter(quest => (quest.isSideQuest || quest.isRepeatable) && this.isQuestAvailable(quest));
     }
 } 

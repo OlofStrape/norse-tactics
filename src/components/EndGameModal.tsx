@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from '@emotion/styled';
+import { motion } from 'framer-motion';
 
 const Overlay = styled.div`
   position: fixed;
@@ -34,13 +35,14 @@ const Score = styled.div`
   margin-bottom: 1.5rem;
 `;
 
-const Button = styled.button`
+const Button = styled(motion.button)`
   background: #ffd700;
   color: #222;
   border: none;
   border-radius: 6px;
   padding: 0.75rem 2rem;
   font-size: 1.1rem;
+  font-family: 'Norse', serif;
   cursor: pointer;
   transition: background 0.2s;
   &:hover {
@@ -68,7 +70,14 @@ export const EndGameModal: React.FC<EndGameModalProps> = ({ isOpen, winner, play
           Final Score<br />
           <b>You:</b> {playerScore} &nbsp; | &nbsp; <b>AI:</b> {opponentScore}
         </Score>
-        <Button onClick={onRestart}>Play Again</Button>
+        <Button
+          whileHover={{ scale: 1.06, boxShadow: '0 0 18px #ffd70088' }}
+          whileTap={{ scale: 0.97 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          onClick={onRestart}
+        >
+          Play Again
+        </Button>
       </Modal>
     </Overlay>
   );

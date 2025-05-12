@@ -13,6 +13,7 @@ import { getLevelFromXP, xpForLevel, xpToNextLevel } from '../utils/xp';
 import { realms as baseRealms, realmProgression } from '../data/realms';
 import { PlayerProgress } from '../types/player';
 import { Quest } from '../services/campaignService';
+import { LoadingSpinner } from './AILoadingIndicator';
 
 const Container = styled.div`
   min-height: 100vh;
@@ -265,6 +266,7 @@ const CampaignPage: React.FC = () => {
   const [showOutro, setShowOutro] = useState(false);
   const [choiceResult, setChoiceResult] = useState<string | null>(null);
   const [showLoreJournal, setShowLoreJournal] = useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
 
   // Calculate level from XP using new formula
   const playerLevel = getLevelFromXP(progress.experience);
@@ -410,6 +412,16 @@ const CampaignPage: React.FC = () => {
   }
 
   const computedRealms = getRealmStates(progress, playerLevel);
+
+  React.useEffect(() => {
+    // Simulate loading for demonstration; replace with real data fetch if needed
+    const timer = setTimeout(() => setIsLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <LoadingSpinner text="Loading campaign..." />;
+  }
 
   return (
     <Container>

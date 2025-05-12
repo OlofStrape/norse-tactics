@@ -4,21 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '../types/game';
 import { useDrag } from 'react-dnd';
 
-const CardContainer = styled.div`
-  width: 100%;
-  height: 100%;
-  perspective: 800px;
-  position: relative;
-  will-change: transform;
-  overflow: visible;
-  @media (max-width: 600px) {
-    max-width: 90vw;
-    max-height: 120vw;
-    min-width: 60px;
-    min-height: 80px;
-  }
-`;
-
 const Flipper = styled(motion.div)`
   width: 100%;
   height: 100%;
@@ -228,6 +213,7 @@ const GameCard: React.FC<GameCardProps> = ({
   const [showCaptureEffect, setShowCaptureEffect] = useState(false);
   const [showChainEffect, setShowChainEffect] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [isPressed, setIsPressed] = React.useState(false);
 
   // Drag and drop
   const [{ isDragging }, drag] = useDrag(() => ({
@@ -254,12 +240,29 @@ const GameCard: React.FC<GameCardProps> = ({
   }, [isChainReaction]);
 
   return (
-    <CardContainer
+    <motion.div
+      whileHover={{ scale: isPlayable ? 1.06 : 1, boxShadow: isPlayable ? '0 0 16px #ffd70088' : undefined }}
+      whileTap={{ scale: isPlayable ? 0.97 : 1 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+      onMouseDown={() => setIsPressed(true)}
+      onMouseUp={() => setIsPressed(false)}
+      onMouseLeave={() => setIsPressed(false)}
+      onClick={onClick}
+      style={{
+        cursor: isPlayable ? 'pointer' : 'default',
+        position: 'relative',
+        width: '100%',
+        height: '100%',
+        opacity: isDragging ? 0.5 : 1,
+        perspective: '800px',
+        willChange: 'transform',
+        overflow: 'visible',
+        maxWidth: window.innerWidth <= 600 ? '90vw' : undefined,
+        maxHeight: window.innerWidth <= 600 ? '120vw' : undefined,
+        minWidth: window.innerWidth <= 600 ? 60 : undefined,
+        minHeight: window.innerWidth <= 600 ? 80 : undefined,
+      }}
       ref={isPlayable ? drag : undefined}
-      style={{ position: 'relative', width: '100%', height: '100%', opacity: isDragging ? 0.5 : 1, cursor: isPlayable ? 'grab' : 'default' }}
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
-      onClick={isPlayable ? onClick : undefined}
     >
       <Flipper
         animate={isCapturing ? { rotateY: 360, scale: [1, 1.15, 1] } : { rotateY: 0, scale: 1 }}
@@ -331,7 +334,7 @@ const GameCard: React.FC<GameCardProps> = ({
           )}
         </Tooltip>
       )}
-    </CardContainer>
+    </motion.div>
   );
 };
 

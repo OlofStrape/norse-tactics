@@ -43,20 +43,19 @@ const Modal = styled(motion.div)`
   }
 `;
 
-const CloseButton = styled.button`
+const CloseButton = styled(motion.button)`
   position: absolute;
-  top: 1.2rem;
-  right: 1.2rem;
+  top: 16px;
+  right: 16px;
   background: none;
   border: none;
-  font-size: 2.2rem;
   color: #ffd700;
+  font-size: 2rem;
   cursor: pointer;
-  font-family: 'Norse', serif;
-  text-shadow: 0 0 8px #ffd70088;
+  z-index: 10;
   transition: color 0.2s;
   &:hover {
-    color: #fffbe6;
+    color: #fff8b0;
   }
 `;
 
@@ -221,34 +220,27 @@ const ProgressBar = styled.div<{ progress: number }>`
   }
 `;
 
-const StartButton = styled.button<{ unlocked: boolean }>`
-  padding: 0.8rem 2.2rem;
-  font-size: 1.2rem;
+const StartButton = styled(motion.button)<{ unlocked: boolean }>`
+  padding: 1rem 2.5rem;
+  font-size: 1.3rem;
   border-radius: 8px;
   border: 2px solid #ffd700;
-  background: ${props => props.unlocked ? '#ffd700' : '#444'};
-  color: ${props => props.unlocked ? '#1a1a1a' : '#aaa'};
+  background: ${({ unlocked }) => unlocked ? '#ffd700' : '#444'};
+  color: ${({ unlocked }) => unlocked ? '#1a1a1a' : '#aaa'};
   font-family: 'Norse', serif;
   font-weight: bold;
   letter-spacing: 1px;
-  cursor: ${props => props.unlocked ? 'pointer' : 'not-allowed'};
+  cursor: ${({ unlocked }) => unlocked ? 'pointer' : 'not-allowed'};
   box-shadow: 0 0 12px 2px #ffd70033, 0 4px 16px rgba(0,0,0,0.18);
+  transition: box-shadow 0.2s, text-shadow 0.2s, color 0.2s;
   text-shadow: 0 1px 6px #fff8, 0 0 2px #ffd70044;
-  margin-top: 1.2rem;
-  transition: background 0.2s, box-shadow 0.2s;
+  min-width: 220px;
+  min-height: 56px;
   &:hover {
-    background: ${props => props.unlocked ? '#ffe066' : '#444'};
+    background: ${({ unlocked }) => unlocked ? '#ffed4a' : '#444'};
+    color: ${({ unlocked }) => unlocked ? '#ffd700' : '#aaa'};
+    text-shadow: 0 0 18px #ffd700, 0 0 36px #ffd700, 0 2px 2px #000, 0 0 2px #ffd700;
     box-shadow: 0 0 18px 4px #ffd70066, 0 4px 16px rgba(0,0,0,0.18);
-  }
-  @media (max-width: 700px) {
-    padding: 0.5rem 1.2rem;
-    font-size: 1rem;
-    margin-top: 0.6rem;
-  }
-  @media (max-width: 500px) {
-    padding: 0.3rem 0.7rem;
-    font-size: 0.9rem;
-    margin-top: 0.3rem;
   }
 `;
 
@@ -291,7 +283,15 @@ const QuestDetailsModal: React.FC<QuestDetailsModalProps> = ({ open, onClose, qu
           transition={{ duration: 0.2 }}
           onClick={e => e.stopPropagation()}
         >
-          <CloseButton onClick={onClose} title="Close">×</CloseButton>
+          <CloseButton
+            whileHover={{ scale: 1.12, color: '#fff8b0' }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            onClick={onClose}
+            title="Close"
+          >
+            ×
+          </CloseButton>
           <QuestName>{quest.name}</QuestName>
           <Description>{quest.description}</Description>
           <Section>
@@ -335,9 +335,11 @@ const QuestDetailsModal: React.FC<QuestDetailsModalProps> = ({ open, onClose, qu
           <ProgressBar progress={progress} />
           <StartButton
             unlocked={unlocked}
-            disabled={!unlocked}
-            title={unlocked ? 'Start this quest' : 'You must meet all requirements to start'}
+            whileHover={{ scale: unlocked ? 1.06 : 1, boxShadow: unlocked ? '0 0 18px #ffd70088' : undefined }}
+            whileTap={{ scale: unlocked ? 0.97 : 1 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
             onClick={unlocked ? () => { onClose(); navigate(`/campaign/${quest.id}`); } : undefined}
+            disabled={!unlocked}
           >
             {completed ? 'Completed' : unlocked ? 'Start Quest' : 'Locked'}
           </StartButton>

@@ -32,10 +32,10 @@ const Dot = styled(motion.div)`
   border-radius: 50%;
 `;
 
-export const AILoadingIndicator: React.FC = () => {
+export const LoadingSpinner: React.FC<{ text?: string }> = ({ text = 'Loading...' }) => {
   return (
     <Container>
-      <Text>AI is thinking...</Text>
+      <Text>{text}</Text>
       <LoadingDots>
         <Dot
           animate={{ y: [0, -10, 0] }}

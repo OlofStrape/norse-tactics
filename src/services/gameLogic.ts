@@ -23,6 +23,12 @@ export class GameLogic {
         plus: false,
         elements: false,
         ragnarok: false,
+        captureRules: {
+          sameElement: false,
+          higherValue: true,
+          adjacent: false,
+        },
+        chainReaction: false,
       },
       ragnarokCounter: 0,
       activeEffects: [],
@@ -41,6 +47,7 @@ export class GameLogic {
       turnCount: 0,
       matchStartTime: new Date(),
       gameStatus: 'active',
+      aiDifficulty: 'medium',
     };
   }
 
@@ -66,20 +73,44 @@ export class GameLogic {
     }).filter((result): result is NonNullable<typeof result> => result !== null);
   }
 
-  static compareCards(playedCard: Card, adjacentCard: Card, direction: string): { captured: boolean; value: number } {
-    const getComparisonValues = () => {
-      switch (direction) {
-        case 'left': return { played: playedCard.left, adjacent: adjacentCard.right };
-        case 'right': return { played: playedCard.right, adjacent: adjacentCard.left };
-        case 'up': return { played: playedCard.top, adjacent: adjacentCard.bottom };
-        case 'down': return { played: playedCard.bottom, adjacent: adjacentCard.top };
-        default: return { played: 0, adjacent: 0 };
-      }
-    };
+  static compareCards(playedCard: Card, adjacentCard: Card, direction: string, rules?: GameRules): { captured: boolean; value: number } {
+    // Default stat comparison
+    let played = 0, adjacent = 0;
+    switch (direction) {
+      case 'left': played = playedCard.left; adjacent = adjacentCard.right; break;
+      case 'right': played = playedCard.right; adjacent = adjacentCard.left; break;
+      case 'up': played = playedCard.top; adjacent = adjacentCard.bottom; break;
+      case 'down': played = playedCard.bottom; adjacent = adjacentCard.top; break;
+      default: played = 0; adjacent = 0;
+    }
 
-    const { played, adjacent } = getComparisonValues();
+    // Elements rule: +1 to stat if element matches and rule is enabled
+    if (rules?.elements && playedCard.element && adjacentCard.element && playedCard.element === adjacentCard.element) {
+      played += 1;
+    }
+
+    // Ragnarok rule: +2 to all stats if ragnarok is enabled (simulate ragnarok phase)
+    if (rules?.ragnarok) {
+      played += 2;
+    }
+
+    // Custom capture rules
+    let captured = false;
+    if (rules?.captureRules) {
+      const { sameElement, higherValue, adjacent: adjacentRule } = rules.captureRules;
+      // sameElement: only capture if elements match
+      if (sameElement && playedCard.element === adjacentCard.element && played > adjacent) captured = true;
+      // higherValue: only capture if played > adjacent (default rule)
+      if (higherValue && played > adjacent) captured = true;
+      // adjacent: only capture if cards are adjacent (always true in this context)
+      if (adjacentRule && played > adjacent) captured = true;
+      // If none of the above, fallback to default
+      if (!sameElement && !higherValue && !adjacentRule) captured = played > adjacent;
+    } else {
+      captured = played > adjacent;
+    }
     return {
-      captured: played > adjacent,
+      captured,
       value: played - adjacent
     };
   }
@@ -147,11 +178,10 @@ export class GameLogic {
 
       const adjacentCards = this.getAdjacentCards(newBoard, currentPos);
       
-      // Check normal captures
+      // Check normal captures with all rules
       adjacentCards.forEach(({ card: adjacentCard, direction, position: adjPos }) => {
         if (adjacentCard.owner === currentTurn) return;
-        
-        const { captured } = this.compareCards(currentCard, adjacentCard, direction);
+        const { captured } = this.compareCards(currentCard, adjacentCard, direction, rules);
         if (captured) {
           newBoard[adjPos.row][adjPos.col] = {
             ...newBoard[adjPos.row][adjPos.col]!,

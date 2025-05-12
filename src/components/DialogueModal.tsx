@@ -62,7 +62,15 @@ const DialogueModal: React.FC<DialogueModalProps> = ({ open, onClose, dialogue }
               {line.portraitUrl && <img src={line.portraitUrl} alt={line.speaker} style={{ width: 64, height: 64, borderRadius: 32, marginBottom: 16 }} />}
               <strong style={{ color: '#ffd700', fontFamily: 'NorseBold, Norse, serif', fontSize: '1.2rem', textShadow: '0 0 8px #ffd70088' }}>{line.speaker}:</strong>
               <p style={{ color: '#ffe066', fontSize: '1.1rem', marginBottom: '1.5rem', textAlign: 'center', fontFamily: 'Norse, serif' }}>{line.text}</p>
-              <button onClick={next} style={{ padding: '0.8rem 2.2rem', fontSize: '1.2rem', borderRadius: 8, border: '2px solid #ffd700', background: '#ffd700', color: '#1a1a1a', fontFamily: 'Norse, serif', fontWeight: 'bold', letterSpacing: 1, cursor: 'pointer', boxShadow: '0 0 12px 2px #ffd70033, 0 4px 16px rgba(0,0,0,0.18)', textShadow: '0 1px 6px #fff8, 0 0 2px #ffd70044', marginTop: '1.2rem', transition: 'background 0.2s, box-shadow 0.2s' }}>{index < dialogue.length - 1 ? 'Next' : 'Close'}</button>
+              <motion.button
+                onClick={next}
+                style={{ padding: '0.8rem 2.2rem', fontSize: '1.2rem', borderRadius: 8, border: '2px solid #ffd700', background: '#ffd700', color: '#1a1a1a', fontFamily: 'Norse, serif', fontWeight: 700, letterSpacing: 1, cursor: 'pointer', boxShadow: '0 0 12px 2px #ffd70033', transition: 'background 0.2s, color 0.2s' }}
+                whileHover={{ scale: 1.06, boxShadow: '0 0 18px #ffd70088' }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              >
+                {index < dialogue.length - 1 ? 'Next' : 'Close'}
+              </motion.button>
             </div>
           </motion.div>
         )}

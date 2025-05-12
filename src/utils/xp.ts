@@ -1,11 +1,11 @@
 export function xpForLevel(level: number): number {
-  // Total XP required to reach this level
-  return 100 * ((level - 1) * level) / 2;
+  // Non-linear XP curve: XP required to reach this level
+  return Math.round(100 * Math.pow(level, 1.7));
 }
 
 export function xpToNextLevel(currentLevel: number): number {
   // XP required to go from currentLevel to currentLevel+1
-  return 100 * currentLevel;
+  return xpForLevel(currentLevel + 1) - xpForLevel(currentLevel);
 }
 
 export function getLevelFromXP(xp: number): number {

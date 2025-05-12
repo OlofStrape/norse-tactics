@@ -1,0 +1,146 @@
+[CARDS]
+# Card images (one per card, use .jpg as in code)
+# Format: Card | [Card Name] | cards/[card-id].jpg
+Card | Odin | cards/odin.jpg
+Card | Thor | cards/thor.jpg
+Card | Loki | cards/loki.jpg
+Card | Freya | cards/freya.jpg
+Card | Tyr | cards/tyr.jpg
+Card | Heimdall | cards/heimdall.jpg
+Card | Baldur | cards/baldur.jpg
+Card | Frigg | cards/frigg.jpg
+Card | Njörð | cards/njord.jpg
+Card | Freyr | cards/freyr.jpg
+Card | Iðunn | cards/idun.jpg
+Card | Bragi | cards/bragi.jpg
+Card | Forseti | cards/forseti.jpg
+Card | Ullr | cards/ullr.jpg
+Card | Skaði | cards/skadi.jpg
+Card | Fenrir | cards/fenrir.jpg
+Card | Jörmungandr | cards/jormungandr.jpg
+Card | Níðhöggr | cards/nidhogg.jpg
+Card | Sleipnir | cards/sleipnir.jpg
+Card | Ratatösk | cards/ratatosk.jpg
+Card | Garmr | cards/garmr.jpg
+Card | Surtr | cards/surtr.jpg
+Card | Ymir | cards/ymir.jpg
+Card | Thrym | cards/thrym.jpg
+Card | Útgarða-Loki | cards/utgard-loki.jpg
+Card | Hrungnir | cards/hrungnir.jpg
+Card | Þjazi | cards/thiazi.jpg
+Card | Brynhildr | cards/brunhild.jpg
+Card | Sigrdrífa | cards/sigrdriva.jpg
+Card | Göndul | cards/gondul.jpg
+Card | Hildr | cards/hildr.jpg
+Card | Sigurd | cards/sigurd.jpg
+Card | Beowulf | cards/beowulf.jpg
+Card | Erik the Red | cards/erik.jpg
+Card | Leif Erikson | cards/leif.jpg
+Card | Ivar the Boneless | cards/ivar.jpg
+Card | Björn Ironside | cards/bjorn.jpg
+Card | Mjölnir | cards/mjolnir.jpg
+Card | Gungnir | cards/gungnir.jpg
+Card | Gleipnir | cards/gleipnir.jpg
+Card | Draupnir | cards/draupnir.jpg
+Card | Brísingamen | cards/brisingamen.jpg
+Card | Yggdrasil | cards/yggdrasil.jpg
+Card | Asgard | cards/asgard.jpg
+Card | Vanaheim | cards/vanaheim.jpg
+Card | Jötunheim | cards/jotunheim.jpg
+Card | Niflheim | cards/niflheim.jpg
+Card | Muspelheim | cards/muspelheim.jpg
+Card | Viking Warrior | cards/viking-warrior.jpg
+Card | Berserker | cards/berserker.jpg
+Card | Shield Maiden | cards/shield-maiden.jpg
+Card | Draugr | cards/draugr.jpg
+Card | Einherjar | cards/einherjar.jpg
+Card | Freyr the Alfar King | cards/freyr-king.jpg
+Card | Light Elf Archer | cards/light-elf-archer.jpg
+Card | Alfheim Mystic | cards/alfheim-mystic.jpg
+Card | Light Elf Scout | cards/light-elf-scout.jpg
+Card | Light Elf Warrior | cards/alfheim-warrior.jpg
+Card | Eitri | cards/eitri.jpg
+Card | Brokkr | cards/brokkr.jpg
+Card | Dwarven Smith | cards/dwarf-smith.jpg
+Card | Dwarven Warrior | cards/dwarf-warrior.jpg
+Card | Dwarven Runemaster | cards/dwarf-runemaster.jpg
+Card | Malekith | cards/malekith.jpg
+Card | Dark Elf Assassin | cards/dark-elf-assassin.jpg
+Card | Shadow Weaver | cards/shadow-weaver.jpg
+Card | Dark Elf Ranger | cards/dark-elf-ranger.jpg
+Card | Hel | cards/hel.jpg
+Card | Garm | cards/garm.jpg
+Card | Draugr Lord | cards/draugr-lord.jpg
+Card | Warrior of Hel | cards/hel-warrior.jpg
+Card | Ghost Viking | cards/ghost-viking.jpg
+Card | Gullinkambi | cards/gullinkambi.jpg
+Card | Hræsvelgr | cards/hraesvelgr.jpg
+Card | Veðrfölnir | cards/vedrfolnir.jpg
+Card | Auðumbla | cards/audhumbla.jpg
+Card | Huginn | cards/huginn.jpg
+Card | Muninn | cards/muninn.jpg
+Card | Gram | cards/gram.jpg
+Card | Hofund | cards/hofund.jpg
+Card | Megingjörð | cards/megingjord.jpg
+Card | Andvaranaut | cards/andvaranaut.jpg
+Card | Óðrœrir | cards/odroerir.jpg
+Card | Bifröst | cards/bifrost.jpg
+Card | Valhalla | cards/valhalla.jpg
+Card | Fólkvangr | cards/folkvangr.jpg
+Card | Gimlé | cards/gimli.jpg
+Card | Hvergelmir | cards/hvergelmir.jpg
+
+[REALMS]
+# Realm/world images (one per realm, use .jpg or .png)
+# Format: Realm | [Realm Name] | realms/[realm-id].jpg
+Realm | Midgard | realms/midgard.jpg
+Realm | Asgard | realms/asgard.jpg
+Realm | Vanaheim | realms/vanaheim.jpg
+Realm | Alfheim | realms/alfheim.jpg
+Realm | Jötunheim | realms/jotunheim.jpg
+Realm | Nidavellir | realms/nidavellir.jpg
+Realm | Muspelheim | realms/muspelheim.jpg
+Realm | Niflheim | realms/niflheim.jpg
+Realm | Helheim | realms/helheim.jpg
+
+[STATUS ICONS]
+# Card status/effect icons (use .png or .svg)
+# Format: Status | [Status Name] | icons/status-[status].png
+Status | Stunned | icons/status-stunned.png
+Status | Poisoned | icons/status-poisoned.png
+Status | Buffed | icons/status-buffed.png
+Status | Debuffed | icons/status-debuffed.png
+Status | Shielded | icons/status-shielded.png
+Status | Frozen | icons/status-frozen.png
+Status | Burning | icons/status-burning.png
+Status | Silenced | icons/status-silenced.png
+Status | Chained | icons/status-chained.png
+Status | Empowered | icons/status-empowered.png
+Status | Weakened | icons/status-weakened.png
+Status | Marked | icons/status-marked.png
+Status | Protected | icons/status-protected.png
+
+[ELEMENT ICONS]
+# Element icons (use .png or .svg)
+# Format: Element | [Element Name] | icons/element-[element].png
+Element | Fire | icons/element-fire.png
+Element | Ice | icons/element-ice.png
+Element | Lightning | icons/element-lightning.png
+Element | None | icons/element-none.png
+
+[RARITY ICONS]
+# Rarity icons (use .png or .svg)
+# Format: Rarity | [Rarity Name] | icons/rarity-[rarity].png
+Rarity | Common | icons/rarity-common.png
+Rarity | Rare | icons/rarity-rare.png
+Rarity | Epic | icons/rarity-epic.png
+Rarity | Legendary | icons/rarity-legendary.png
+
+[ABILITY TRIGGER ICONS]
+# Ability trigger icons (use .png or .svg)
+# Format: Ability | [Trigger Type] | icons/ability-[trigger].png
+Ability | On Play | icons/ability-onplay.png
+Ability | On Capture | icons/ability-oncapture.png
+Ability | On Loss | icons/ability-onloss.png
+Ability | Passive | icons/ability-passive.png
+Ability | Ragnarök | icons/ability-ragnarok.png 
