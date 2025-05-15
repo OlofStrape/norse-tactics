@@ -525,119 +525,99 @@ export const GameSession: React.FC<GameSessionProps> = ({
     };
   }
 
-  const fontStyles = `
-    @font-face {
-      font-family: 'Norse';
-      src: url('/fonts/Norse1.woff2') format('woff2'),
-           url('/fonts/Norse1.woff') format('woff');
-      font-weight: normal;
-      font-style: normal;
-    }
-    @font-face {
-      font-family: 'NorseBold';
-      src: url('/fonts/Norsebold1.woff2') format('woff2'),
-           url('/fonts/Norsebold1.woff') format('woff');
-      font-weight: bold;
-      font-style: normal;
-    }
-  `;
-
   return (
-    <>
-      <style>{fontStyles}</style>
-      <AppContainer style={{ position: 'relative', background: 'none' }}>
-        <BackButton onClick={() => navigate('/')} aria-label="Back to Menu">
-          ←
-        </BackButton>
-        <MuteButton onClick={() => setMuted(m => !m)} aria-label={muted ? 'Unmute' : 'Mute'}>
-          {muted ? (
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M4 8V14H8L14 20V2L8 8H4Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
-              <line x1="17" y1="7" x2="21" y2="15" stroke="currentColor" strokeWidth="2"/>
-              <line x1="21" y1="7" x2="17" y2="15" stroke="currentColor" strokeWidth="2"/>
-            </svg>
-          ) : (
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M4 8V14H8L14 20V2L8 8H4Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
-              <path d="M17 7C18.6569 8.65685 18.6569 11.3431 17 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              <path d="M19 4C22.3137 7.31371 22.3137 12.6863 19 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
-          )}
-        </MuteButton>
-        {title && <Title>{title}</Title>}
-        {isAIThinking && <LoadingSpinner text="AI is thinking..." />}
-        <EndGameModal
-          isOpen={isGameOver}
-          winner={winner || 'draw'}
-          playerScore={gameState.score.player}
-          opponentScore={gameState.score.opponent}
-          onRestart={() => window.location.reload()}
-        />
-        {/* Turn marker bar at the very top */}
-        <TurnBar>
-          <PlayerLabel active={gameState.currentTurn === 'player'}>
-            Player 1 <Score>({gameState.score.player})</Score>
-          </PlayerLabel>
-          <Clock>⏳ {gameState.currentTurn === 'player' ? turnTimer : 30}</Clock>
-          <PlayerLabel active={gameState.currentTurn === 'opponent'}>
-            Player 2 <Score>({gameState.score.opponent})</Score>
-          </PlayerLabel>
-        </TurnBar>
-        <GameContainer>
-          {/* Player 2 hand (top, horizontal) */}
-          <HandContainer className="player2">
-            {(() => {
-              const hand = gameState.player2Hand;
-              const emptySlots = Math.max(0, 5 - hand.length);
-              return [
-                ...hand.map(card => (
-                  <CardWrapper key={card.id} style={selectedCard && selectedCard.id === card.id ? { border: '2px solid #ffd700', boxShadow: '0 0 8px #ffd700' } : {}}>
-                    <GameCard
-                      card={card}
-                      isPlayable={gameState.currentTurn === 'opponent'}
-                      onClick={() => handleCardSelect(card)}
-                      isCapturing={capturingCards.has(card.id)}
-                      isChainReaction={chainReactionCards.has(card.id)}
-                    />
-                  </CardWrapper>
-                )),
-                ...Array(emptySlots).fill(null).map((_, i) => <div key={`empty-p2-${i}`} />)
-              ];
-            })()}
-          </HandContainer>
-          <div style={{ height: '2.4rem' }} />
-          {/* Board in the center */}
-          <BoardWrapper>
-            <GameBoard
-              gameState={gameState}
-              onCellClick={handleCellClick}
-              onCapture={handleCapture}
-            />
-          </BoardWrapper>
-          <div style={{ height: '1.2rem' }} />
-          {/* Player 1 hand (bottom, horizontal) */}
-          <HandContainer className="player1">
-            {(() => {
-              const hand = gameState.player1Hand;
-              const emptySlots = Math.max(0, 5 - hand.length);
-              return [
-                ...hand.map(card => (
-                  <CardWrapper key={card.id} style={selectedCard && selectedCard.id === card.id ? { border: '2px solid #ffd700', boxShadow: '0 0 8px #ffd700' } : {}}>
-                    <GameCard
-                      card={card}
-                      isPlayable={gameState.currentTurn === 'player'}
-                      onClick={() => handleCardSelect(card)}
-                      isCapturing={capturingCards.has(card.id)}
-                      isChainReaction={chainReactionCards.has(card.id)}
-                    />
-                  </CardWrapper>
-                )),
-                ...Array(emptySlots).fill(null).map((_, i) => <div key={`empty-p1-${i}`} />)
-              ];
-            })()}
-          </HandContainer>
-        </GameContainer>
-      </AppContainer>
-    </>
+    <AppContainer style={{ position: 'relative', background: 'none' }}>
+      <BackButton onClick={() => navigate('/')} aria-label="Back to Menu">
+        ←
+      </BackButton>
+      <MuteButton onClick={() => setMuted(m => !m)} aria-label={muted ? 'Unmute' : 'Mute'}>
+        {muted ? (
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 8V14H8L14 20V2L8 8H4Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+            <line x1="17" y1="7" x2="21" y2="15" stroke="currentColor" strokeWidth="2"/>
+            <line x1="21" y1="7" x2="17" y2="15" stroke="currentColor" strokeWidth="2"/>
+          </svg>
+        ) : (
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 8V14H8L14 20V2L8 8H4Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+            <path d="M17 7C18.6569 8.65685 18.6569 11.3431 17 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            <path d="M19 4C22.3137 7.31371 22.3137 12.6863 19 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+        )}
+      </MuteButton>
+      {title && <Title>{title}</Title>}
+      {isAIThinking && <LoadingSpinner text="AI is thinking..." />}
+      <EndGameModal
+        isOpen={isGameOver}
+        winner={winner || 'draw'}
+        playerScore={gameState.score.player}
+        opponentScore={gameState.score.opponent}
+        onRestart={() => window.location.reload()}
+      />
+      {/* Turn marker bar at the very top */}
+      <TurnBar>
+        <PlayerLabel active={gameState.currentTurn === 'player'}>
+          Player 1 <Score>({gameState.score.player})</Score>
+        </PlayerLabel>
+        <Clock>⏳ {gameState.currentTurn === 'player' ? turnTimer : 30}</Clock>
+        <PlayerLabel active={gameState.currentTurn === 'opponent'}>
+          Player 2 <Score>({gameState.score.opponent})</Score>
+        </PlayerLabel>
+      </TurnBar>
+      <GameContainer>
+        {/* Player 2 hand (top, horizontal) */}
+        <HandContainer className="player2">
+          {(() => {
+            const hand = gameState.player2Hand;
+            const emptySlots = Math.max(0, 5 - hand.length);
+            return [
+              ...hand.map(card => (
+                <CardWrapper key={card.id} style={selectedCard && selectedCard.id === card.id ? { border: '2px solid #ffd700', boxShadow: '0 0 8px #ffd700' } : {}}>
+                  <GameCard
+                    card={card}
+                    isPlayable={gameState.currentTurn === 'opponent'}
+                    onClick={() => handleCardSelect(card)}
+                    isCapturing={capturingCards.has(card.id)}
+                    isChainReaction={chainReactionCards.has(card.id)}
+                  />
+                </CardWrapper>
+              )),
+              ...Array(emptySlots).fill(null).map((_, i) => <div key={`empty-p2-${i}`} />)
+            ];
+          })()}
+        </HandContainer>
+        <div style={{ height: '2.4rem' }} />
+        {/* Board in the center */}
+        <BoardWrapper>
+          <GameBoard
+            gameState={gameState}
+            onCellClick={handleCellClick}
+            onCapture={handleCapture}
+          />
+        </BoardWrapper>
+        <div style={{ height: '1.2rem' }} />
+        {/* Player 1 hand (bottom, horizontal) */}
+        <HandContainer className="player1">
+          {(() => {
+            const hand = gameState.player1Hand;
+            const emptySlots = Math.max(0, 5 - hand.length);
+            return [
+              ...hand.map(card => (
+                <CardWrapper key={card.id} style={selectedCard && selectedCard.id === card.id ? { border: '2px solid #ffd700', boxShadow: '0 0 8px #ffd700' } : {}}>
+                  <GameCard
+                    card={card}
+                    isPlayable={gameState.currentTurn === 'player'}
+                    onClick={() => handleCardSelect(card)}
+                    isCapturing={capturingCards.has(card.id)}
+                    isChainReaction={chainReactionCards.has(card.id)}
+                  />
+                </CardWrapper>
+              )),
+              ...Array(emptySlots).fill(null).map((_, i) => <div key={`empty-p1-${i}`} />)
+            ];
+          })()}
+        </HandContainer>
+      </GameContainer>
+    </AppContainer>
   );
 };

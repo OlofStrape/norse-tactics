@@ -118,6 +118,23 @@ const RuleButton = styled.button<{ active: boolean }>`
   }
 `;
 
+const fontFaces = css`
+  @font-face {
+    font-family: 'Norse';
+    src: url('/fonts/Norse1.woff2') format('woff2'),
+         url('/fonts/Norse1.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+  }
+  @font-face {
+    font-family: 'NorseBold';
+    src: url('/fonts/Norsebold1.woff2') format('woff2'),
+         url('/fonts/Norsebold1.woff') format('woff');
+    font-weight: bold;
+    font-style: normal;
+  }
+`;
+
 const fontStyles = css`
   @font-face {
     font-family: 'Norse';
@@ -607,6 +624,7 @@ const AppRoutes: React.FC = () => {
 const App: React.FC = () => {
   return (
     <>
+      <Global styles={fontFaces} />
       <Global styles={fontStyles} />
       <DndProvider backend={HTML5Backend}>
         <Router>

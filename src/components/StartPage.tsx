@@ -6,24 +6,6 @@ import { Tutorial } from './Tutorial';
 import { tutorialSteps } from '../data/tutorials';
 import { motion } from 'framer-motion';
 
-// Add font-face rules for Norse and Norse Bold
-const fontStyles = `
-  @font-face {
-    font-family: 'Norse';
-    src: url('/fonts/Norse1.woff2') format('woff2'),
-         url('/fonts/Norse1.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-  }
-  @font-face {
-    font-family: 'NorseBold';
-    src: url('/fonts/Norsebold1.woff2') format('woff2'),
-         url('/fonts/Norsebold1.woff') format('woff');
-    font-weight: bold;
-    font-style: normal;
-  }
-`;
-
 const Container = styled.div`
   min-height: 100vh;
   display: flex;
@@ -144,7 +126,6 @@ const StartPage: React.FC<StartPageProps> = ({ multiplayerUnlocked }) => {
   const [showHowToPlay, setShowHowToPlay] = React.useState(false);
   return (
     <Container>
-      <style>{fontStyles}</style>
       <Global styles={css`
         body {
           min-height: 100vh;

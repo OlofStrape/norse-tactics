@@ -114,23 +114,6 @@ const DeckBuilder: React.FC = () => {
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
-  const fontStyles = `
-    @font-face {
-      font-family: 'Norse';
-      src: url('/fonts/Norse1.woff2') format('woff2'),
-           url('/fonts/Norse1.woff') format('woff');
-      font-weight: normal;
-      font-style: normal;
-    }
-    @font-face {
-      font-family: 'NorseBold';
-      src: url('/fonts/Norsebold1.woff2') format('woff2'),
-           url('/fonts/Norsebold1.woff') format('woff');
-      font-weight: bold;
-      font-style: normal;
-    }
-  `;
-
   const toggleCard = (cardId: string) => {
     if (deck.includes(cardId)) {
       setDeck(deck.filter(id => id !== cardId));
@@ -150,7 +133,6 @@ const DeckBuilder: React.FC = () => {
 
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url(https://res.cloudinary.com/dvfobknn4/image/upload/v1746867992/Background_snigeo.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', fontFamily: 'Norse, serif', padding: '2rem 0' }}>
-      <style>{fontStyles}</style>
       <button
         style={{
           position: 'absolute',
