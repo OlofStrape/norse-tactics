@@ -23,16 +23,26 @@ const Container = styled.div`
   justify-content: flex-start;
   position: relative;
   padding: 1.1rem 0 0 0;
+  width: 100vw;
+  box-sizing: border-box;
+  @media (max-width: 700px) {
+    padding: 0.5rem 0 0 0;
+    width: 100vw;
+  }
 `;
 
 const Title = styled.h1`
   font-family: 'Norse', 'Cinzel Decorative', serif;
-  font-size: 3rem;
+  font-size: clamp(2rem, 6vw, 3rem);
   margin-top: 0.2rem;
   margin-bottom: 0.3rem;
   text-align: center;
   color: #ffd700;
   text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  @media (max-width: 700px) {
+    font-size: clamp(1.2rem, 8vw, 2.2rem);
+    margin-bottom: 0.7rem;
+  }
 `;
 
 const SubTitle = styled.div`
@@ -77,53 +87,56 @@ const BackButton = styled.button`
 const InfoPanel = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-  justify-content: center;
+  align-items: center;
+  justify-content: flex-start;
   width: 100%;
-  max-width: 270px;
+  max-width: 420px;
   background: #222c;
   border-radius: 16px;
   box-shadow: 0 2px 12px #0006;
-  padding: 1.1rem 0;
+  padding: 2rem 1.2rem 2rem 1.2rem;
   margin: 0 auto 1.2rem auto;
-  gap: 2rem;
+  gap: 1.2rem;
   box-sizing: border-box;
   @media (max-width: 700px) {
-    flex-direction: column;
-    align-items: center;
     max-width: 98vw;
-    padding: 0.7rem 0;
-    gap: 0.5rem;
+    width: 95vw;
+    padding: 1rem 0.5rem;
+    gap: 0.7rem;
   }
-`;
-
-const InfoPanelTop = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  gap: 1.2rem;
 `;
 
 const AvatarBlock = styled.div`
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  width: 100%;
-  margin-bottom: 0.2rem;
+  justify-content: center;
+  width: 72px;
+  min-width: 72px;
+  height: 100px;
+  margin: 0 auto 0.5rem auto;
   @media (max-width: 700px) {
+    width: 44px;
+    min-width: 44px;
+    height: 60px;
     margin-bottom: 0.3rem;
   }
+`;
+
+const NameEditBlock = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin: 0.2rem 0 0.7rem 0;
+  gap: 0.5rem;
 `;
 
 const NameBlock = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 0.2rem;
-  width: 100%;
+  justify-content: center;
+  min-width: 0;
 `;
 
 const LevelBlock = styled.div`
@@ -144,15 +157,17 @@ const LevelBlock = styled.div`
 const ButtonBlock = styled.div`
   display: flex;
   flex-direction: row;
-  gap: 0.7rem;
+  gap: 0.5rem;
   justify-content: center;
   align-items: center;
   width: 100%;
-  margin-top: 0.2rem;
+  margin: 0.7rem 0 0 0;
   @media (max-width: 700px) {
     flex-direction: column;
     gap: 0.5rem;
-    margin-top: 0.3rem;
+    width: 100%;
+    justify-content: center;
+    margin: 0.5rem 0 0 0;
   }
 `;
 
@@ -428,13 +443,15 @@ const CampaignPage: React.FC = () => {
       <Global styles={css`
         @font-face {
           font-family: 'Norse';
-          src: url('/fonts/Norse1.otf') format('opentype');
+          src: url('/fonts/Norse1.woff2') format('woff2'),
+               url('/fonts/Norse1.woff') format('woff');
           font-weight: normal;
           font-style: normal;
         }
         @font-face {
           font-family: 'NorseBold';
-          src: url('/fonts/Norsebold1.otf') format('opentype');
+          src: url('/fonts/Norsebold1.woff2') format('woff2'),
+               url('/fonts/Norsebold1.woff') format('woff');
           font-weight: bold;
           font-style: normal;
         }
@@ -454,102 +471,100 @@ const CampaignPage: React.FC = () => {
       <Title>Campaign</Title>
       <SubTitle>{selectedRealm ? campaignStory.chapters[selectedRealm].title : 'Select a realm to view quests'}</SubTitle>
       <InfoPanel>
-        <InfoPanelTop>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flex: 1, minWidth: 0 }}>
-            <AvatarBlock>
-              <div style={{ width: 72, height: 100, borderRadius: 10, background: '#181818', boxShadow: '0 0 8px #000a', marginBottom: 4, position: 'relative', cursor: 'pointer' }} onClick={() => setAvatarSelectOpen(true)} title="Change Avatar">
-                {playerProfile.avatar ? (
-                  <img src={cards.find(c => c.id === playerProfile.avatar)?.image} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: 10, objectFit: 'cover', border: '2px solid #ffd700' }} />
-                ) : (
-                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffd700', fontSize: 32 }}>?</div>
-                )}
-                <span style={{ position: 'absolute', bottom: 2, right: 6, fontSize: 18, color: '#ffd700', textShadow: '0 0 6px #000' }}>✎</span>
-              </div>
-            </AvatarBlock>
-            <NameBlock>
-              {editingName ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <input
-                    value={nameInput}
-                    onChange={e => setNameInput(e.target.value)}
-                    style={{ fontSize: 18, borderRadius: 6, border: '1px solid #ffd700', padding: '2px 8px', fontFamily: 'Norse, serif', color: '#222', background: '#ffd700', fontWeight: 'bold', width: 90 }}
-                    maxLength={16}
-                    autoFocus
-                  />
-                  <button onClick={handleSaveName} style={{ background: '#ffd700', color: '#222', border: 'none', borderRadius: 6, fontWeight: 'bold', padding: '2px 10px', cursor: 'pointer' }}>✔</button>
-                  <button onClick={() => setEditingName(false)} style={{ background: '#888', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', padding: '2px 10px', cursor: 'pointer' }}>✖</button>
-                </div>
-              ) : (
-                <div style={{ fontSize: 20, fontWeight: 'bold', color: '#ffd700', cursor: 'pointer', textShadow: '0 0 6px #ffd70088' }} onClick={() => setEditingName(true)} title="Edit Name">{playerProfile.name}</div>
-              )}
-            </NameBlock>
+        <AvatarBlock>
+          <div style={{ width: 72, height: 100, borderRadius: 10, background: '#181818', boxShadow: '0 0 8px #000a', marginBottom: 4, position: 'relative', cursor: 'pointer' }} onClick={() => setAvatarSelectOpen(true)} title="Change Avatar">
+            {playerProfile.avatar ? (
+              <img src={cards.find(c => c.id === playerProfile.avatar)?.image} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: 10, objectFit: 'cover', border: '2px solid #ffd700' }} />
+            ) : (
+              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffd700', fontSize: 32 }}>?</div>
+            )}
+            <span style={{ position: 'absolute', bottom: 2, right: 6, fontSize: 18, color: '#ffd700', textShadow: '0 0 6px #000' }}>✎</span>
           </div>
-          <ButtonBlock style={{ alignItems: 'flex-end', flex: 1, maxWidth: 180 }}>
-            <button
-              style={{
-                padding: '0.7rem 1.2rem',
-                fontSize: '1.05rem',
-                borderRadius: 8,
-                border: '2px solid #ffd700',
-                background: '#181818',
-                color: '#ffd700',
-                fontFamily: 'Norsebold, Norse, serif',
-                fontWeight: 'bold',
-                letterSpacing: 1,
-                cursor: 'pointer',
-                boxShadow: '0 0 12px 2px #ffd70033',
-                transition: 'background 0.2s, color 0.2s',
-                width: '100%',
-                maxWidth: 160,
-              }}
-              onClick={() => navigate('/collection')}
-            >
-              Card Collection
-            </button>
-            <button
-              style={{
-                padding: '0.7rem 1.2rem',
-                fontSize: '1.05rem',
-                borderRadius: 8,
-                border: '2px solid #ffd700',
-                background: '#181818',
-                color: '#ffd700',
-                fontFamily: 'Norsebold, Norse, serif',
-                fontWeight: 'bold',
-                letterSpacing: 1,
-                cursor: 'pointer',
-                boxShadow: '0 0 12px 2px #ffd70033',
-                transition: 'background 0.2s, color 0.2s',
-                width: '100%',
-                maxWidth: 160,
-              }}
-              onClick={() => navigate('/deck-builder')}
-            >
-              Deck Builder
-            </button>
-            <button
-              style={{
-                padding: '0.7rem 1.2rem',
-                fontSize: '1.05rem',
-                borderRadius: 8,
-                border: '2px solid #ffd700',
-                background: '#181818',
-                color: '#ffd700',
-                fontFamily: 'Norsebold, Norse, serif',
-                fontWeight: 'bold',
-                letterSpacing: 1,
-                cursor: 'pointer',
-                boxShadow: '0 0 12px 2px #ffd70033',
-                transition: 'background 0.2s, color 0.2s',
-                width: '100%',
-                maxWidth: 160,
-              }}
-              onClick={() => setShowLoreJournal(true)}
-            >
-              Lore Journal
-            </button>
-          </ButtonBlock>
-        </InfoPanelTop>
+        </AvatarBlock>
+        <NameEditBlock>
+          <NameBlock>
+            {editingName ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <input
+                  value={nameInput}
+                  onChange={e => setNameInput(e.target.value)}
+                  style={{ fontSize: 18, borderRadius: 6, border: '1px solid #ffd700', padding: '2px 8px', fontFamily: 'Norse, serif', color: '#222', background: '#ffd700', fontWeight: 'bold', width: 90 }}
+                  maxLength={16}
+                  autoFocus
+                />
+                <button onClick={handleSaveName} style={{ background: '#ffd700', color: '#222', border: 'none', borderRadius: 6, fontWeight: 'bold', padding: '2px 10px', cursor: 'pointer' }}>✔</button>
+                <button onClick={() => setEditingName(false)} style={{ background: '#888', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', padding: '2px 10px', cursor: 'pointer' }}>✖</button>
+              </div>
+            ) : (
+              <div style={{ fontSize: 20, fontWeight: 'bold', color: '#ffd700', cursor: 'pointer', textShadow: '0 0 6px #ffd70088' }} onClick={() => setEditingName(true)} title="Edit Name">{playerProfile.name}</div>
+            )}
+          </NameBlock>
+        </NameEditBlock>
+        <ButtonBlock>
+          <button
+            style={{
+              padding: '0.7rem 1.2rem',
+              fontSize: '1.05rem',
+              borderRadius: 8,
+              border: '2px solid #ffd700',
+              background: '#181818',
+              color: '#ffd700',
+              fontFamily: 'Norsebold, Norse, serif',
+              fontWeight: 'bold',
+              letterSpacing: 1,
+              cursor: 'pointer',
+              boxShadow: '0 0 12px 2px #ffd70033',
+              transition: 'background 0.2s, color 0.2s',
+              width: '100%',
+              maxWidth: 160,
+            }}
+            onClick={() => navigate('/collection')}
+          >
+            Card Collection
+          </button>
+          <button
+            style={{
+              padding: '0.7rem 1.2rem',
+              fontSize: '1.05rem',
+              borderRadius: 8,
+              border: '2px solid #ffd700',
+              background: '#181818',
+              color: '#ffd700',
+              fontFamily: 'Norsebold, Norse, serif',
+              fontWeight: 'bold',
+              letterSpacing: 1,
+              cursor: 'pointer',
+              boxShadow: '0 0 12px 2px #ffd70033',
+              transition: 'background 0.2s, color 0.2s',
+              width: '100%',
+              maxWidth: 160,
+            }}
+            onClick={() => navigate('/deck-builder')}
+          >
+            Deck Builder
+          </button>
+          <button
+            style={{
+              padding: '0.7rem 1.2rem',
+              fontSize: '1.05rem',
+              borderRadius: 8,
+              border: '2px solid #ffd700',
+              background: '#181818',
+              color: '#ffd700',
+              fontFamily: 'Norsebold, Norse, serif',
+              fontWeight: 'bold',
+              letterSpacing: 1,
+              cursor: 'pointer',
+              boxShadow: '0 0 12px 2px #ffd70033',
+              transition: 'background 0.2s, color 0.2s',
+              width: '100%',
+              maxWidth: 160,
+            }}
+            onClick={() => setShowLoreJournal(true)}
+          >
+            Lore Journal
+          </button>
+        </ButtonBlock>
         <LevelBlock>
           <div style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 2 }}>Level {progress.playerLevel}</div>
           <div style={{ fontSize: 15, marginBottom: 4 }}>XP: {progress.experience - ((progress.playerLevel - 1) * 1000)} / {progress.playerLevel * 1000}</div>
@@ -578,7 +593,7 @@ const CampaignPage: React.FC = () => {
       {/* Quest Start Modal */}
       {questToStart && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.82)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#222', borderRadius: 16, padding: 36, minWidth: 420, maxWidth: 600, color: '#ffd700', boxShadow: '0 0 32px #000', position: 'relative' }}>
+          <div style={{ background: '#222', borderRadius: 16, padding: 36, width: '95%', maxWidth: '98%', color: '#ffd700', boxShadow: '0 0 32px #000', position: 'relative' }}>
             <h2 style={{ fontFamily: 'Norsebold, Norse, serif', fontSize: 32, color: '#ffd700', marginBottom: 8, textShadow: '0 0 8px #ffd70088' }}>{questToStart.name}</h2>
             <div style={{ fontSize: 18, marginBottom: 12 }}>{questToStart.description}</div>
             {questToStart.specialRules && (
@@ -619,7 +634,7 @@ const CampaignPage: React.FC = () => {
       {/* Deck Edit Modal */}
       {deckModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#222', borderRadius: 12, padding: 32, minWidth: 400, maxWidth: 600, color: '#ffd700', boxShadow: '0 0 24px #000' }}>
+          <div style={{ background: '#222', borderRadius: 12, padding: 32, width: '95%', maxWidth: '98%', color: '#ffd700', boxShadow: '0 0 24px #000' }}>
             <h2 style={{ color: '#ffd700', marginBottom: 12 }}>Edit Your Deck</h2>
             <div style={{ marginBottom: 16 }}>Select up to 5 cards for your deck:</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 24 }}>
@@ -651,7 +666,7 @@ const CampaignPage: React.FC = () => {
       {/* Level Up Modal */}
       {levelUpModalOpen && newLevel && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.82)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#222', borderRadius: 20, padding: 48, minWidth: 340, maxWidth: 420, color: '#ffd700', boxShadow: '0 0 32px #000', textAlign: 'center', position: 'relative' }}>
+          <div style={{ background: '#222', borderRadius: 20, padding: 48, width: '95%', maxWidth: '98%', color: '#ffd700', boxShadow: '0 0 32px #000', textAlign: 'center', position: 'relative' }}>
             <h2 style={{ fontFamily: 'Norsebold, Norse, serif', fontSize: 38, color: '#ffd700', marginBottom: 12, textShadow: '0 0 12px #ffd70088' }}>Level Up!</h2>
             <div style={{ fontSize: 24, marginBottom: 16 }}>You reached <span style={{ color: '#fff', fontWeight: 'bold' }}>Level {newLevel}</span>!</div>
             <div style={{ fontSize: 18, marginBottom: 24 }}>Keep playing to unlock new quests, realms, and rewards.</div>
@@ -662,7 +677,7 @@ const CampaignPage: React.FC = () => {
       {/* Avatar selection modal */}
       {avatarSelectOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.82)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#222', borderRadius: 20, padding: 36, minWidth: 340, maxWidth: 520, color: '#ffd700', boxShadow: '0 0 32px #000', textAlign: 'center', position: 'relative' }}>
+          <div style={{ background: '#222', borderRadius: 20, padding: 36, width: '95%', maxWidth: '98%', color: '#ffd700', boxShadow: '0 0 32px #000', textAlign: 'center', position: 'relative' }}>
             <h2 style={{ fontFamily: 'Norsebold, Norse, serif', fontSize: 28, color: '#ffd700', marginBottom: 12, textShadow: '0 0 8px #ffd70088' }}>Select Avatar</h2>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'center', marginBottom: 18 }}>
               {progress.unlockedCards && progress.unlockedCards.map((cardId: string) => {

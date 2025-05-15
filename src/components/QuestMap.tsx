@@ -33,13 +33,14 @@ const MapContainer = styled.div`
     box-shadow: 0 0 32px #000a;
     font-family: 'Norse', serif;
     touch-action: pan-x pan-y;
+    padding: 10px;
     @media (max-width: 700px) {
         aspect-ratio: 3/4;
         min-height: 180px;
         max-height: 70vw;
         min-width: 180px;
         max-width: 98vw;
-        padding: 0;
+        padding: 6px;
     }
 `;
 
@@ -68,10 +69,11 @@ const RealmNode = styled(motion.div)<{
     x: number;
     y: number;
 }>`
-    width: 90%;
-    height: 90%;
+    width: 80%;
+    height: 80%;
     max-width: 120px;
     max-height: 120px;
+    aspect-ratio: 1/1;
     border-radius: 50%;
     background: ${props => {
         if (!props.unlocked) return 'linear-gradient(135deg, #b0a98f 0%, #6e6651 100%)';
@@ -89,11 +91,12 @@ const RealmNode = styled(motion.div)<{
     transition: box-shadow 0.2s, background 0.2s;
     font-size: 1.1rem;
     @media (max-width: 700px) {
-        width: 90%;
-        height: 90%;
+        width: 80%;
+        height: 80%;
         max-width: 60px;
         max-height: 60px;
         font-size: 0.7rem;
+        aspect-ratio: 1/1;
     }
     &:hover {
         box-shadow: ${props => props.unlocked ? '0 0 32px 8px #ffd70088, 0 0 20px rgba(0,0,0,0.3)' : '0 0 20px rgba(0,0,0,0.3)'};
@@ -150,6 +153,7 @@ const GridRealmNode = styled(motion.div)<{ unlocked: boolean; completed: boolean
   width: 100%;
   height: 100%;
   pointer-events: auto;
+  aspect-ratio: 1/1;
 `;
 
 // Add Padlock SVG component

@@ -185,6 +185,7 @@ const QuestPanelModal: React.FC<QuestPanelModalProps> = ({ open, onClose, realm,
             quest={selectedQuest}
             unlocked={selectedQuest ? (selectedQuest.state === 'unlocked' || selectedQuest.state === 'completed') : false}
             completed={selectedQuest ? selectedQuest.state === 'completed' : false}
+            data-completed={selectedQuest ? selectedQuest.state === 'completed' : false}
           />
         </Modal>
       </Overlay>

@@ -528,13 +528,15 @@ export const GameSession: React.FC<GameSessionProps> = ({
   const fontStyles = `
     @font-face {
       font-family: 'Norse';
-      src: url('/fonts/Norse1.otf') format('opentype');
+      src: url('/fonts/Norse1.woff2') format('woff2'),
+           url('/fonts/Norse1.woff') format('woff');
       font-weight: normal;
       font-style: normal;
     }
     @font-face {
       font-family: 'NorseBold';
-      src: url('/fonts/Norsebold1.otf') format('opentype');
+      src: url('/fonts/Norsebold1.woff2') format('woff2'),
+           url('/fonts/Norsebold1.woff') format('woff');
       font-weight: bold;
       font-style: normal;
     }
