@@ -15,6 +15,8 @@ import { PlayerProgress } from '../types/player';
 import { Quest } from '../services/campaignService';
 import { LoadingSpinner } from './AILoadingIndicator';
 import { RewardModal } from './RewardModal';
+import { CampaignOnboardingModal } from './CampaignOnboardingModal';
+import StoryModal from './StoryModal';
 
 const Container = styled.div`
   min-height: 100vh;
@@ -274,7 +276,6 @@ function savePlayerProfile(name: string, avatar: string) {
 }
 
 const LoreJournal = React.lazy(() => import('./LoreJournal'));
-const StoryModal = React.lazy(() => import('./StoryModal'));
 const DialogueModal = React.lazy(() => import('./DialogueModal'));
 
 const CampaignPage: React.FC = () => {
@@ -298,6 +299,9 @@ const CampaignPage: React.FC = () => {
   const [showLoreJournal, setShowLoreJournal] = useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
   const [rewardModalCards, setRewardModalCards] = useState<{ id: string; name: string; image: string }[] | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem('campaignProgress'));
+  const [showNextTrialModal, setShowNextTrialModal] = useState(false);
+  const [nextQuest, setNextQuest] = useState<any | null>(null);
 
   // Calculate level from XP using new formula
   const playerLevel = getLevelFromXP(progress.experience);
@@ -347,7 +351,7 @@ const CampaignPage: React.FC = () => {
     return 'locked';
   }
 
-  // Handler for quest completion (simulate for now)
+  // After quest completion, show outro, then next trial modal
   function handleCompleteQuest(quest: any) {
     if (progress.completedQuests.includes(quest.id)) return;
     const newExp = progress.experience + (quest.rewards.experience || 0);
@@ -388,7 +392,34 @@ const CampaignPage: React.FC = () => {
     if (quest.storyOutro) {
       setQuestToStart(quest);
       setShowOutro(true);
+    } else {
+      // After outro, show next trial modal
+      handleShowNextTrial(quest);
     }
+  }
+
+  // Show next trial modal after outro/reward
+  function handleShowNextTrial(completedQuest: any) {
+    // Find next unlocked quest in the same realm
+    const realmQuests = allQuests.filter(q => q.location === completedQuest.location);
+    const completedIndex = realmQuests.findIndex(q => q.id === completedQuest.id);
+    let next = null;
+    for (let i = completedIndex + 1; i < realmQuests.length; i++) {
+      // Check if quest is unlocked (requirements met)
+      const q = realmQuests[i];
+      let unlocked = true;
+      if (q.requirements.playerLevel && playerLevel < q.requirements.playerLevel) unlocked = false;
+      if (q.requirements.completedQuests && q.requirements.completedQuests.length > 0 && !q.requirements.completedQuests.every((qid: string) => progress.completedQuests.includes(qid))) unlocked = false;
+      if (unlocked) { next = q; break; }
+    }
+    setNextQuest(next);
+    setShowNextTrialModal(!!next);
+  }
+
+  // When outro closes, show next trial modal
+  function handleOutroClose() {
+    setShowOutro(false);
+    if (questToStart) handleShowNextTrial(questToStart);
   }
 
   // Handler for quest start (open modal instead of navigating immediately)
@@ -460,12 +491,73 @@ const CampaignPage: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  // DEV: Reset Progress Button
+  const handleResetProgress = () => {
+    localStorage.removeItem('campaignProgress');
+    localStorage.removeItem('playerName');
+    localStorage.removeItem('playerAvatar');
+    localStorage.removeItem('cardCollection');
+    localStorage.removeItem('norse_muted');
+    localStorage.removeItem('playerPrevLevel');
+    window.location.reload();
+  };
+
+  // Onboarding complete handler
+  const handleOnboardingComplete = (playerName: string, chosenCards: string[]) => {
+    // Save to localStorage and campaignProgress
+    const progress = {
+      completedQuests: [],
+      playerLevel: 1,
+      experience: 0,
+      specialAbilities: [],
+      unlockedCards: chosenCards,
+      deck: chosenCards,
+      storyFlags: {}
+    };
+    localStorage.setItem('campaignProgress', JSON.stringify(progress));
+    localStorage.setItem('playerName', playerName);
+    localStorage.setItem('playerAvatar', chosenCards[0] || '');
+    localStorage.setItem('cardCollection', JSON.stringify(chosenCards));
+    setShowOnboarding(false);
+    // Find the first quest in Midgard
+    const firstQuest = allQuests.find(q => q.location === 'midgard');
+    if (firstQuest) {
+      navigate(`/campaign/${firstQuest.id}`);
+    } else {
+      window.location.reload();
+    }
+  };
+
   if (isLoading) {
     return <LoadingSpinner text="Loading campaign..." />;
   }
 
   return (
     <Container>
+      <CampaignOnboardingModal open={showOnboarding} onComplete={handleOnboardingComplete} />
+      {/* DEV ONLY: Reset Progress Button */}
+      <button
+        onClick={handleResetProgress}
+        style={{
+          position: 'fixed',
+          top: 12,
+          right: 12,
+          zIndex: 9999,
+          background: '#b22222',
+          color: '#fff',
+          border: '2px solid #ffd700',
+          borderRadius: 8,
+          padding: '0.7rem 1.5rem',
+          fontSize: '1.1rem',
+          fontWeight: 700,
+          fontFamily: 'Norse, serif',
+          boxShadow: '0 0 12px #ffd70088',
+          cursor: 'pointer',
+          letterSpacing: 1,
+        }}
+      >
+        Reset Progress (DEV)
+      </button>
       <Global styles={css`
         body {
           min-height: 100vh;
@@ -750,9 +842,21 @@ const CampaignPage: React.FC = () => {
           allQuests={allQuests}
         />
       </Suspense>
+      {/* Next Trial Modal */}
+      {showNextTrialModal && nextQuest && (
+        <StoryModal
+          open={showNextTrialModal}
+          title="The Next Trial"
+          text={"The next trial awaits..." /* TODO: Add custom story intros later */}
+          onClose={() => {
+            setShowNextTrialModal(false);
+            navigate(`/campaign/${nextQuest.id}`);
+          }}
+        />
+      )}
       <StoryModal
         open={showOutro}
-        onClose={() => setShowOutro(false)}
+        onClose={handleOutroClose}
         title={questToStart?.name}
         text={questToStart?.storyOutro}
         images={questToStart?.storyImages}
