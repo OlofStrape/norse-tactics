@@ -1,4 +1,5 @@
 import { Card, ElementType, Rarity, CardAbility } from '../types/game';
+import { cardImages } from './cardImages';
 
 // Helper function to create cards with consistent rarity stats
 const createCard = (
@@ -12,7 +13,7 @@ const createCard = (
 ): Card => ({
     id,
     name,
-    image: `/cards/${id}.jpg`,
+    image: cardImages[id] || `/cards/${id}.jpg`,
     top: stats[0],
     right: stats[1],
     bottom: stats[2],
@@ -20,6 +21,7 @@ const createCard = (
     element,
     description,
     rarity,
+    value: 0,
     owner: null,
     abilities
 });

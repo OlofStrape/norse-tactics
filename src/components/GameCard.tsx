@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import styled from '@emotion/styled';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '../types/game';
@@ -27,16 +27,22 @@ const CardFace = styled.div<{ rarity: string; owner: string | null }>`
   justify-content: flex-start;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  border: 2px solid ${props => {
-    if (props.owner === 'player') return '#ff4444';
-    if (props.owner === 'opponent') return '#4444ff';
-    return 'transparent';
+  border: ${props => {
+    if (props.owner === 'player') return '2.5px solid #bfa100';
+    if (props.owner === 'opponent') return '2.5px solid #7a1a1a';
+    return 'none';
   }};
   background: ${props => {
     if (props.owner === 'player') {
-      return 'linear-gradient(45deg, #1a1a1a, #2a2a2a)';
+      // No tint, use rarity background
+      switch (props.rarity) {
+        case 'legendary': return 'linear-gradient(45deg, #FFD700, #FFA500)';
+        case 'epic': return 'linear-gradient(45deg, #9400D3, #4B0082)';
+        case 'rare': return 'linear-gradient(45deg, #0066cc, #0033cc)';
+        default: return 'linear-gradient(45deg, #666666, #333333)';
+      }
     } else if (props.owner === 'opponent') {
-      return 'linear-gradient(45deg, #2a2a2a, #1a1a1a)';
+      return 'linear-gradient(45deg, #23232a 80%, #111118 100%)'; // dark tint
     }
     switch (props.rarity) {
       case 'legendary': return 'linear-gradient(45deg, #FFD700, #FFA500)';
@@ -53,8 +59,24 @@ const CardBack = styled(CardFace)<{ owner: string | null; rarity: string }>`
       ? 'linear-gradient(45deg, #ff4444, #aa2222)'
       : props.owner === 'opponent'
       ? 'linear-gradient(45deg, #4444ff, #2222aa)'
-      : 'linear-gradient(45deg, #666666, #333333)'};
+      : 'linear-gradient(135deg, #222 60%, #ffd700 100%)'};
   transform: rotateY(180deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backface-visibility: hidden;
+`;
+
+const CardBackContent = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3.5rem;
+  color: #ffd700;
+  text-shadow: 0 0 18px #fff8, 0 0 8px #ffd700cc;
+  font-family: 'NorseBold', 'Norse', serif;
 `;
 
 const CardImage = styled.div<{ image: string }>`
@@ -94,17 +116,12 @@ const CardStats = styled.div`
 
 const StatValue = styled.div<{ position: 'top' | 'right' | 'bottom' | 'left' }>`
   position: absolute;
-  background: rgba(0, 0, 0, 0.65);
-  color: white;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
+  color: rgba(245, 230, 197, 0.7);
+  border-radius: 4px;
+  background: none;
+  padding: 0 4px;
   font-weight: bold;
-  font-size: 0.95rem;
-  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  font-size: 1.1rem;
   z-index: 2;
   ${props => {
     switch (props.position) {
@@ -115,16 +132,10 @@ const StatValue = styled.div<{ position: 'top' | 'right' | 'bottom' | 'left' }>`
     }
   }}
   @media (max-width: 700px) {
-    width: 15px;
-    height: 15px;
-    font-size: 0.7rem;
-    border-width: 1px;
+    font-size: 0.8rem;
   }
   @media (max-width: 500px) {
-    width: 12px;
-    height: 12px;
-    font-size: 0.6rem;
-    border-width: 0.8px;
+    font-size: 0.7rem;
   }
 `;
 
@@ -144,36 +155,6 @@ const ElementIcon = styled.div<{ element: string }>`
   }};
   border-radius: 50%;
   display: ${props => props.element === 'none' ? 'none' : 'block'};
-`;
-
-const CaptureEffect = styled(motion.div)<{ element: string }>`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 10;
-  background: ${props => {
-    switch (props.element) {
-      case 'fire': return 'radial-gradient(circle, rgba(255,100,0,0.5) 0%, rgba(255,0,0,0) 70%)';
-      case 'lightning': return 'radial-gradient(circle, rgba(255,255,0,0.5) 0%, rgba(255,255,0,0) 70%)';
-      case 'ice': return 'radial-gradient(circle, rgba(0,200,255,0.5) 0%, rgba(0,200,255,0) 70%)';
-      default: return 'radial-gradient(circle, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 70%)';
-    }
-  }};
-`;
-
-const ChainEffect = styled(motion.div)`
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 200%;
-  height: 200%;
-  transform: translate(-50%, -50%);
-  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
-  pointer-events: none;
-  z-index: 5;
 `;
 
 const Tooltip = styled.div`
@@ -210,10 +191,13 @@ const GameCard: React.FC<GameCardProps> = ({
   isCapturing = false,
   isChainReaction = false
 }) => {
-  const [showCaptureEffect, setShowCaptureEffect] = useState(false);
-  const [showChainEffect, setShowChainEffect] = useState(false);
+  console.log('[GameCard] card.id:', card.id, 'isCapturing:', isCapturing);
   const [showTooltip, setShowTooltip] = useState(false);
   const [isPressed, setIsPressed] = React.useState(false);
+  const [flip, setFlip] = useState(0); // 0 = not flipping, 1 = flipping
+  const [flipAngle, setFlipAngle] = useState(0);
+  const [displayedOwner, setDisplayedOwner] = useState(card.owner);
+  const animationRef = React.useRef<number | null>(null);
 
   // Drag and drop
   const [{ isDragging }, drag] = useDrag(() => ({
@@ -225,19 +209,53 @@ const GameCard: React.FC<GameCardProps> = ({
     }),
   }), [card, isPlayable]);
 
-  useEffect(() => {
-    if (isCapturing) {
-      setShowCaptureEffect(true);
-      setTimeout(() => setShowCaptureEffect(false), 1000);
-    }
-  }, [isCapturing]);
+  // Card flip animation function (moved outside useEffect)
+  const animateFlip = useCallback((startTime: number, duration: number, onComplete?: () => void) => {
+    console.log('[GameCard] Flip animation START for card:', card.id);
+    const step = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      setFlipAngle(progress * 180);
+      console.log('[GameCard] Flip animation frame for card:', card.id, 'flipAngle:', progress * 180);
+      if (progress < 1) {
+        animationRef.current = requestAnimationFrame(step);
+      } else {
+        setFlip(0);
+        console.log('[GameCard] Flip animation END for card:', card.id);
+        if (onComplete) onComplete();
+      }
+    };
+    step();
+  }, [card.id]);
 
   useEffect(() => {
-    if (isChainReaction) {
-      setShowChainEffect(true);
-      setTimeout(() => setShowChainEffect(false), 600);
+    if (isCapturing) {
+      console.log('[GameCard] isCapturing TRUE for card:', card.id, 'owner:', card.owner);
+      setFlip(1);
+      setFlipAngle(0);
+      setDisplayedOwner(displayedOwner);
+      const duration = 600; // ms (faster flip)
+      const start = Date.now();
+      animateFlip(start, duration, () => {
+        setDisplayedOwner(card.owner);
+      });
     }
-  }, [isChainReaction]);
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [isCapturing, animateFlip, card.owner]);
+
+  useEffect(() => {
+    console.log('[GameCard] displayedOwner changed for card:', card.id, 'now:', displayedOwner);
+  }, [displayedOwner, card.id]);
+
+  useEffect(() => {
+    if (!isCapturing) {
+      setDisplayedOwner(card.owner);
+    }
+  }, [card.owner, isCapturing]);
 
   return (
     <motion.div
@@ -265,12 +283,30 @@ const GameCard: React.FC<GameCardProps> = ({
       ref={isPlayable ? drag : undefined}
     >
       <Flipper
-        animate={isCapturing ? { rotateY: 360, scale: [1, 1.15, 1] } : { rotateY: 0, scale: 1 }}
-        transition={{ duration: 0.4, ease: 'easeInOut' }}
+        style={{
+          transform: `rotateY(${flip ? flipAngle : 0}deg)`
+        }}
       >
-        {/* Front Face */}
-        <CardFace rarity={card.rarity} owner={card.owner} style={{ zIndex: 2, transform: 'rotateY(0deg)' }}>
-          <CardImage image={card.image} />
+        {/* Front Face (shows after 90deg) */}
+        <CardFace
+          rarity={card.rarity}
+          owner={displayedOwner}
+          style={{
+            zIndex: 2,
+            transform: flip ? (flipAngle < 90 ? 'rotateY(180deg)' : 'rotateY(0deg)') : 'rotateY(0deg)',
+            visibility: flip ? (flipAngle < 90 ? 'hidden' : 'visible') : 'visible',
+          }}
+        >
+          <img 
+            src={card.image} 
+            alt={card.name} 
+            style={{ 
+              width: '100%', 
+              height: '100%', 
+              objectFit: 'cover', 
+              borderRadius: '8px'
+            }} 
+          />
           <CardInfo>
             <CardName>{card.name}</CardName>
           </CardInfo>
@@ -282,38 +318,24 @@ const GameCard: React.FC<GameCardProps> = ({
             <StatValue position="left">{card.left}</StatValue>
           </CardStats>
         </CardFace>
-        {/* Back Face */}
-        <CardBack owner={card.owner} rarity={card.rarity} style={{ zIndex: 1 }}>
-          <CardInfo>
-            <CardName>{card.name}</CardName>
-          </CardInfo>
-          <ElementIcon element={card.element || 'none'} />
-          <CardStats>
-            <StatValue position="top">{card.top}</StatValue>
-            <StatValue position="right">{card.right}</StatValue>
-            <StatValue position="bottom">{card.bottom}</StatValue>
-            <StatValue position="left">{card.left}</StatValue>
-          </CardStats>
+        {/* Back Face (shows before 90deg) */}
+        <CardBack
+          owner={card.owner}
+          rarity={card.rarity}
+          style={{
+            zIndex: 1,
+            transform: flip ? (flipAngle < 90 ? 'rotateY(0deg)' : 'rotateY(180deg)') : 'rotateY(180deg)',
+            visibility: flip ? (flipAngle < 90 ? 'visible' : 'hidden') : 'hidden',
+            background: 'linear-gradient(135deg, #181818 60%, #ffd700 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <CardBackContent style={{ fontSize: '2.5rem', color: '#ffd700', textShadow: '0 0 18px #fff8, 0 0 8px #ffd700cc' }}>
+            {''}
+          </CardBackContent>
         </CardBack>
-        <AnimatePresence>
-          {showCaptureEffect && (
-            <CaptureEffect
-              element={card.element || 'none'}
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 2, opacity: 0 }}
-              transition={{ duration: 0.25 }}
-            />
-          )}
-          {showChainEffect && (
-            <ChainEffect
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 2, opacity: 0 }}
-              transition={{ duration: 0.15 }}
-            />
-          )}
-        </AnimatePresence>
       </Flipper>
       {/* Tooltip for hand cards only */}
       {isPlayable && showTooltip && (

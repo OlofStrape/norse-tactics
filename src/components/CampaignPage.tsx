@@ -14,6 +14,7 @@ import { realms as baseRealms, realmProgression } from '../data/realms';
 import { PlayerProgress } from '../types/player';
 import { Quest } from '../services/campaignService';
 import { LoadingSpinner } from './AILoadingIndicator';
+import { RewardModal } from './RewardModal';
 
 const Container = styled.div`
   min-height: 100vh;
@@ -245,6 +246,20 @@ function loadProgress() {
 }
 function saveProgress(progress: any) {
   localStorage.setItem('campaignProgress', JSON.stringify(progress));
+  // --- Sync unlockedCards to cardCollection ---
+  if (progress.unlockedCards) {
+    const collection = JSON.parse(localStorage.getItem('cardCollection') || '[]');
+    let changed = false;
+    for (const cardId of progress.unlockedCards) {
+      if (!collection.includes(cardId)) {
+        collection.push(cardId);
+        changed = true;
+      }
+    }
+    if (changed) {
+      localStorage.setItem('cardCollection', JSON.stringify(collection));
+    }
+  }
 }
 
 function loadPlayerProfile(progress: any) {
@@ -282,6 +297,7 @@ const CampaignPage: React.FC = () => {
   const [choiceResult, setChoiceResult] = useState<string | null>(null);
   const [showLoreJournal, setShowLoreJournal] = useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [rewardModalCards, setRewardModalCards] = useState<{ id: string; name: string; image: string }[] | null>(null);
 
   // Calculate level from XP using new formula
   const playerLevel = getLevelFromXP(progress.experience);
@@ -342,9 +358,16 @@ const CampaignPage: React.FC = () => {
     }
     // Add new cards to unlockedCards
     let newUnlocked = progress.unlockedCards ? [...progress.unlockedCards] : [];
+    let actuallyNewCards: { id: string; name: string; image: string }[] = [];
     if (quest.rewards.cardIds && quest.rewards.cardIds.length > 0) {
       for (const cardId of quest.rewards.cardIds) {
-        if (!newUnlocked.includes(cardId)) newUnlocked.push(cardId);
+        if (!newUnlocked.includes(cardId)) {
+          newUnlocked.push(cardId);
+          const cardObj = cards.find(c => c.id === cardId);
+          if (cardObj) {
+            actuallyNewCards.push({ id: cardObj.id, name: cardObj.name, image: cardObj.image });
+          }
+        }
       }
     }
     // If deck is empty, set to unlocked
@@ -358,6 +381,9 @@ const CampaignPage: React.FC = () => {
       unlockedCards: newUnlocked,
       deck: newDeck
     });
+    if (actuallyNewCards.length > 0) {
+      setRewardModalCards(actuallyNewCards);
+    }
     // Show outro story if present
     if (quest.storyOutro) {
       setQuestToStart(quest);
@@ -679,6 +705,9 @@ const CampaignPage: React.FC = () => {
             <button onClick={() => setAvatarSelectOpen(false)} style={{ padding: '0.7rem 2rem', borderRadius: 8, border: 'none', background: '#ffd700', color: '#222', fontWeight: 'bold', fontSize: 18, cursor: 'pointer', boxShadow: '0 0 8px #ffd70088' }}>Close</button>
           </div>
         </div>
+      )}
+      {rewardModalCards && (
+        <RewardModal cards={rewardModalCards} onClose={() => setRewardModalCards(null)} />
       )}
       <Suspense fallback={<div style={{ color: '#ffd700', textAlign: 'center', marginTop: 40 }}>Loading...</div>}>
         <StoryModal

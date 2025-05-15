@@ -287,6 +287,7 @@ export const GameSession: React.FC<GameSessionProps> = ({
   const [rules, setRules] = useState<GameRules>(initialRules);
   const [capturingCards, setCapturingCards] = useState<Set<string>>(new Set());
   const [chainReactionCards, setChainReactionCards] = useState<Set<string>>(new Set());
+  const [pendingCaptures, setPendingCaptures] = useState<{id: string, owner: 'player' | 'opponent'}[]>([]);
   const [isAIThinking, setIsAIThinking] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
   const [winner, setWinner] = useState<'player' | 'opponent' | 'draw' | null>(null);
@@ -297,41 +298,50 @@ export const GameSession: React.FC<GameSessionProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const [muted, setMuted] = useSound();
+  const [showEndGameModal, setShowEndGameModal] = useState(false);
 
   useEffect(() => {
     const initialState = GameLogic.initializeGame(playerDeck, opponentDeck);
     initialState.rules = rules;
     setGameState(initialState);
+  
     setIsGameOver(false);
     setWinner(null);
     setSelectedCard(null);
     setCapturingCards(new Set());
+
     setChainReactionCards(new Set());
     setIsLoading(true);
     // eslint-disable-next-line
   }, [playerDeck, opponentDeck, aiDifficulty]);
 
   const handleCapture = useCallback((cardId: string, isChainReaction: boolean) => {
-    if (isChainReaction) {
-      setChainReactionCards(prev => new Set([...Array.from(prev), cardId]));
-      setTimeout(() => {
-        setChainReactionCards(prev => {
-          const newSet = new Set(Array.from(prev));
-          newSet.delete(cardId);
-          return newSet;
-        });
-      }, 1000);
-    } else {
-      setCapturingCards(prev => new Set([...Array.from(prev), cardId]));
-      setTimeout(() => {
-        setCapturingCards(prev => {
-          const newSet = new Set(Array.from(prev));
-          newSet.delete(cardId);
-          return newSet;
-        });
-      }, 1000);
-    }
-  }, []);
+    console.log('[handleCapture] Card captured:', cardId, 'isChainReaction:', isChainReaction);
+    if (!gameState) return;
+    // Use the current turn to determine the new owner
+    const newOwner = gameState.currentTurn;
+    setPendingCaptures(prev => prev.some(c => c.id === cardId) ? prev : [...prev, { id: cardId, owner: newOwner }]);
+    setTimeout(() => {
+      setPendingCaptures(prev => prev.filter(c => c.id !== cardId));
+      setGameState(prevState => {
+        if (!prevState) return prevState;
+        const newBoard = prevState.board.map(row => row.map(cell => {
+          if (cell && cell.id === cardId) {
+            return { ...cell, owner: newOwner };
+          }
+          return cell;
+        }));
+        const playerScore = newBoard.flat().filter(cell => cell?.owner === 'player').length;
+        const opponentScore = newBoard.flat().filter(cell => cell?.owner === 'opponent').length;
+        console.log('[handleCapture] New board state:', newBoard);
+        return {
+          ...prevState,
+          board: newBoard,
+          score: { player: playerScore, opponent: opponentScore },
+        };
+      });
+    }, 1200);
+  }, [gameState]);
 
   useEffect(() => {
     window.handleGameCapture = handleCapture;
@@ -402,6 +412,15 @@ export const GameSession: React.FC<GameSessionProps> = ({
     }
   }, [missedTurnCount, onGameEnd]);
 
+  useEffect(() => {
+    if (isGameOver) {
+      const timeout = setTimeout(() => setShowEndGameModal(true), 1500);
+      return () => clearTimeout(timeout);
+    } else {
+      setShowEndGameModal(false);
+    }
+  }, [isGameOver]);
+
   // All hooks are now above this early return
   if (!gameState) {
     return (
@@ -453,9 +472,10 @@ export const GameSession: React.FC<GameSessionProps> = ({
     // If it's now the AI's turn, trigger AI move after a short delay
     if (newState.currentTurn === 'opponent') {
       setIsAIThinking(true);
+      // Wait for flip animation to complete before AI plays
       setTimeout(() => {
         triggerAIMove(newState);
-      }, 700);
+      }, 1300); // 1200ms for flip + 100ms buffer
     }
   };
 
@@ -548,7 +568,7 @@ export const GameSession: React.FC<GameSessionProps> = ({
       {title && <Title>{title}</Title>}
       {isAIThinking && <LoadingSpinner text="AI is thinking..." />}
       <EndGameModal
-        isOpen={isGameOver}
+        isOpen={showEndGameModal}
         winner={winner || 'draw'}
         playerScore={gameState.score.player}
         opponentScore={gameState.score.opponent}
@@ -572,12 +592,12 @@ export const GameSession: React.FC<GameSessionProps> = ({
             const emptySlots = Math.max(0, 5 - hand.length);
             return [
               ...hand.map(card => (
-                <CardWrapper key={card.id} style={selectedCard && selectedCard.id === card.id ? { border: '2px solid #ffd700', boxShadow: '0 0 8px #ffd700' } : {}}>
+                <CardWrapper key={card.id}>
                   <GameCard
-                    card={card}
+                    card={{ ...card, owner: 'opponent' }}
                     isPlayable={gameState.currentTurn === 'opponent'}
                     onClick={() => handleCardSelect(card)}
-                    isCapturing={capturingCards.has(card.id)}
+                    isCapturing={!!pendingCaptures.find(c => c.id === card.id)}
                     isChainReaction={chainReactionCards.has(card.id)}
                   />
                 </CardWrapper>
@@ -593,6 +613,8 @@ export const GameSession: React.FC<GameSessionProps> = ({
             gameState={gameState}
             onCellClick={handleCellClick}
             onCapture={handleCapture}
+            pendingCaptures={pendingCaptures}
+            chainReactionCards={chainReactionCards}
           />
         </BoardWrapper>
         <div style={{ height: '1.2rem' }} />
@@ -603,12 +625,12 @@ export const GameSession: React.FC<GameSessionProps> = ({
             const emptySlots = Math.max(0, 5 - hand.length);
             return [
               ...hand.map(card => (
-                <CardWrapper key={card.id} style={selectedCard && selectedCard.id === card.id ? { border: '2px solid #ffd700', boxShadow: '0 0 8px #ffd700' } : {}}>
+                <CardWrapper key={card.id}>
                   <GameCard
-                    card={card}
+                    card={{ ...card, owner: 'player' }}
                     isPlayable={gameState.currentTurn === 'player'}
                     onClick={() => handleCardSelect(card)}
-                    isCapturing={capturingCards.has(card.id)}
+                    isCapturing={!!pendingCaptures.find(c => c.id === card.id)}
                     isChainReaction={chainReactionCards.has(card.id)}
                   />
                 </CardWrapper>

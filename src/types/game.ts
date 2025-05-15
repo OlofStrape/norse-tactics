@@ -1,4 +1,4 @@
-export type ElementType = 'fire' | 'water' | 'earth' | 'air' | 'none';
+export type ElementType = 'fire' | 'water' | 'earth' | 'air' | 'ice' | 'lightning' | 'none';
 export type Rarity = 'common' | 'rare' | 'epic' | 'legendary';
 
 export interface CardAbility {

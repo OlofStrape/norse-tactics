@@ -108,55 +108,14 @@ interface GameBoardProps {
   gameState: GameState;
   onCellClick: (position: Position, card?: any) => void;
   onCapture?: (cardId: string, isChainReaction: boolean) => void;
+  pendingCaptures: {id: string, owner: 'player' | 'opponent'}[];
+  chainReactionCards: Set<string>;
 }
 
-export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onCellClick, onCapture }) => {
-  const [capturingCards, setCapturingCards] = useState<Set<string>>(new Set());
-  const [chainReactionCards, setChainReactionCards] = useState<Set<string>>(new Set());
-
+export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onCellClick, onCapture, pendingCaptures, chainReactionCards }) => {
   const isCellPlayable = (row: number, col: number) => {
     return gameState.board[row][col] === null;
   };
-
-  useEffect(() => {
-    // Reset animation states after each turn
-    setCapturingCards(new Set());
-    setChainReactionCards(new Set());
-  }, [gameState.turnCount]);
-
-  const handleCapture = useCallback((cardId: string, isChainReaction: boolean = false) => {
-    if (isChainReaction) {
-      setChainReactionCards(prev => new Set([...Array.from(prev), cardId]));
-      setTimeout(() => {
-        setChainReactionCards(prev => {
-          const newSet = new Set(Array.from(prev));
-          newSet.delete(cardId);
-          return newSet;
-        });
-      }, 1000);
-    } else {
-      setCapturingCards(prev => new Set([...Array.from(prev), cardId]));
-      setTimeout(() => {
-        setCapturingCards(prev => {
-          const newSet = new Set(Array.from(prev));
-          newSet.delete(cardId);
-          return newSet;
-        });
-      }, 1000);
-    }
-    onCapture?.(cardId, isChainReaction);
-  }, [onCapture]);
-
-  // Connect the capture handler to the game logic
-  useEffect(() => {
-    if (onCapture) {
-      const handleGameCapture = (cardId: string, isChainReaction: boolean) => {
-        handleCapture(cardId, isChainReaction);
-      };
-      // @ts-ignore - we'll add this to the window object temporarily
-      window.handleGameCapture = handleGameCapture;
-    }
-  }, [onCapture, handleCapture]);
 
   const renderCell = (row: number, col: number) => {
     const isPlayable = isCellPlayable(row, col);
@@ -197,7 +156,11 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onCellClick, on
             transition={{ type: "spring", stiffness: 260, damping: 20 }}
             style={{ width: '100%', height: '100%' }}
           >
-            <GameCard card={gameState.board[row][col]!} />
+            <GameCard 
+              card={gameState.board[row][col]!}
+              isCapturing={!!pendingCaptures.find(c => c.id === gameState.board[row][col]!.id)}
+              isChainReaction={chainReactionCards.has(gameState.board[row][col]!.id)}
+            />
           </motion.div>
         )}
       </Cell>

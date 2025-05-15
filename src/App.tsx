@@ -6,7 +6,6 @@ import { GameLogic } from './services/gameLogic';
 import { cards } from './data/cards';
 import { Card, GameState, Position, GameRules } from './types/game';
 import { AILogic } from './services/aiLogic';
-import { AILoadingIndicator } from './components/AILoadingIndicator';
 import { EndGameModal } from './components/EndGameModal';
 import { motion } from 'framer-motion';
 import { DndProvider } from 'react-dnd';
@@ -41,7 +40,7 @@ const AppContainer = styled.div`
 `;
 
 const Title = styled.h1`
-  font-family: 'Norse', 'Cinzel Decorative', serif;
+  font-family: 'Cinzel Decorative', serif;
   font-size: 3rem;
   margin-bottom: 2rem;
   text-align: center;
@@ -118,40 +117,6 @@ const RuleButton = styled.button<{ active: boolean }>`
   }
 `;
 
-const fontFaces = css`
-  @font-face {
-    font-family: 'Norse';
-    src: url('/fonts/Norse.woff2') format('woff2'),
-         url('/fonts/Norse.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-  }
-  @font-face {
-    font-family: 'NorseBold';
-    src: url('/fonts/Norse-Bold.woff2') format('woff2'),
-         url('/fonts/Norse-Bold.woff') format('woff');
-    font-weight: bold;
-    font-style: normal;
-  }
-`;
-
-const fontStyles = css`
-  @font-face {
-    font-family: 'Norse';
-    src: url('/fonts/Norse1.woff2') format('woff2'),
-         url('/fonts/Norse1.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-  }
-  @font-face {
-    font-family: 'NorseBold';
-    src: url('/fonts/Norsebold1.woff2') format('woff2'),
-         url('/fonts/Norsebold1.woff') format('woff');
-    font-weight: bold;
-    font-style: normal;
-  }
-`;
-
 const BackButton = styled.button`
   position: absolute;
   top: 10px;
@@ -162,7 +127,7 @@ const BackButton = styled.button`
   border: none;
   background: rgba(24,24,24,0.18);
   color: #ffd700;
-  font-family: 'Norse', 'Cinzel Decorative', serif;
+  font-family: 'Cinzel Decorative', serif;
   font-weight: 400;
   letter-spacing: 1px;
   cursor: pointer;
@@ -366,14 +331,14 @@ const AppRoutes: React.FC = () => {
     // Font-face and global styles for Free-play
     const fontStyles = `
       @font-face {
-        font-family: 'Norse';
+        font-family: 'Cinzel Decorative';
         src: url('/fonts/Norse1.woff2') format('woff2'),
              url('/fonts/Norse1.woff') format('woff');
         font-weight: normal;
         font-style: normal;
       }
       @font-face {
-        font-family: 'Norsebold';
+        font-family: 'Cinzel Decorative Bold';
         src: url('/fonts/Norsebold1.woff2') format('woff2'),
              url('/fonts/Norsebold1.woff') format('woff');
         font-weight: bold;
@@ -381,12 +346,12 @@ const AppRoutes: React.FC = () => {
       }
     `;
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', background: 'linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url(https://res.cloudinary.com/dvfobknn4/image/upload/v1746867992/Background_snigeo.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', fontFamily: 'Norse, serif', padding: '0', position: 'relative' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', background: 'linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url(https://res.cloudinary.com/dvfobknn4/image/upload/v1746867992/Background_snigeo.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', fontFamily: 'Cinzel Decorative, serif', padding: '0', position: 'relative' }}>
         <style>{fontStyles}</style>
         <BackButton onClick={() => navigate('/')} aria-label="Back to Menu">←</BackButton>
         <div style={{ width: '100%', maxWidth: 420, margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
           <h1 style={{
-            fontFamily: 'Norsebold, Norse, Cinzel Decorative, serif',
+            fontFamily: 'Cinzel Decorative Bold',
             fontSize: '3rem',
             marginBottom: '0.5rem',
             textAlign: 'center',
@@ -398,21 +363,21 @@ const AppRoutes: React.FC = () => {
           }}>
             Norse Tactics
           </h1>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16, fontFamily: 'Norsebold, Norse, serif' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16, fontFamily: 'Cinzel Decorative Bold, serif' }}>
             <AIDifficultySelector
               selectedDifficulty={aiDifficulty}
               onDifficultyChange={setAIDifficulty}
             />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 16, maxWidth: 200, width: '100%' }}>
-            <button style={{ padding: '0.08rem 0.2rem', fontSize: '0.78rem', borderRadius: 4, border: rules.same ? '2px solid #ffd700' : '2px solid #444', background: rules.same ? '#ffd700' : 'transparent', color: rules.same ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Norsebold, Norse, serif', width: '100%', minHeight: 36, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} onClick={() => setRules(r => ({ ...r, same: !r.same }))}>Same<br />Rule</button>
-            <button style={{ padding: '0.08rem 0.2rem', fontSize: '0.78rem', borderRadius: 4, border: rules.plus ? '2px solid #ffd700' : '2px solid #444', background: rules.plus ? '#ffd700' : 'transparent', color: rules.plus ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Norsebold, Norse, serif', width: '100%', minHeight: 36, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} onClick={() => setRules(r => ({ ...r, plus: !r.plus }))}>Plus<br />Rule</button>
-            <button style={{ padding: '0.08rem 0.2rem', fontSize: '0.78rem', borderRadius: 4, border: rules.elements ? '2px solid #ffd700' : '2px solid #444', background: rules.elements ? '#ffd700' : 'transparent', color: rules.elements ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Norsebold, Norse, serif', width: '100%', minHeight: 36, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} onClick={() => setRules(r => ({ ...r, elements: !r.elements }))}>Elements</button>
-            <button style={{ padding: '0.08rem 0.2rem', fontSize: '0.78rem', borderRadius: 4, border: rules.ragnarok ? '2px solid #ffd700' : '2px solid #444', background: rules.ragnarok ? '#ffd700' : 'transparent', color: rules.ragnarok ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Norsebold, Norse, serif', width: '100%', minHeight: 36, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} onClick={() => setRules(r => ({ ...r, ragnarok: !r.ragnarok }))}>Ragnarök</button>
+            <button style={{ padding: '0.08rem 0.2rem', fontSize: '0.78rem', borderRadius: 4, border: rules.same ? '2px solid #ffd700' : '2px solid #444', background: rules.same ? '#ffd700' : 'transparent', color: rules.same ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Cinzel Decorative Bold, serif', width: '100%', minHeight: 36, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} onClick={() => setRules(r => ({ ...r, same: !r.same }))}>Same<br />Rule</button>
+            <button style={{ padding: '0.08rem 0.2rem', fontSize: '0.78rem', borderRadius: 4, border: rules.plus ? '2px solid #ffd700' : '2px solid #444', background: rules.plus ? '#ffd700' : 'transparent', color: rules.plus ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Cinzel Decorative Bold, serif', width: '100%', minHeight: 36, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} onClick={() => setRules(r => ({ ...r, plus: !r.plus }))}>Plus<br />Rule</button>
+            <button style={{ padding: '0.08rem 0.2rem', fontSize: '0.78rem', borderRadius: 4, border: rules.elements ? '2px solid #ffd700' : '2px solid #444', background: rules.elements ? '#ffd700' : 'transparent', color: rules.elements ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Cinzel Decorative Bold, serif', width: '100%', minHeight: 36, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} onClick={() => setRules(r => ({ ...r, elements: !r.elements }))}>Elements</button>
+            <button style={{ padding: '0.08rem 0.2rem', fontSize: '0.78rem', borderRadius: 4, border: rules.ragnarok ? '2px solid #ffd700' : '2px solid #444', background: rules.ragnarok ? '#ffd700' : 'transparent', color: rules.ragnarok ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Cinzel Decorative Bold, serif', width: '100%', minHeight: 36, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} onClick={() => setRules(r => ({ ...r, ragnarok: !r.ragnarok }))}>Ragnarök</button>
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: 32 }}>
             <button
-              style={{ padding: '1rem 2.5rem', fontSize: '1.6rem', borderRadius: 8, border: '3px solid #ffd700', background: '#ffd700', color: '#1a1a1a', fontFamily: 'Norsebold, Norse, serif', fontWeight: 'bold', letterSpacing: 1, cursor: 'pointer', boxShadow: '0 0 12px 2px #ffd70033', transition: 'box-shadow 0.2s, text-shadow 0.2s, color 0.2s' }}
+              style={{ padding: '1rem 2.5rem', fontSize: '1.6rem', borderRadius: 8, border: '3px solid #ffd700', background: '#ffd700', color: '#1a1a1a', fontFamily: 'Cinzel Decorative Bold, serif', fontWeight: 'bold', letterSpacing: 1, cursor: 'pointer', boxShadow: '0 0 12px 2px #ffd70033', transition: 'box-shadow 0.2s, text-shadow 0.2s, color 0.2s' }}
               onClick={() => navigate('/free-play/game', { state: { rules, aiDifficulty } })}
             >
               Start Game
@@ -440,11 +405,26 @@ const AppRoutes: React.FC = () => {
       chainReaction: false,
     };
     const aiDifficulty = state?.aiDifficulty || 'medium';
-    const shuffled = [...cards].sort(() => Math.random() - 0.5);
+    // Only use cards with Cloudinary images
+    const allowedCardIds = [
+      "fenrir",
+      "surtr",
+      "sleipnr",
+      "tyr",
+      "thor",
+      "loki",
+      "heimdall",
+      "freya",
+      "jormungandr",
+      "hel"
+      // Add more as you provide them...
+    ];
+    const allowedCards = cards.filter(card => allowedCardIds.includes(card.id));
+    const shuffled = [...allowedCards].sort(() => Math.random() - 0.5);
     const player1Cards = shuffled.slice(0, 5);
     const player2Cards = shuffled.slice(5, 10);
     return (
-      <div style={{ minHeight: '100vh', background: 'linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url(https://res.cloudinary.com/dvfobknn4/image/upload/v1746867992/Background_snigeo.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', fontFamily: 'Norse, serif', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+      <div style={{ minHeight: '100vh', background: 'linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url(https://res.cloudinary.com/dvfobknn4/image/upload/v1746867992/Background_snigeo.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', fontFamily: 'Cinzel Decorative, serif', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
         <div style={{ width: '100vw', maxWidth: 600, height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
           <GameSession
             playerDeck={player1Cards}
@@ -592,8 +572,8 @@ const AppRoutes: React.FC = () => {
     }
 
     return (
-      <div style={{ minHeight: '100vh', height: '100vh', background: 'linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url(https://res.cloudinary.com/dvfobknn4/image/upload/v1746867992/Background_snigeo.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', fontFamily: 'Norse, serif', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-        <div style={{ width: '100%', maxWidth: 1200, margin: 0, fontFamily: 'Norse, serif', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+      <div style={{ minHeight: '100vh', height: '100vh', background: 'linear-gradient(rgba(20, 15, 5, 0.7), rgba(20, 15, 5, 0.7)), url(https://res.cloudinary.com/dvfobknn4/image/upload/v1746867992/Background_snigeo.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', fontFamily: 'Cinzel Decorative, serif', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{ width: '100%', maxWidth: 1200, margin: 0, fontFamily: 'Cinzel Decorative, serif', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
           <GameSession
             playerDeck={playerDeck}
             opponentDeck={opponentDeck}
@@ -623,15 +603,11 @@ const AppRoutes: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <>
-      <Global styles={fontFaces} />
-      <Global styles={fontStyles} />
-      <DndProvider backend={HTML5Backend}>
-        <Router>
-          <AppRoutes />
-        </Router>
-      </DndProvider>
-    </>
+    <DndProvider backend={HTML5Backend}>
+      <Router>
+        <AppRoutes />
+      </Router>
+    </DndProvider>
   );
 };
 
