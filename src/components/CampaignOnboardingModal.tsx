@@ -92,19 +92,21 @@ export const CampaignOnboardingModal: React.FC<CampaignOnboardingModalProps> = (
   if (step === 2) {
     return open ? (
       <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(24,18,8,0.92)', zIndex: 4000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="story-modal-content" style={{ background: 'linear-gradient(135deg, #2a1a0a 0%, #181818 100%)', borderRadius: 20, boxShadow: '0 0 48px 8px #000a, 0 0 0 4px #ffd70044', padding: '2.5rem 2.5rem 2rem 2.5rem', minWidth: 320, maxWidth: 520, width: '98vw', maxHeight: '90vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', fontFamily: 'Norse, serif', zIndex: 4100 }}>
+        <div className="story-modal-content" style={{ background: 'linear-gradient(135deg, #2a1a0a 0%, #181818 100%)', borderRadius: 20, boxShadow: '0 0 48px 8px #000a, 0 0 0 4px #ffd70044', padding: '2.5rem 2.5rem 2rem 2.5rem', minWidth: 320, maxWidth: 620, width: '98vw', maxHeight: '90vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', fontFamily: 'Norse, serif', zIndex: 4100 }}>
           <h2 style={{ color: '#ffd700', fontFamily: 'NorseBold, Norse, serif', fontSize: '2.2rem', textShadow: '0 0 18px #ffd700, 0 2px 2px #000, 0 0 2px #ffd700', marginBottom: '0.5rem', textAlign: 'center' }}>Choose Your Companions</h2>
           <p style={{ color: '#ffe066', fontSize: '1.1rem', marginBottom: '1.5rem', textAlign: 'center', fontFamily: 'Norse, serif' }}>
             "Before you set forth, select five allies to stand with you in the coming trials.\nChoose wisely – their strength may decide the fate of the worlds."
           </p>
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))',
+            gridTemplateColumns: 'repeat(5, 1fr)',
+            gridAutoRows: '180px',
             gap: 20,
+            rowGap: 36,
             justifyContent: 'center',
-            alignItems: 'center',
+            alignItems: 'end',
             margin: '1.2rem 0',
-            maxHeight: 420,
+            maxHeight: 540,
             overflowY: 'auto',
             padding: 8,
             background: '#181818cc',
@@ -125,8 +127,10 @@ export const CampaignOnboardingModal: React.FC<CampaignOnboardingModalProps> = (
                   width: 110,
                   height: 160,
                   display: 'flex',
+                  flexDirection: 'column',
                   alignItems: 'center',
-                  justifyContent: 'center',
+                  justifyContent: 'flex-end',
+                  paddingBottom: 0,
                 }}
                 onClick={() => {
                   if (chosenCards.includes(card.id)) {
@@ -138,7 +142,7 @@ export const CampaignOnboardingModal: React.FC<CampaignOnboardingModalProps> = (
                 onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.07)'}
                 onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
               >
-                <GameCard card={{ ...card, owner: null }} isPlayable={false} />
+                <GameCard card={{ ...card, owner: null }} isPlayable={false} hideName={true} />
                 {chosenCards.includes(card.id) && (
                   <div style={{
                     position: 'absolute',
@@ -157,6 +161,21 @@ export const CampaignOnboardingModal: React.FC<CampaignOnboardingModalProps> = (
                     boxShadow: '0 0 8px #ffd700cc',
                   }}>✓</div>
                 )}
+                <div style={{
+                  marginTop: 12,
+                  minHeight: 28,
+                  fontSize: 16,
+                  color: '#ffd700',
+                  fontWeight: 700,
+                  textAlign: 'center',
+                  fontFamily: 'Norse, serif',
+                  textShadow: '0 0 6px #000',
+                  wordBreak: 'break-word',
+                  lineHeight: 1.15,
+                  maxWidth: 120,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}>{card.name}</div>
               </div>
             ))}
           </div>

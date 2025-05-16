@@ -100,6 +100,7 @@ const CardName = styled.div`
   margin-bottom: 0.25rem;
   word-break: break-word;
   font-size: 1rem;
+  font-family: 'Norse', serif;
   @media (max-width: 700px) {
     font-size: 0.8rem;
   }
@@ -124,6 +125,7 @@ const StatValue = styled.div<{ position: 'top' | 'right' | 'bottom' | 'left' }>`
   font-weight: bold;
   font-size: 1.1rem;
   z-index: 2;
+  font-family: 'Norse', serif;
   ${props => {
     switch (props.position) {
       case 'top': return 'top: 4px; left: 50%; transform: translateX(-50%);';
@@ -194,6 +196,7 @@ interface GameCardProps {
   onClick?: () => void;
   isCapturing?: boolean;
   isChainReaction?: boolean;
+  hideName?: boolean;
 }
 
 const GameCard: React.FC<GameCardProps> = ({ 
@@ -201,7 +204,8 @@ const GameCard: React.FC<GameCardProps> = ({
   isPlayable, 
   onClick,
   isCapturing = false,
-  isChainReaction = false
+  isChainReaction = false,
+  hideName = false
 }) => {
   console.log('[GameCard] card.id:', card.id, 'isCapturing:', isCapturing);
   const [showTooltip, setShowTooltip] = useState(false);
@@ -324,7 +328,7 @@ const GameCard: React.FC<GameCardProps> = ({
             <ElementIconImg src={elementIcons[card.element]} alt={card.element + ' icon'} />
           )}
           <CardInfo>
-            <CardName>{card.name}</CardName>
+            {!hideName && <CardName>{card.name}</CardName>}
           </CardInfo>
           <CardStats>
             <StatValue position="top">{card.top}</StatValue>

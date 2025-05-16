@@ -18,6 +18,7 @@ const Text = styled.div`
   color: #ffd700;
   font-size: 1.2rem;
   text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  font-family: 'Norse', 'NorseBold', serif;
 `;
 
 const LoadingDots = styled.div`

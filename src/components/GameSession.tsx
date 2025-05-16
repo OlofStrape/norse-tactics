@@ -146,9 +146,16 @@ const RuleButton = styled.button<{ active: boolean }>`
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
+  font-family: 'Norse', serif;
+  font-size: 1.15rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 6px #fff8, 0 0 2px #ffd70044;
 
   &:hover {
     background: ${props => props.active ? '#ffed4a' : 'rgba(255,255,255,0.08)'};
+    color: #ffd700;
+    text-shadow: 0 0 18px #ffd700, 0 0 36px #ffd700, 0 2px 2px #000, 0 0 2px #ffd700;
   }
 `;
 

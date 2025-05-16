@@ -8,7 +8,7 @@ const TutorialContainer = styled(motion.div)`
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: linear-gradient(rgba(10,8,4,0.85), rgba(10,8,4,0.92)), url('https://res.cloudinary.com/dvfobknn4/image/upload/v1747047080/ChatGPT_Image_5_maj_2025_13_14_36_ycwwd1.png') center/cover no-repeat;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -18,7 +18,7 @@ const TutorialContainer = styled(motion.div)`
 `;
 
 const TutorialContent = styled(motion.div)`
-  background: #2a2a2a;
+  background: linear-gradient(rgba(20,15,5,0.88), rgba(20,15,5,0.92)), url('https://res.cloudinary.com/dvfobknn4/image/upload/v1747047080/ChatGPT_Image_5_maj_2025_13_14_36_ycwwd1.png') center/cover no-repeat;
   border-radius: 8px;
   padding: 2rem;
   max-width: 600px;
@@ -125,6 +125,8 @@ export const Tutorial: React.FC<TutorialProps> = ({ steps, onComplete }) => {
     setTimeout(onComplete, 300);
   };
 
+  const step = steps[currentStep];
+
   return (
     <AnimatePresence>
       {isVisible && (
@@ -146,11 +148,11 @@ export const Tutorial: React.FC<TutorialProps> = ({ steps, onComplete }) => {
             >
               ×
             </CloseButton>
-            <TutorialTitle>{steps[currentStep].title}</TutorialTitle>
-            {steps[currentStep].image && (
-              <TutorialImage src={steps[currentStep].image} alt={steps[currentStep].title} />
+            <TutorialTitle>{step.title}</TutorialTitle>
+            {step.image && (
+              <TutorialImage src={step.image} alt={step.title} />
             )}
-            <TutorialText>{steps[currentStep].content}</TutorialText>
+            <TutorialText>{step.content}</TutorialText>
             <ButtonGroup>
               <TutorialButton
                 whileHover={{ scale: 1.06, boxShadow: '0 0 12px #ffd70088' }}

@@ -352,33 +352,33 @@ const AppRoutes: React.FC = () => {
         <BackButton onClick={() => navigate('/')} aria-label="Back to Menu">←</BackButton>
         <div style={{ width: '100%', maxWidth: 420, margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
           <h1 style={{
-            fontFamily: 'Cinzel Decorative Bold',
+            fontFamily: 'NorseBold, Norse, serif',
             fontSize: '3rem',
             marginBottom: '0.5rem',
             textAlign: 'center',
-            color: 'transparent',
+            color: '#ffd700',
             textShadow: '0 0 8px #ffd70088, 0 0 12px #ffd70044, 0 0 1px #fff',
-            WebkitTextStroke: '1px #ffd700',
             letterSpacing: '2px',
             fontWeight: 'bold',
+            WebkitTextStroke: 'none',
           }}>
             Norse Tactics
           </h1>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16, fontFamily: 'Cinzel Decorative Bold, serif' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16, fontFamily: 'NorseBold, Norse, serif' }}>
             <AIDifficultySelector
               selectedDifficulty={aiDifficulty}
               onDifficultyChange={setAIDifficulty}
             />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 16, maxWidth: 200, width: '100%' }}>
-            <button style={{ padding: '0.08rem 0.2rem', fontSize: '0.78rem', borderRadius: 4, border: rules.same ? '2px solid #ffd700' : '2px solid #444', background: rules.same ? '#ffd700' : 'transparent', color: rules.same ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Cinzel Decorative Bold, serif', width: '100%', minHeight: 36, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} onClick={() => setRules(r => ({ ...r, same: !r.same }))}>Same<br />Rule</button>
-            <button style={{ padding: '0.08rem 0.2rem', fontSize: '0.78rem', borderRadius: 4, border: rules.plus ? '2px solid #ffd700' : '2px solid #444', background: rules.plus ? '#ffd700' : 'transparent', color: rules.plus ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Cinzel Decorative Bold, serif', width: '100%', minHeight: 36, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} onClick={() => setRules(r => ({ ...r, plus: !r.plus }))}>Plus<br />Rule</button>
-            <button style={{ padding: '0.08rem 0.2rem', fontSize: '0.78rem', borderRadius: 4, border: rules.elements ? '2px solid #ffd700' : '2px solid #444', background: rules.elements ? '#ffd700' : 'transparent', color: rules.elements ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Cinzel Decorative Bold, serif', width: '100%', minHeight: 36, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} onClick={() => setRules(r => ({ ...r, elements: !r.elements }))}>Elements</button>
-            <button style={{ padding: '0.08rem 0.2rem', fontSize: '0.78rem', borderRadius: 4, border: rules.ragnarok ? '2px solid #ffd700' : '2px solid #444', background: rules.ragnarok ? '#ffd700' : 'transparent', color: rules.ragnarok ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Cinzel Decorative Bold, serif', width: '100%', minHeight: 36, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} onClick={() => setRules(r => ({ ...r, ragnarok: !r.ragnarok }))}>Ragnarök</button>
+            <button style={{ padding: '0.08rem 0.2rem', fontSize: '0.95rem', borderRadius: 4, border: rules.same ? '2px solid #ffd700' : '2px solid #444', background: rules.same ? '#ffd700' : 'transparent', color: rules.same ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Norse, serif', width: '100%', minHeight: 36, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', letterSpacing: 1, textShadow: '0 1px 6px #fff8, 0 0 2px #ffd70044' }} onClick={() => setRules(r => ({ ...r, same: !r.same }))}>Same<br />Rule</button>
+            <button style={{ padding: '0.08rem 0.2rem', fontSize: '0.95rem', borderRadius: 4, border: rules.plus ? '2px solid #ffd700' : '2px solid #444', background: rules.plus ? '#ffd700' : 'transparent', color: rules.plus ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Norse, serif', width: '100%', minHeight: 36, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', letterSpacing: 1, textShadow: '0 1px 6px #fff8, 0 0 2px #ffd70044' }} onClick={() => setRules(r => ({ ...r, plus: !r.plus }))}>Plus<br />Rule</button>
+            <button style={{ padding: '0.08rem 0.2rem', fontSize: '0.95rem', borderRadius: 4, border: rules.elements ? '2px solid #ffd700' : '2px solid #444', background: rules.elements ? '#ffd700' : 'transparent', color: rules.elements ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Norse, serif', width: '100%', minHeight: 36, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', letterSpacing: 1, textShadow: '0 1px 6px #fff8, 0 0 2px #ffd70044' }} onClick={() => setRules(r => ({ ...r, elements: !r.elements }))}>Elements</button>
+            <button style={{ padding: '0.08rem 0.2rem', fontSize: '0.95rem', borderRadius: 4, border: rules.ragnarok ? '2px solid #ffd700' : '2px solid #444', background: rules.ragnarok ? '#ffd700' : 'transparent', color: rules.ragnarok ? '#bfa100' : '#fff', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Norse, serif', width: '100%', minHeight: 36, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', letterSpacing: 1, textShadow: '0 1px 6px #fff8, 0 0 2px #ffd70044' }} onClick={() => setRules(r => ({ ...r, ragnarok: !r.ragnarok }))}>Ragnarök</button>
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: 32 }}>
             <button
-              style={{ padding: '1rem 2.5rem', fontSize: '1.6rem', borderRadius: 8, border: '3px solid #ffd700', background: '#ffd700', color: '#1a1a1a', fontFamily: 'Cinzel Decorative Bold, serif', fontWeight: 'bold', letterSpacing: 1, cursor: 'pointer', boxShadow: '0 0 12px 2px #ffd70033', transition: 'box-shadow 0.2s, text-shadow 0.2s, color 0.2s' }}
+              style={{ padding: '1rem 2.5rem', fontSize: '1.6rem', borderRadius: 8, border: '3px solid #ffd700', background: '#ffd700', color: '#1a1a1a', fontFamily: 'NorseBold, Norse, serif', fontWeight: 'bold', letterSpacing: 1, cursor: 'pointer', boxShadow: '0 0 12px 2px #ffd70033', transition: 'box-shadow 0.2s, text-shadow 0.2s, color 0.2s', textShadow: '0 1px 6px #fff8, 0 0 2px #ffd70044' }}
               onClick={() => navigate('/free-play/game', { state: { rules, aiDifficulty } })}
             >
               Start Game

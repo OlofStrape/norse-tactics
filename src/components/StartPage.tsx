@@ -65,7 +65,7 @@ const ModeButton = styled(motion.button)<{ disabled?: boolean }>`
   color: ${({ disabled }) => disabled ? '#aaa' : '#1a1a1a'};
   cursor: ${({ disabled }) => disabled ? 'not-allowed' : 'pointer'};
   box-shadow: 0 0 12px 2px #ffd70033, 0 4px 16px rgba(0,0,0,0.18);
-  font-family: 'Cinzel Decorative', serif;
+  font-family: 'Norse', serif;
   font-weight: bold;
   letter-spacing: 1px;
   transition: box-shadow 0.2s, text-shadow 0.2s, color 0.2s;

@@ -19,6 +19,7 @@ import { CampaignOnboardingModal } from './CampaignOnboardingModal';
 import StoryModal from './StoryModal';
 import { cardImages } from '../data/cardImages';
 import { setCardCollection, getCardCollection } from '../utils/cardCollection';
+import { Card } from '../types/game';
 
 const Container = styled.div`
   min-height: 100vh;
@@ -179,7 +180,7 @@ const ButtonBlock = styled.div`
 const campaignService = new CampaignService();
 
 // Helper to compute realm progress and lock/unlock state
-function getRealmStates(progress: any, playerLevel: number, forceUnlockAll: boolean) {
+function getRealmStates(progress: any, playerLevel: number) {
   // Map of realmId -> quests in that realm
   const questsByRealm: { [realmId: string]: typeof allQuests } = allQuests.reduce((acc: { [realmId: string]: typeof allQuests }, quest) => {
     if (!acc[quest.location]) acc[quest.location] = [];
@@ -195,7 +196,6 @@ function getRealmStates(progress: any, playerLevel: number, forceUnlockAll: bool
 
   // Helper: is realm unlocked?
   function isRealmUnlocked(realmId: string): boolean {
-    if (forceUnlockAll) return true;
     if (realmId === 'midgard') return true;
     const req = realmProgression[realmId as keyof typeof realmProgression];
     if (!req) return false;
@@ -281,6 +281,8 @@ function savePlayerProfile(name: string, avatar: string) {
 const LoreJournal = React.lazy(() => import('./LoreJournal'));
 const DialogueModal = React.lazy(() => import('./DialogueModal'));
 
+const hasRealImage = (card: any) => card.image && !card.image.includes('/cards/');
+
 const CampaignPage: React.FC = () => {
   const [selectedRealm, setSelectedRealm] = useState<ChapterKey | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -305,8 +307,8 @@ const CampaignPage: React.FC = () => {
   const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem('campaignProgress'));
   const [showNextTrialModal, setShowNextTrialModal] = useState(false);
   const [nextQuest, setNextQuest] = useState<any | null>(null);
-  const [editMode, setEditMode] = useState(false);
-  const [forceUnlockAll, setForceUnlockAll] = useState(false);
+  const [profilePopoverOpen, setProfilePopoverOpen] = useState(false);
+  const avatarUrl = playerProfile.avatar ? (cards.find(c => c.id === playerProfile.avatar)?.image) : undefined;
 
   // Calculate level from XP using new formula
   const playerLevel = getLevelFromXP(progress.experience);
@@ -326,6 +328,29 @@ const CampaignPage: React.FC = () => {
       localStorage.setItem('playerPrevLevel', String(progress.playerLevel));
     }
   }, [progress.playerLevel]);
+
+  // Sätt nextQuest när Level Up-modal öppnas
+  useEffect(() => {
+    if (levelUpModalOpen && progress.completedQuests.length > 0) {
+      // Hitta senaste avklarade quest
+      const lastCompletedId = progress.completedQuests[progress.completedQuests.length - 1];
+      const lastCompleted = allQuests.find(q => q.id === lastCompletedId);
+      if (lastCompleted) {
+        // Samma logik som i handleShowNextTrial
+        const realmQuests = allQuests.filter(q => q.location === lastCompleted.location);
+        const completedIndex = realmQuests.findIndex(q => q.id === lastCompleted.id);
+        let next = null;
+        for (let i = completedIndex + 1; i < realmQuests.length; i++) {
+          const q = realmQuests[i];
+          let unlocked = true;
+          if (q.requirements.playerLevel && playerLevel < q.requirements.playerLevel) unlocked = false;
+          if (q.requirements.completedQuests && q.requirements.completedQuests.length > 0 && !q.requirements.completedQuests.every((qid: string) => progress.completedQuests.includes(qid))) unlocked = false;
+          if (unlocked) { next = q; break; }
+        }
+        setNextQuest(next);
+      }
+    }
+  }, [levelUpModalOpen, progress.completedQuests, playerLevel]);
 
   // Find the realm object by id
   const selectedRealmObj = selectedRealm
@@ -488,7 +513,7 @@ const CampaignPage: React.FC = () => {
     setAvatarSelectOpen(false);
   }
 
-  const computedRealms = getRealmStates(progress, playerLevel, forceUnlockAll);
+  const computedRealms = getRealmStates(progress, playerLevel);
 
   React.useEffect(() => {
     // Simulate loading for demonstration; replace with real data fetch if needed
@@ -533,6 +558,18 @@ const CampaignPage: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    if (!profilePopoverOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      const pop = document.querySelector('[aria-label="Show player menu"]');
+      if (pop && !pop.contains(e.target as Node)) {
+        setProfilePopoverOpen(false);
+      }
+    };
+    window.addEventListener('mousedown', handleClick);
+    return () => window.removeEventListener('mousedown', handleClick);
+  }, [profilePopoverOpen]);
+
   if (isLoading) {
     return <LoadingSpinner text="Loading campaign..." />;
   }
@@ -563,58 +600,6 @@ const CampaignPage: React.FC = () => {
       >
         Reset Progress (DEV)
       </button>
-      {/* DEV ONLY: Unlock all cards with image */}
-      <button
-        onClick={() => {
-          const allWithImage = Object.keys(cardImages);
-          const collection = getCardCollection();
-          const newCollection = Array.from(new Set([...collection, ...allWithImage]));
-          setCardCollection(newCollection);
-          window.location.reload();
-        }}
-        style={{
-          position: 'fixed',
-          top: 110,
-          right: 12,
-          zIndex: 9999,
-          background: '#1a6e22',
-          color: '#fff',
-          border: '2px solid #ffd700',
-          borderRadius: 8,
-          padding: '0.7rem 1.5rem',
-          fontSize: '1.1rem',
-          fontWeight: 700,
-          fontFamily: 'Norse, serif',
-          boxShadow: '0 0 12px #ffd70088',
-          cursor: 'pointer',
-          letterSpacing: 1,
-        }}
-      >
-        Unlock all cards with image (DEV)
-      </button>
-      {/* --- LÄGG TILL TOGGLE-KNAPP --- */}
-      <button
-        onClick={() => setForceUnlockAll(v => !v)}
-        style={{
-          position: 'fixed',
-          top: 60,
-          right: 12,
-          zIndex: 9999,
-          background: forceUnlockAll ? '#ffd700' : '#444',
-          color: forceUnlockAll ? '#222' : '#ffd700',
-          border: '2px solid #ffd700',
-          borderRadius: 8,
-          padding: '0.7rem 1.5rem',
-          fontSize: '1.1rem',
-          fontWeight: 700,
-          fontFamily: 'Norse, serif',
-          boxShadow: forceUnlockAll ? '0 0 18px #ffd70088' : '0 0 8px #ffd70044',
-          cursor: 'pointer',
-          letterSpacing: 1,
-        }}
-      >
-        {forceUnlockAll ? 'Alla realms upplåsta (Klicka för att låsa)' : 'Testläge: Lås upp alla realms'}
-      </button>
       <Global styles={css`
         body {
           min-height: 100vh;
@@ -631,19 +616,52 @@ const CampaignPage: React.FC = () => {
       <BackButton onClick={() => navigate('/')}>←</BackButton>
       <Title>Campaign</Title>
       <SubTitle>{selectedRealm ? campaignStory.chapters[selectedRealm].title : 'Select a realm to view quests'}</SubTitle>
-      <InfoPanel>
-        <AvatarBlock>
-          <div style={{ width: 72, height: 100, borderRadius: 10, background: '#181818', boxShadow: '0 0 8px #000a', marginBottom: 4, position: 'relative', cursor: 'pointer' }} onClick={() => setAvatarSelectOpen(true)} title="Change Avatar">
-            {playerProfile.avatar ? (
-              <img src={cards.find(c => c.id === playerProfile.avatar)?.image} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: 10, objectFit: 'cover', border: '2px solid #ffd700' }} />
-            ) : (
-              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffd700', fontSize: 32 }}>?</div>
-            )}
-            <span style={{ position: 'absolute', bottom: 2, right: 6, fontSize: 18, color: '#ffd700', textShadow: '0 0 6px #000' }}>✎</span>
-          </div>
-        </AvatarBlock>
-        <NameEditBlock>
-          <NameBlock>
+      <div style={{ position: 'fixed', top: 16, right: 16, zIndex: 2000 }}>
+        <button
+          onClick={() => setProfilePopoverOpen(v => !v)}
+          style={{
+            width: 56, height: 56, borderRadius: '50%', border: '2px solid #ffd700', background: '#181818', boxShadow: '0 0 12px #ffd70088', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0, overflow: 'hidden', position: 'relative', zIndex: 2001
+          }}
+          aria-label="Show player menu"
+        >
+          {avatarUrl ? (
+            <img src={avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+          ) : (
+            <span style={{ color: '#ffd700', fontSize: 32 }}>?</span>
+          )}
+        </button>
+      </div>
+      {profilePopoverOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 80,
+            right: 24,
+            zIndex: 2100,
+            background: 'linear-gradient(135deg, #2a1a0a 0%, #181818 100%)',
+            borderRadius: 18,
+            boxShadow: '0 0 32px #000a, 0 0 0 4px #ffd70044',
+            padding: '2.2rem 2.2rem 1.5rem 2.2rem',
+            minWidth: 280,
+            maxWidth: 340,
+            color: '#ffd700',
+            fontFamily: 'Norse, serif',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 18,
+            border: '2px solid #ffd700',
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 72, height: 100, borderRadius: 10, background: '#181818', boxShadow: '0 0 8px #000a', marginBottom: 4, position: 'relative', cursor: 'pointer' }} onClick={() => setAvatarSelectOpen(true)} title="Change Avatar">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: 10, objectFit: 'cover', border: '2px solid #ffd700' }} />
+              ) : (
+                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffd700', fontSize: 32 }}>?</div>
+              )}
+              <span style={{ position: 'absolute', bottom: 2, right: 6, fontSize: 18, color: '#ffd700', textShadow: '0 0 6px #000' }}>✎</span>
+            </div>
             {editingName ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <input
@@ -659,9 +677,12 @@ const CampaignPage: React.FC = () => {
             ) : (
               <div style={{ fontSize: 20, fontWeight: 'bold', color: '#ffd700', cursor: 'pointer', textShadow: '0 0 6px #ffd70088' }} onClick={() => setEditingName(true)} title="Edit Name">{playerProfile.name}</div>
             )}
-          </NameBlock>
-        </NameEditBlock>
-        <ButtonBlock>
+          </div>
+          <div style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 2 }}>Level {progress.playerLevel}</div>
+          <div style={{ fontSize: 15, marginBottom: 4 }}>XP: {progress.experience - ((progress.playerLevel - 1) * 1000)} / {progress.playerLevel * 1000}</div>
+          <div style={{ height: 8, background: '#444', borderRadius: 4, width: '100%', maxWidth: 140, marginBottom: 2 }}>
+            <div style={{ height: 8, background: '#ffd700', borderRadius: 4, width: `${Math.min(100, Math.round((progress.experience - ((progress.playerLevel - 1) * 1000)) / (progress.playerLevel * 1000) * 100))}%`, transition: 'width 0.3s' }} />
+          </div>
           <button
             style={{
               padding: '0.7rem 1.2rem',
@@ -679,7 +700,7 @@ const CampaignPage: React.FC = () => {
               width: '100%',
               maxWidth: 160,
             }}
-            onClick={() => navigate('/collection')}
+            onClick={() => { setProfilePopoverOpen(false); navigate('/collection'); }}
           >
             Card Collection
           </button>
@@ -700,7 +721,7 @@ const CampaignPage: React.FC = () => {
               width: '100%',
               maxWidth: 160,
             }}
-            onClick={() => navigate('/deck-builder')}
+            onClick={() => { setProfilePopoverOpen(false); navigate('/deck-builder'); }}
           >
             Deck Builder
           </button>
@@ -721,42 +742,19 @@ const CampaignPage: React.FC = () => {
               width: '100%',
               maxWidth: 160,
             }}
-            onClick={() => setShowLoreJournal(true)}
+            onClick={() => { setProfilePopoverOpen(false); setShowLoreJournal(true); }}
           >
             Lore Journal
           </button>
-        </ButtonBlock>
-        <LevelBlock>
-          <div style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 2 }}>Level {progress.playerLevel}</div>
-          <div style={{ fontSize: 15, marginBottom: 4 }}>XP: {progress.experience - ((progress.playerLevel - 1) * 1000)} / {progress.playerLevel * 1000}</div>
-          <div style={{ height: 8, background: '#444', borderRadius: 4, width: '100%', maxWidth: 140, marginBottom: 2 }}>
-            <div style={{ height: 8, background: '#ffd700', borderRadius: 4, width: `${Math.min(100, Math.round((progress.experience - ((progress.playerLevel - 1) * 1000)) / (progress.playerLevel * 1000) * 100))}%`, transition: 'width 0.3s' }} />
-          </div>
-        </LevelBlock>
-      </InfoPanel>
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
-        <button
-          onClick={() => setEditMode(e => !e)}
-          style={{
-            padding: '0.5rem 1.2rem',
-            borderRadius: 8,
-            border: '2px solid #ffd700',
-            background: editMode ? '#ffd700' : '#181818',
-            color: editMode ? '#222' : '#ffd700',
-            fontFamily: 'Norsebold, Norse, serif',
-            fontWeight: 'bold',
-            letterSpacing: 1,
-            cursor: 'pointer',
-            boxShadow: '0 0 12px 2px #ffd70033',
-            transition: 'background 0.2s, color 0.2s',
-            marginBottom: 8,
-            minWidth: 120,
-          }}
-        >
-          {editMode ? 'Edit Mode: ON' : 'Edit Mode: OFF'}
-        </button>
-      </div>
-      <QuestMap realms={computedRealms} onRealmSelect={handleRealmSelect} editable={editMode} />
+          <button
+            onClick={() => setProfilePopoverOpen(false)}
+            style={{ marginTop: 18, padding: '0.5rem 1.2rem', borderRadius: 8, border: 'none', background: '#ffd700', color: '#222', fontWeight: 'bold', fontSize: 16, cursor: 'pointer', boxShadow: '0 0 8px #ffd70088' }}
+          >
+            Close
+          </button>
+        </div>
+      )}
+      <QuestMap realms={computedRealms} onRealmSelect={handleRealmSelect} />
       <QuestPanelModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
@@ -786,20 +784,20 @@ const CampaignPage: React.FC = () => {
             <div style={{ marginBottom: 10 }}>
               <strong>Your Deck:</strong>
               <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
-                {progress.deck && progress.deck.map((cardId: string) => {
-                  const cardObj = cards.find(c => c.id === cardId);
-                  return cardObj ? (
-                    <div key={cardId} style={{ width: 80 }}>
-                      <GameCard card={cardObj} isPlayable={false} onClick={() => {}} />
+                {progress.deck && progress.deck
+                  .map((cardId: string) => cards.find(c => c.id === cardId))
+                  .filter((cardObj: Card | undefined) => cardObj && hasRealImage(cardObj))
+                  .map((cardObj: Card) => (
+                    <div key={cardObj.id} style={{ width: 80 }}>
+                      <GameCard card={cardObj} isPlayable={false} onClick={() => {}} hideName={true} />
                       <div style={{ textAlign: 'center', color: '#ffd700', fontWeight: 'bold', fontSize: 13 }}>{cardObj.name}</div>
                     </div>
-                  ) : null;
-                })}
+                  ))}
               </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 18 }}>
               <button onClick={() => setQuestToStart(null)} style={{ padding: '0.5rem 1.2rem', borderRadius: 6, border: 'none', background: '#888', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}>Cancel</button>
-              <button onClick={handleBeginBattle} style={{ padding: '0.5rem 1.2rem', borderRadius: 6, border: 'none', background: '#ffd700', color: '#222', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 0 8px #ffd70088' }}>Begin Battle</button>
+              <button onClick={handleBeginBattle} style={{ padding: '0.5rem 1.2rem', borderRadius: 6, border: 'none', background: '#ffd700', color: '#222', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 0 8px #ffd70088', fontFamily: 'Norse, serif', fontSize: '1.2rem', letterSpacing: '1px', textShadow: '0 1px 6px #fff8, 0 0 2px #ffd70044' }}>Begin Battle</button>
             </div>
           </div>
         </div>
@@ -811,23 +809,19 @@ const CampaignPage: React.FC = () => {
             <h2 style={{ color: '#ffd700', marginBottom: 12 }}>Edit Your Deck</h2>
             <div style={{ marginBottom: 16 }}>Select up to 5 cards for your deck:</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 24 }}>
-              {progress.unlockedCards && progress.unlockedCards.map((cardId: string) => {
-                const cardObj = cards.find(c => c.id === cardId);
-                return (
+              {progress.unlockedCards && progress.unlockedCards
+                .map((cardId: string) => cards.find(c => c.id === cardId))
+                .filter((cardObj: Card | undefined) => cardObj && hasRealImage(cardObj))
+                .map((cardObj: Card) => (
                   <div
-                    key={cardId}
-                    style={{ border: deckSelection.includes(cardId) ? '3px solid #ffd700' : '2px solid #444', borderRadius: 8, padding: 4, background: deckSelection.includes(cardId) ? '#333' : '#181818', cursor: 'pointer', width: 120 }}
-                    onClick={() => handleToggleCard(cardId)}
+                    key={cardObj.id}
+                    style={{ border: deckSelection.includes(cardObj.id) ? '3px solid #ffd700' : '2px solid #444', borderRadius: 8, padding: 4, background: deckSelection.includes(cardObj.id) ? '#333' : '#181818', cursor: 'pointer', width: 120 }}
+                    onClick={() => handleToggleCard(cardObj.id)}
                   >
-                    {cardObj ? (
-                      <GameCard card={cardObj} isPlayable={false} onClick={() => {}} />
-                    ) : (
-                      <div style={{ height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#aaa' }}>Unknown Card</div>
-                    )}
-                    <div style={{ textAlign: 'center', marginTop: 4, color: deckSelection.includes(cardId) ? '#ffd700' : '#aaa', fontWeight: 'bold' }}>{cardObj ? cardObj.name : cardId}</div>
+                    <GameCard card={cardObj} isPlayable={false} onClick={() => {}} />
+                    <div style={{ textAlign: 'center', marginTop: 4, color: deckSelection.includes(cardObj.id) ? '#ffd700' : '#aaa', fontWeight: 'bold' }}>{cardObj.name}</div>
                   </div>
-                );
-              })}
+                ))}
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
               <button onClick={() => setDeckModalOpen(false)} style={{ padding: '0.5rem 1.2rem', borderRadius: 6, border: 'none', background: '#888', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}>Cancel</button>
@@ -838,12 +832,80 @@ const CampaignPage: React.FC = () => {
       )}
       {/* Level Up Modal */}
       {levelUpModalOpen && newLevel && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.82)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#222', borderRadius: 20, padding: 48, width: '95%', maxWidth: '98%', color: '#ffd700', boxShadow: '0 0 32px #000', textAlign: 'center', position: 'relative' }}>
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          zIndex: 3000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: `linear-gradient(rgba(10,8,4,0.85), rgba(10,8,4,0.92)), url('https://res.cloudinary.com/dvfobknn4/image/upload/v1747047080/ChatGPT_Image_5_maj_2025_13_14_36_ycwwd1.png') center/cover no-repeat`
+        }}>
+          <div style={{
+            background: `linear-gradient(rgba(20,15,5,0.88), rgba(20,15,5,0.92)), url('https://res.cloudinary.com/dvfobknn4/image/upload/v1747047080/ChatGPT_Image_5_maj_2025_13_14_36_ycwwd1.png') center/cover no-repeat`,
+            borderRadius: 20,
+            padding: 48,
+            width: '95%',
+            maxWidth: '98%',
+            color: '#ffd700',
+            boxShadow: '0 0 32px #000',
+            textAlign: 'center',
+            position: 'relative'
+          }}>
+            {/* Close (X) button in top right */}
+            <button
+              onClick={() => setLevelUpModalOpen(false)}
+              style={{
+                position: 'absolute',
+                top: 18,
+                right: 24,
+                background: 'none',
+                border: 'none',
+                color: '#ffd700',
+                fontSize: 32,
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                zIndex: 10,
+                textShadow: '0 0 8px #000, 0 0 8px #ffd70088',
+                padding: 0,
+                lineHeight: 1
+              }}
+              aria-label="Close"
+            >
+              ×
+            </button>
             <h2 style={{ fontFamily: 'Norsebold, Norse, serif', fontSize: 38, color: '#ffd700', marginBottom: 12, textShadow: '0 0 12px #ffd70088' }}>Level Up!</h2>
             <div style={{ fontSize: 24, marginBottom: 16 }}>You reached <span style={{ color: '#fff', fontWeight: 'bold' }}>Level {newLevel}</span>!</div>
             <div style={{ fontSize: 18, marginBottom: 24 }}>Keep playing to unlock new quests, realms, and rewards.</div>
-            <button onClick={() => setLevelUpModalOpen(false)} style={{ padding: '0.7rem 2rem', borderRadius: 8, border: 'none', background: '#ffd700', color: '#222', fontWeight: 'bold', fontSize: 18, cursor: 'pointer', boxShadow: '0 0 8px #ffd70088' }}>Close</button>
+            <button
+              onClick={() => {
+                if (nextQuest) {
+                  setLevelUpModalOpen(false);
+                  setSelectedRealm(nextQuest.location);
+                  setQuestToStart(nextQuest);
+                  setModalOpen(true);
+                } else {
+                  setLevelUpModalOpen(false);
+                }
+              }}
+              style={{
+                padding: '0.7rem 2rem',
+                borderRadius: 8,
+                border: 'none',
+                background: '#ffd700',
+                color: '#222',
+                fontWeight: 'bold',
+                fontSize: 18,
+                cursor: 'pointer',
+                boxShadow: '0 0 8px #ffd70088',
+                marginTop: 18
+              }}
+            >
+              {nextQuest ? 'Next Quest' : 'Close'}
+            </button>
           </div>
         </div>
       )}
