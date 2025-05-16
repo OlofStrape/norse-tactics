@@ -5,7 +5,7 @@ export const realms: Realm[] = [
         id: 'midgard',
         name: 'Midgard',
         description: 'The realm of humans, where your journey begins.',
-        position: { x: 50, y: 50 }, // Center
+        position: { x: 44, y: 55 },
         connections: ['asgard', 'vanaheim', 'alfheim'],
         unlocked: true,
         completed: false
@@ -14,72 +14,72 @@ export const realms: Realm[] = [
         id: 'asgard',
         name: 'Asgard',
         description: 'Home of the Æsir gods.',
-        position: { x: 50, y: 20 }, // Top center
+        position: { x: 44, y: 15 },
         connections: ['midgard', 'vanaheim', 'jotunheim'],
-        unlocked: false,
+        unlocked: true,
         completed: false
     },
     {
         id: 'vanaheim',
         name: 'Vanaheim',
         description: 'Realm of the Vanir gods.',
-        position: { x: 75, y: 35 }, // Top right
+        position: { x: 69, y: 28 },
         connections: ['midgard', 'asgard', 'alfheim'],
-        unlocked: false,
+        unlocked: true,
         completed: false
     },
     {
         id: 'alfheim',
         name: 'Alfheim',
         description: 'Home of the Light Elves.',
-        position: { x: 80, y: 65 }, // Right
+        position: { x: 79, y: 50 },
         connections: ['midgard', 'vanaheim'],
-        unlocked: false,
+        unlocked: true,
         completed: false
     },
     {
         id: 'jotunheim',
         name: 'Jötunheim',
         description: 'Land of the giants.',
-        position: { x: 25, y: 35 }, // Top left
+        position: { x: 19, y: 28 },
         connections: ['asgard', 'niflheim', 'midgard'],
-        unlocked: false,
+        unlocked: true,
         completed: false
     },
     {
         id: 'nidavellir',
         name: 'Nidavellir',
         description: 'Underground realm of the dwarves.',
-        position: { x: 20, y: 65 }, // Left
+        position: { x: 9, y: 50 },
         connections: ['midgard'],
-        unlocked: false,
+        unlocked: true,
         completed: false
     },
     {
         id: 'muspelheim',
         name: 'Muspelheim',
         description: 'Realm of fire and home of the fire giants.',
-        position: { x: 75, y: 80 }, // Bottom right
+        position: { x: 64, y: 72 },
         connections: ['helheim', 'niflheim'],
-        unlocked: false,
+        unlocked: true,
         completed: false
     },
     {
         id: 'niflheim',
         name: 'Niflheim',
         description: 'The primordial realm of ice and mist.',
-        position: { x: 65, y: 85 }, // Bottom
+        position: { x: 24, y: 72 },
         connections: ['helheim', 'muspelheim', 'jotunheim'],
-        unlocked: false,
+        unlocked: true,
         completed: false
     },
     {
         id: 'helheim',
         name: 'Helheim',
         description: 'Realm of the dead.',
-        position: { x: 80, y: 90 }, // Far bottom right (moved)
+        position: { x: 44, y: 82 },
         connections: ['niflheim', 'muspelheim', 'nidavellir'],
-        unlocked: false,
+        unlocked: true,
         completed: false
     }
 ];

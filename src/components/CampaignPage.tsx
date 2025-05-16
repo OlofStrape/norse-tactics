@@ -17,6 +17,8 @@ import { LoadingSpinner } from './AILoadingIndicator';
 import { RewardModal } from './RewardModal';
 import { CampaignOnboardingModal } from './CampaignOnboardingModal';
 import StoryModal from './StoryModal';
+import { cardImages } from '../data/cardImages';
+import { setCardCollection, getCardCollection } from '../utils/cardCollection';
 
 const Container = styled.div`
   min-height: 100vh;
@@ -177,7 +179,7 @@ const ButtonBlock = styled.div`
 const campaignService = new CampaignService();
 
 // Helper to compute realm progress and lock/unlock state
-function getRealmStates(progress: any, playerLevel: number) {
+function getRealmStates(progress: any, playerLevel: number, forceUnlockAll: boolean) {
   // Map of realmId -> quests in that realm
   const questsByRealm: { [realmId: string]: typeof allQuests } = allQuests.reduce((acc: { [realmId: string]: typeof allQuests }, quest) => {
     if (!acc[quest.location]) acc[quest.location] = [];
@@ -193,6 +195,7 @@ function getRealmStates(progress: any, playerLevel: number) {
 
   // Helper: is realm unlocked?
   function isRealmUnlocked(realmId: string): boolean {
+    if (forceUnlockAll) return true;
     if (realmId === 'midgard') return true;
     const req = realmProgression[realmId as keyof typeof realmProgression];
     if (!req) return false;
@@ -302,6 +305,8 @@ const CampaignPage: React.FC = () => {
   const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem('campaignProgress'));
   const [showNextTrialModal, setShowNextTrialModal] = useState(false);
   const [nextQuest, setNextQuest] = useState<any | null>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [forceUnlockAll, setForceUnlockAll] = useState(false);
 
   // Calculate level from XP using new formula
   const playerLevel = getLevelFromXP(progress.experience);
@@ -483,7 +488,7 @@ const CampaignPage: React.FC = () => {
     setAvatarSelectOpen(false);
   }
 
-  const computedRealms = getRealmStates(progress, playerLevel);
+  const computedRealms = getRealmStates(progress, playerLevel, forceUnlockAll);
 
   React.useEffect(() => {
     // Simulate loading for demonstration; replace with real data fetch if needed
@@ -557,6 +562,58 @@ const CampaignPage: React.FC = () => {
         }}
       >
         Reset Progress (DEV)
+      </button>
+      {/* DEV ONLY: Unlock all cards with image */}
+      <button
+        onClick={() => {
+          const allWithImage = Object.keys(cardImages);
+          const collection = getCardCollection();
+          const newCollection = Array.from(new Set([...collection, ...allWithImage]));
+          setCardCollection(newCollection);
+          window.location.reload();
+        }}
+        style={{
+          position: 'fixed',
+          top: 110,
+          right: 12,
+          zIndex: 9999,
+          background: '#1a6e22',
+          color: '#fff',
+          border: '2px solid #ffd700',
+          borderRadius: 8,
+          padding: '0.7rem 1.5rem',
+          fontSize: '1.1rem',
+          fontWeight: 700,
+          fontFamily: 'Norse, serif',
+          boxShadow: '0 0 12px #ffd70088',
+          cursor: 'pointer',
+          letterSpacing: 1,
+        }}
+      >
+        Unlock all cards with image (DEV)
+      </button>
+      {/* --- LÄGG TILL TOGGLE-KNAPP --- */}
+      <button
+        onClick={() => setForceUnlockAll(v => !v)}
+        style={{
+          position: 'fixed',
+          top: 60,
+          right: 12,
+          zIndex: 9999,
+          background: forceUnlockAll ? '#ffd700' : '#444',
+          color: forceUnlockAll ? '#222' : '#ffd700',
+          border: '2px solid #ffd700',
+          borderRadius: 8,
+          padding: '0.7rem 1.5rem',
+          fontSize: '1.1rem',
+          fontWeight: 700,
+          fontFamily: 'Norse, serif',
+          boxShadow: forceUnlockAll ? '0 0 18px #ffd70088' : '0 0 8px #ffd70044',
+          cursor: 'pointer',
+          letterSpacing: 1,
+        }}
+      >
+        {forceUnlockAll ? 'Alla realms upplåsta (Klicka för att låsa)' : 'Testläge: Lås upp alla realms'}
       </button>
       <Global styles={css`
         body {
@@ -677,17 +734,29 @@ const CampaignPage: React.FC = () => {
           </div>
         </LevelBlock>
       </InfoPanel>
-      {progress.specialAbilities && progress.specialAbilities.length > 0 && (
-        <div style={{ margin: '1rem 0', background: '#222', color: '#ffd700', padding: '0.75rem 1.5rem', borderRadius: 8, boxShadow: '0 0 8px #ffd70055' }}>
-          <strong>Unlocked Abilities:</strong>
-          <ul style={{ margin: 0, paddingLeft: 18 }}>
-            {progress.specialAbilities.map((ability: string, i: number) => (
-              <li key={i}>{ability}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-      <QuestMap realms={computedRealms} onRealmSelect={handleRealmSelect} />
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+        <button
+          onClick={() => setEditMode(e => !e)}
+          style={{
+            padding: '0.5rem 1.2rem',
+            borderRadius: 8,
+            border: '2px solid #ffd700',
+            background: editMode ? '#ffd700' : '#181818',
+            color: editMode ? '#222' : '#ffd700',
+            fontFamily: 'Norsebold, Norse, serif',
+            fontWeight: 'bold',
+            letterSpacing: 1,
+            cursor: 'pointer',
+            boxShadow: '0 0 12px 2px #ffd70033',
+            transition: 'background 0.2s, color 0.2s',
+            marginBottom: 8,
+            minWidth: 120,
+          }}
+        >
+          {editMode ? 'Edit Mode: ON' : 'Edit Mode: OFF'}
+        </button>
+      </div>
+      <QuestMap realms={computedRealms} onRealmSelect={handleRealmSelect} editable={editMode} />
       <QuestPanelModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}

@@ -246,6 +246,15 @@ const additionalLocations: Card[] = [
     createCard('hvergelmir', 'Hvergelmir', [6, 8, 6, 8], 'ice', 'The Bubbling Cauldron', 'rare'),
 ];
 
+// Add new cards for Eir, Gullveig, Gullinbursti, Mimir, Gerdr
+const newGodsAndCreatures: Card[] = [
+    createCard('eir', 'Eir', [6, 8, 7, 7], 'none', 'Goddess of Healing', 'epic'),
+    createCard('gullveig', 'Gullveig', [7, 7, 8, 6], 'fire', 'Witch of the Vanir, master of seidr magic', 'epic'),
+    createCard('gullinbursti', 'Gullinbursti', [7, 6, 7, 8], 'none', 'The Golden Boar, Freyr\'s magical mount', 'rare'),
+    createCard('mimir', 'Mimir', [7, 8, 6, 7], 'none', 'The wise guardian of Mímisbrunnr', 'epic'),
+    createCard('gerdr', 'Gerdr', [6, 7, 8, 7], 'none', 'Giantess, wife of Freyr', 'rare'),
+];
+
 // Combine all cards
 export const cards: Card[] = [
     ...majorGods,
@@ -264,4 +273,5 @@ export const cards: Card[] = [
     ...additionalCreatures,
     ...additionalArtifacts,
     ...additionalLocations,
+    ...newGodsAndCreatures,
 ]; 

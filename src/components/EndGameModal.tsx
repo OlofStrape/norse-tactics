@@ -56,9 +56,13 @@ interface EndGameModalProps {
   playerScore: number;
   opponentScore: number;
   onRestart: () => void;
+  /** If provided, shows a Next Quest button and calls this when clicked */
+  onNextQuest?: () => void;
+  /** If true, shows the Next Quest button */
+  showNextQuestButton?: boolean;
 }
 
-export const EndGameModal: React.FC<EndGameModalProps> = ({ isOpen, winner, playerScore, opponentScore, onRestart }) => {
+export const EndGameModal: React.FC<EndGameModalProps> = ({ isOpen, winner, playerScore, opponentScore, onRestart, onNextQuest, showNextQuestButton }) => {
   if (!isOpen) return null;
   return (
     <Overlay>
@@ -78,6 +82,17 @@ export const EndGameModal: React.FC<EndGameModalProps> = ({ isOpen, winner, play
         >
           Play Again
         </Button>
+        {showNextQuestButton && onNextQuest && (
+          <Button
+            style={{ marginTop: 16, background: '#bfa100', color: '#fff' }}
+            whileHover={{ scale: 1.06, boxShadow: '0 0 18px #bfa10088' }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            onClick={onNextQuest}
+          >
+            Next Quest
+          </Button>
+        )}
       </Modal>
     </Overlay>
   );

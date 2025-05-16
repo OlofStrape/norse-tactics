@@ -3,6 +3,7 @@ import styled from '@emotion/styled';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '../types/game';
 import { useDrag } from 'react-dnd';
+import { elementIcons } from '../data/elementIcons';
 
 const Flipper = styled(motion.div)`
   width: 100%;
@@ -174,6 +175,17 @@ const Tooltip = styled.div`
   min-width: 180px;
 `;
 
+const ElementIconImg = styled.img`
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 15px;
+  height: 15px;
+  z-index: 5;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 4px #000a) drop-shadow(0 0 6px #fff8);
+`;
+
 export const CARD_TYPE = 'CARD';
 
 interface GameCardProps {
@@ -307,10 +319,13 @@ const GameCard: React.FC<GameCardProps> = ({
               borderRadius: '8px'
             }} 
           />
+          {/* Element-ikon nere till höger */}
+          {card.element && card.element !== 'none' && elementIcons[card.element] && (
+            <ElementIconImg src={elementIcons[card.element]} alt={card.element + ' icon'} />
+          )}
           <CardInfo>
             <CardName>{card.name}</CardName>
           </CardInfo>
-          <ElementIcon element={card.element || 'none'} />
           <CardStats>
             <StatValue position="top">{card.top}</StatValue>
             <StatValue position="right">{card.right}</StatValue>

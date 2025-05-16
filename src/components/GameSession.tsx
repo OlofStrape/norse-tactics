@@ -258,6 +258,11 @@ interface GameSessionProps {
   title?: string;
   unlockedAbilities?: string[];
   showControls?: boolean;
+  currentQuestId?: string;
+  allQuests?: any[];
+  onNextQuest?: (nextQuestId: string) => void;
+  showLevelUpModal?: boolean;
+  onLevelUpModalClose?: () => void;
 }
 
 // Simple sound manager hook
@@ -280,7 +285,12 @@ export const GameSession: React.FC<GameSessionProps> = ({
   onGameEnd,
   title,
   unlockedAbilities = [],
-  showControls = true
+  showControls = true,
+  currentQuestId,
+  allQuests,
+  onNextQuest,
+  showLevelUpModal,
+  onLevelUpModalClose
 }) => {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
@@ -299,6 +309,7 @@ export const GameSession: React.FC<GameSessionProps> = ({
   const navigate = useNavigate();
   const [muted, setMuted] = useSound();
   const [showEndGameModal, setShowEndGameModal] = useState(false);
+  const [nextQuestId, setNextQuestId] = useState<string | null>(null);
 
   useEffect(() => {
     const initialState = GameLogic.initializeGame(playerDeck, opponentDeck);
@@ -314,6 +325,18 @@ export const GameSession: React.FC<GameSessionProps> = ({
     setIsLoading(true);
     // eslint-disable-next-line
   }, [playerDeck, opponentDeck, aiDifficulty]);
+
+  useEffect(() => {
+    // Find next quest if in campaign mode
+    if (currentQuestId && allQuests) {
+      const idx = allQuests.findIndex(q => q.id === currentQuestId);
+      if (idx !== -1 && idx + 1 < allQuests.length) {
+        setNextQuestId(allQuests[idx + 1].id);
+      } else {
+        setNextQuestId(null);
+      }
+    }
+  }, [currentQuestId, allQuests]);
 
   const handleCapture = useCallback((cardId: string, isChainReaction: boolean) => {
     console.log('[handleCapture] Card captured:', cardId, 'isChainReaction:', isChainReaction);
@@ -545,6 +568,14 @@ export const GameSession: React.FC<GameSessionProps> = ({
     };
   }
 
+  // Handler for Next Quest button
+  const handleNextQuest = () => {
+    setShowEndGameModal(false);
+    if (onNextQuest && nextQuestId) {
+      onNextQuest(nextQuestId);
+    }
+  };
+
   return (
     <AppContainer style={{ position: 'relative', background: 'none' }}>
       <BackButton onClick={() => navigate('/')} aria-label="Back to Menu">
@@ -573,6 +604,8 @@ export const GameSession: React.FC<GameSessionProps> = ({
         playerScore={gameState.score.player}
         opponentScore={gameState.score.opponent}
         onRestart={() => window.location.reload()}
+        showNextQuestButton={!!nextQuestId && !!onNextQuest && winner === 'player'}
+        onNextQuest={handleNextQuest}
       />
       {/* Turn marker bar at the very top */}
       <TurnBar>

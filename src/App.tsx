@@ -21,6 +21,7 @@ import { Tutorial } from './components/Tutorial';
 import { tutorialSteps } from './data/tutorials';
 import CardCollection from './components/CardCollection';
 import DeckBuilder from './components/DeckBuilder';
+import { cardImages } from './data/cardImages';
 
 // Add window handler type
 declare global {
@@ -405,20 +406,8 @@ const AppRoutes: React.FC = () => {
       chainReaction: false,
     };
     const aiDifficulty = state?.aiDifficulty || 'medium';
-    // Only use cards with Cloudinary images
-    const allowedCardIds = [
-      "fenrir",
-      "surtr",
-      "sleipnr",
-      "tyr",
-      "thor",
-      "loki",
-      "heimdall",
-      "freya",
-      "jormungandr",
-      "hel"
-      // Add more as you provide them...
-    ];
+    // Använd alla kort med Cloudinary-bild
+    const allowedCardIds = Object.keys(cardImages);
     const allowedCards = cards.filter(card => allowedCardIds.includes(card.id));
     const shuffled = [...allowedCards].sort(() => Math.random() - 0.5);
     const player1Cards = shuffled.slice(0, 5);

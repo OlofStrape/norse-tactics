@@ -3,6 +3,7 @@ import styled from '@emotion/styled';
 import { motion, AnimatePresence } from 'framer-motion';
 import QuestCard from './QuestCard';
 import QuestDetailsModal from './QuestDetailsModal';
+import { cardBackgrounds } from '../data/cardBackgrounds';
 
 const Overlay = styled(motion.div)`
   position: fixed;
@@ -14,8 +15,8 @@ const Overlay = styled(motion.div)`
   justify-content: center;
 `;
 
-const Modal = styled(motion.div)`
-  background: linear-gradient(135deg, #181818 0%, #2a1a0a 100%);
+const Modal = styled(motion.div)<{ bgUrl?: string }>`
+  background: none;
   border-radius: 24px;
   box-shadow: 0 0 48px 8px #000a, 0 0 0 4px #ffd70044;
   padding: 2.5rem 2.5rem 2rem 2.5rem;
@@ -28,6 +29,33 @@ const Modal = styled(motion.div)`
   align-items: center;
   position: relative;
   font-family: 'Norse', serif;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: ${({ bgUrl }) =>
+      bgUrl
+        ? `url('${bgUrl}') center/cover no-repeat`
+        : 'none'};
+    filter: blur(3px) brightness(0.95);
+    opacity: 0.92;
+    transition: opacity 0.3s;
+  }
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(135deg, rgba(24,18,8,0.35) 60%, rgba(24,18,8,0.55) 100%);
+    pointer-events: none;
+  }
+  > * {
+    position: relative;
+    z-index: 2;
+  }
 `;
 
 const CloseButton = styled(motion.button)`
@@ -136,6 +164,7 @@ const QuestPanelModal: React.FC<QuestPanelModalProps> = ({ open, onClose, realm,
         onClick={onClose}
       >
         <Modal
+          bgUrl={realm && cardBackgrounds[realm.id]}
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
