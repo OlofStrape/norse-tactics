@@ -255,6 +255,18 @@ const newGodsAndCreatures: Card[] = [
     createCard('gerdr', 'Gerdr', [6, 7, 8, 7], 'none', 'Giantess, wife of Freyr', 'rare'),
 ];
 
+// New batch gods/creatures
+const newBatchCards: Card[] = [
+    createCard('nanna', 'Nanna', [7, 7, 7, 7], 'none', 'Goddess of joy and peace', 'epic'),
+    createCard('fjolnir', 'Fjolnir', [7, 8, 7, 6], 'none', 'Legendary king, son of Freyr', 'epic'),
+    createCard('hodr', 'Höðr', [6, 7, 8, 7], 'none', 'Blind god, brother of Baldr', 'epic'),
+    createCard('syn', 'Syn', [7, 6, 7, 8], 'none', 'Goddess of vigilance and denial', 'epic'),
+    createCard('huldra', 'Huldra', [6, 8, 7, 7], 'none', 'Forest spirit of Norse folklore', 'epic'),
+    createCard('volva', 'Völva', [7, 7, 8, 6], 'none', 'Seeress and practitioner of seidr', 'epic'),
+    createCard('mare', 'Mare', [6, 7, 6, 8], 'none', 'Nightmare-bringer of Norse myth', 'epic'),
+    createCard('vidar', 'Víðarr', [8, 7, 8, 7], 'none', 'God of vengeance and silence', 'epic'),
+];
+
 // Combine all cards
 export const cards: Card[] = [
     ...majorGods,
@@ -274,4 +286,5 @@ export const cards: Card[] = [
     ...additionalArtifacts,
     ...additionalLocations,
     ...newGodsAndCreatures,
+    ...newBatchCards,
 ]; 
