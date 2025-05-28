@@ -131,4 +131,6 @@ If you encounter issues or want to contribute, please open an issue or pull requ
 
 ---
 
-**Enjoy Norse Tactics!** 
+**Enjoy Norse Tactics!**
+
+<!-- Trigger redeploy: removed src/index.css for font fix --> 
